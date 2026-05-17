@@ -53,7 +53,7 @@ def ask_question(body: AskRequest) -> AskResponse:
         logger.error("Anthropic API error: %s", exc, exc_info=True)
         raise HTTPException(
             status_code=502,
-            detail=f"Failed to get a response from Claude: {exc}",
+            detail="Failed to get a response from Claude. Please try again.",
         ) from exc
 
     return AskResponse(**result)
@@ -82,6 +82,9 @@ def ask_demo() -> AskResponse:
         )
     except Exception as exc:
         logger.error("Demo endpoint error: %s", exc, exc_info=True)
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=502,
+            detail="Failed to get a response from Claude. Please try again.",
+        ) from exc
 
     return AskResponse(**result)
