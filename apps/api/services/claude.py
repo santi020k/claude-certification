@@ -17,6 +17,9 @@ Usage
 """
 
 import logging
+import os
+from functools import lru_cache
+from typing import Any
 
 from anthropic import Anthropic
 
@@ -24,10 +27,27 @@ from config import MODEL
 
 logger = logging.getLogger("claude-certification.api")
 
-# One shared client — the SDK reads ANTHROPIC_API_KEY from the environment.
-_client = Anthropic()
+logger.info("Claude service ready — model: %s", MODEL)
 
-logger.info("Anthropic client initialised — model: %s", MODEL)
+
+@lru_cache
+def get_client() -> Anthropic:
+    """Create the Anthropic client when the first Claude request arrives."""
+    if not os.getenv("ANTHROPIC_API_KEY"):
+        raise RuntimeError("ANTHROPIC_API_KEY is not configured")
+    return Anthropic()
+
+
+def extract_text(content_blocks: list[Any]) -> str:
+    """Collect text from Claude content blocks without assuming their order."""
+    parts = [
+        block.text.strip()
+        for block in content_blocks
+        if getattr(block, "type", None) == "text" and getattr(block, "text", "").strip()
+    ]
+    if not parts:
+        raise RuntimeError("Claude returned no text content")
+    return "\n\n".join(parts)
 
 
 def ask_claude(question: str, max_tokens: int = 1000) -> dict[str, object]:
@@ -57,14 +77,13 @@ def ask_claude(question: str, max_tokens: int = 1000) -> dict[str, object]:
     """
     logger.info("→ Claude | question: %.80s…", question)
 
-    response = _client.messages.create(
+    response = get_client().messages.create(
         model=MODEL,
         max_tokens=max_tokens,
         messages=[{"role": "user", "content": question}],
     )
 
-    # Claude may return multiple content blocks; we take the first text block.
-    answer_text: str = response.content[0].text  # type: ignore[union-attr]
+    answer_text = extract_text(response.content)
 
     logger.info(
         "← Claude | %d input tokens, %d output tokens",

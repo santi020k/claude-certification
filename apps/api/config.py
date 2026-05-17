@@ -28,7 +28,7 @@ logger = logging.getLogger("claude-certification.api")
 # Comma-separated list of origins allowed to call this API from the browser.
 # Example .env value:  ALLOWED_ORIGINS=http://localhost:3000,https://my-app.com
 _raw_origins: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
-ALLOWED_ORIGINS: list[str] = [o.strip() for o in _raw_origins.split(",")]
+ALLOWED_ORIGINS: list[str] = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 # ── Anthropic ─────────────────────────────────────────────────────────────────
 # The SDK reads ANTHROPIC_API_KEY from the environment automatically, but
@@ -36,8 +36,8 @@ ALLOWED_ORIGINS: list[str] = [o.strip() for o in _raw_origins.split(",")]
 ANTHROPIC_API_KEY: str | None = os.getenv("ANTHROPIC_API_KEY")
 
 # claude-sonnet-4-0 offers the best balance of speed and intelligence for
-# most certification/demo use-cases.  Override with MODEL env var if needed.
-MODEL: str = os.getenv("MODEL", "claude-sonnet-4-0")
+# most certification/demo use-cases. Override with ANTHROPIC_MODEL if needed.
+MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-0")
 
 # ── Server ────────────────────────────────────────────────────────────────────
 APP_ENV: str = os.getenv("APP_ENV", "development")

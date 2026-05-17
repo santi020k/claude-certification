@@ -20,14 +20,15 @@ class AskRequest(BaseModel):
 
     question: str = Field(
         ...,
-        min_length=1,
+        min_length=3,
+        max_length=4000,
         description="The question you want Claude to answer.",
         examples=["Explain Python decorators in simple terms"],
     )
     max_tokens: int = Field(
         default=1000,
-        ge=1,
-        le=4096,
+        ge=50,
+        le=4000,
         description="Upper limit on Claude's response length (tokens).",
     )
     one_sentence: bool = Field(
