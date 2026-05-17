@@ -1,11 +1,11 @@
-# Certification — Turborepo Monorepo
+# Claude Certification — Turborepo Monorepo
 
 > **Next.js** (frontend) + **FastAPI** (backend) + **Cloudflare** (deployment)
 
 ## Project structure
 
 ```
-certification/
+claude-certification/
 ├── apps/
 │   ├── web/          ← Next.js 15 — Cloudflare Pages
 │   └── api/          ← FastAPI + Claude — Python
@@ -22,7 +22,6 @@ certification/
 | Tool | Version |
 |------|---------|
 | Node.js | ≥ 20 |
-| npm | ≥ 10 |
 | pnpm | ≥ 10 |
 | Python | ≥ 3.11 |
 | pip | latest |
@@ -31,7 +30,8 @@ certification/
 
 ```bash
 # 1. Clone the repo and enter it
-cd certification
+git clone https://github.com/santi020k/claude-certification.git
+cd claude-certification
 
 # 2. Copy the env template
 cp .env.template .env
@@ -84,5 +84,5 @@ pnpm dev   # runs turbo dev → starts apps/web on :3000
 
 ## Deployment
 
-See `apps/web/wrangler.toml` for Cloudflare Pages config.  
+See `apps/web/wrangler.toml` for Cloudflare Pages config.
 Secret env vars (e.g. `ANTHROPIC_API_KEY`) must be set in the Cloudflare dashboard, never in `wrangler.toml`.

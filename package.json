@@ -1,7 +1,7 @@
 {
-  "name": "certification",
+  "name": "claude-certification",
   "version": "1.0.0",
-  "description": "Certification project — Next.js + FastAPI Turborepo",
+  "description": "Claude Certification project — Next.js + FastAPI Turborepo",
   "license": "MIT",
   "author": "santi020k",
   "private": true,

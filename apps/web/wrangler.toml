@@ -1,14 +1,14 @@
 # Cloudflare Pages — Next.js frontend
 # Docs: https://developers.cloudflare.com/pages/framework-guides/nextjs/
 
-name = "certification-web"
+name = "claude-certification-web"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
 
 [vars]
 # Public env vars available at build time and at runtime in the edge
-NEXT_PUBLIC_API_URL = "https://api.certification.your-domain.com"
+NEXT_PUBLIC_API_URL = "https://api.claude-certification.your-domain.com"
 
 # ---------------------------------------------------------------------------
 # NOTE: Secret environment variables (like ANTHROPIC_API_KEY) should be set
