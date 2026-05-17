@@ -1,21 +1,48 @@
 # Claude Certification — Turborepo Monorepo
 
-> **Next.js** (frontend) + **FastAPI** (backend) + **Cloudflare** (deployment)
+> **Next.js 15** (frontend) · **FastAPI** (backend) · **Anthropic Claude** (AI) · **Cloudflare** (deployment)
 
-## Project structure
+A full-stack learning project demonstrating how to integrate Claude into a
+production-ready web stack with a proper monorepo setup.
+
+---
+
+## Architecture
 
 ```
-claude-certification/
+certification/
 ├── apps/
-│   ├── web/          ← Next.js 15 — Cloudflare Pages
-│   └── api/          ← FastAPI + Claude — Python
+│   ├── api/                  ← FastAPI + Anthropic SDK  (Python ≥ 3.11)
+│   │   ├── main.py           ← App factory (thin — just wires routers)
+│   │   ├── config.py         ← Env vars, logging, constants
+│   │   ├── models.py         ← Pydantic request / response schemas
+│   │   ├── services/
+│   │   │   └── claude.py     ← ask_claude() — Anthropic SDK wrapper
+│   │   └── routers/
+│   │       ├── health.py     ← GET /  and  GET /api/health
+│   │       └── claude.py     ← POST /api/ask  and  GET /api/ask/demo
+│   └── web/                  ← Next.js 15 — Cloudflare Pages  (TypeScript)
+│       └── src/app/
+│           ├── page.tsx
+│           └── layout.tsx
 ├── packages/
-│   └── shared/       ← (future) shared types / utils
-├── .env              ← your local secrets (gitignored)
-├── .env.template     ← copy this to .env and fill in values
-├── turbo.json        ← Turborepo pipeline
-└── package.json      ← workspace root
+│   └── shared/               ← (future) shared TypeScript types / utils
+├── .claude/
+│   └── commands/             ← Custom Claude slash commands for this repo
+│       ├── ask.md            ← /ask  — quick API test
+│       ├── health.md         ← /health — check backend health
+│       ├── dev.md            ← /dev  — start dev stack instructions
+│       └── test-api.md       ← /test-api — smoke-test all endpoints
+├── .vscode/
+│   └── settings.json         ← Python interpreter + Pyrefly / Pylance config
+├── CLAUDE.md                 ← AI context, SDK reference, prompting tips
+├── .env                      ← Local secrets (gitignored)
+├── .env.template             ← Copy this → .env, then fill in values
+├── turbo.json                ← Turborepo pipeline
+└── package.json              ← Workspace root
 ```
+
+---
 
 ## Prerequisites
 
@@ -24,33 +51,41 @@ claude-certification/
 | Node.js | ≥ 20 |
 | pnpm | ≥ 10 |
 | Python | ≥ 3.11 |
-| pip | latest |
+
+---
 
 ## First-time setup
 
 ```bash
-# 1. Clone the repo and enter it
+# 1. Clone the repo
 git clone https://github.com/santi020k/claude-certification.git
 cd claude-certification
 
-# 2. Copy the env template
+# 2. Copy the env template and add your API key
 cp .env.template .env
-# → Open .env and set ANTHROPIC_API_KEY and any other values
+# → Open .env and set ANTHROPIC_API_KEY (get one at console.anthropic.com)
 
-# 3. Install Node dependencies (frontend + turbo)
+# 3. Install Node dependencies
 pnpm install
 
-# 4. Set up the Python backend
+# 4. Set up the Python virtual environment
 cd apps/api
 python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cd ../..
 ```
 
+> **VS Code users** — open the repo root folder and VS Code will automatically
+> pick up `.vscode/settings.json`, pointing Pylance and Pyrefly to the correct
+> virtual environment. No manual interpreter selection needed.
+
+---
+
 ## Running in development
 
 **Terminal 1 — FastAPI backend:**
+
 ```bash
 cd apps/api
 source .venv/bin/activate
@@ -58,31 +93,66 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Terminal 2 — Next.js frontend:**
+
 ```bash
-pnpm dev   # runs turbo dev → starts apps/web on :3000
+pnpm dev   # turbo dev → starts apps/web on :3000
 ```
 
-## API testing URLs (Postman / curl)
+---
+
+## API Endpoints
 
 | Method | URL | Description |
 |--------|-----|-------------|
-| GET | http://localhost:8000/ | Root — server alive? |
-| GET | http://localhost:8000/api/health | Health + env info |
-| GET | http://localhost:8000/api/ask/demo | Demo: quantum computing |
-| POST | http://localhost:8000/api/ask | Ask Claude anything |
-| — | http://localhost:8000/docs | Swagger UI (interactive) |
+| `GET` | `http://localhost:8000/` | Root — is the server alive? |
+| `GET` | `http://localhost:8000/api/health` | Health + environment info |
+| `GET` | `http://localhost:8000/api/ask/demo` | Demo: quantum computing (one sentence) |
+| `POST` | `http://localhost:8000/api/ask` | Ask Claude anything |
+| — | `http://localhost:8000/docs` | Swagger UI (interactive) |
+| — | `http://localhost:8000/redoc` | ReDoc UI |
 
-### POST /api/ask — example body
+### POST /api/ask — example
 
-```json
-{
-  "question": "What is a neural network?",
-  "max_tokens": 500,
-  "one_sentence": false
-}
+```bash
+curl -X POST http://localhost:8000/api/ask \
+  -H "Content-Type: application/json" \
+  -d '{
+    "question": "What is a neural network?",
+    "max_tokens": 500,
+    "one_sentence": false
+  }'
 ```
+
+---
+
+## Claude slash commands (in Claude Code / Cowork)
+
+This repo ships with custom slash commands under `.claude/commands/`:
+
+| Command | What it does |
+|---------|-------------|
+| `/ask <question>` | POST a question to the local API and print the response |
+| `/health` | Check the backend health endpoint |
+| `/dev` | Show instructions to start the full dev stack |
+| `/test-api` | Smoke-test all four endpoints in one go |
+
+---
+
+## Claude / Anthropic SDK
+
+See **[CLAUDE.md](./CLAUDE.md)** for a full reference including:
+- Current model names and when to use each
+- Basic message call, system prompts, multi-turn chat, streaming
+- Token counting and usage billing info
+- Prompting tips and best practices
+- Environment variable reference
+
+---
 
 ## Deployment
 
-See `apps/web/wrangler.toml` for Cloudflare Pages config.
-Secret env vars (e.g. `ANTHROPIC_API_KEY`) must be set in the Cloudflare dashboard, never in `wrangler.toml`.
+Frontend is deployed to **Cloudflare Pages** — see `apps/web/wrangler.toml`.
+
+Set secret environment variables (e.g. `ANTHROPIC_API_KEY`) in the
+**Cloudflare dashboard → Pages → Settings → Environment variables**.
+Never put secrets in `wrangler.toml`.

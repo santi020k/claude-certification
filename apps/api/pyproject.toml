@@ -1,0 +1,16 @@
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.11"
+include = ["."]
+exclude = [".venv", "__pycache__"]
+reportMissingImports = "warning"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.isort]
+known-first-party = ["config", "models", "services", "routers"]
