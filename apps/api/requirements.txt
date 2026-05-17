@@ -1,0 +1,18 @@
+# Python runtime dependencies for apps/api
+# Install with:  pip install -r requirements.txt
+
+# Anthropic Python SDK — the official client for Claude API
+anthropic>=0.30.0
+
+# python-dotenv — loads .env files into os.environ automatically
+python-dotenv>=1.0.0
+
+# FastAPI — modern, fast web framework for building APIs
+fastapi>=0.111.0
+
+# Uvicorn — lightning-fast ASGI server for running FastAPI in development
+# The [standard] extra includes watchfiles for --reload support
+uvicorn[standard]>=0.29.0
+
+# Pydantic — data validation (FastAPI uses it under the hood)
+pydantic>=2.7.0
