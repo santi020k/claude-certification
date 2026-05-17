@@ -5,10 +5,7 @@
   "license": "MIT",
   "author": "santi020k",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -20,7 +17,7 @@
     "turbo": "^2.9.14",
     "prettier": "^3.3.3"
   },
-  "packageManager": "npm@10.8.1",
+  "packageManager": "pnpm@10.11.0",
   "engines": {
     "node": ">=20"
   }

@@ -23,6 +23,7 @@ certification/
 |------|---------|
 | Node.js | ≥ 20 |
 | npm | ≥ 10 |
+| pnpm | ≥ 10 |
 | Python | ≥ 3.11 |
 | pip | latest |
 
@@ -37,7 +38,7 @@ cp .env.template .env
 # → Open .env and set ANTHROPIC_API_KEY and any other values
 
 # 3. Install Node dependencies (frontend + turbo)
-npm install
+pnpm install
 
 # 4. Set up the Python backend
 cd apps/api
@@ -58,7 +59,7 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 
 **Terminal 2 — Next.js frontend:**
 ```bash
-npm run dev   # runs turbo dev → starts apps/web on :3000
+pnpm dev   # runs turbo dev → starts apps/web on :3000
 ```
 
 ## API testing URLs (Postman / curl)
