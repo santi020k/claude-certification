@@ -14,8 +14,9 @@
     "jsx": "react-jsx",
     "incremental": true,
     "paths": {
-      "@/components/*": ["./src/components/*"],
-      "@/lib/*": ["./src/lib/*"]
+      "@ui/components/*": ["./src/components/*"],
+      "@ui/lib/*": ["./src/lib/*"],
+      "@ui/hooks/*": ["./src/hooks/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],

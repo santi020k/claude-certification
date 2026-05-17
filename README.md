@@ -1,6 +1,6 @@
 # Claude Certification — Turborepo Monorepo
 
-> **Next.js 15** (frontend) · **FastAPI** (backend) · **Anthropic Claude** (AI) · **Cloudflare** (deployment)
+> **Next.js 16** (frontend) · **FastAPI** (backend) · **Anthropic Claude** (AI) · **Cloudflare** (deployment)
 
 A full-stack learning project demonstrating how to integrate Claude into a
 production-ready web stack with a proper monorepo setup.
@@ -21,7 +21,7 @@ certification/
 │   │   └── routers/
 │   │       ├── health.py     ← GET /  and  GET /api/health
 │   │       └── claude.py     ← POST /api/ask  and  GET /api/ask/demo
-│   └── web/                  ← Next.js 15 — Cloudflare Pages  (TypeScript)
+│   └── web/                  ← Next.js 16 — Cloudflare Pages  (TypeScript)
 │       └── src/app/
 │           ├── page.tsx
 │           └── layout.tsx
@@ -98,6 +98,9 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 pnpm dev   # turbo dev → starts apps/web on :3000
 ```
 
+The frontend is a shadcn-style Claude playground that calls the API configured
+by `NEXT_PUBLIC_API_URL`, usually `http://localhost:8000` in development.
+
 ---
 
 ## API Endpoints
@@ -146,6 +149,18 @@ See **[CLAUDE.md](./CLAUDE.md)** for a full reference including:
 - Token counting and usage billing info
 - Prompting tips and best practices
 - Environment variable reference
+
+---
+
+## Quality checks
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm api:lint
+pnpm api:test
+```
 
 ---
 
