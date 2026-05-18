@@ -1,18 +1,9 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import { eslintConfig } from '@santi020k/eslint-config-basic'
+import react from '@santi020k/eslint-config-react'
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  {
-    rules: {
-      "@next/next/no-html-link-for-pages": "off",
-      "react-hooks/purity": "off",
-      "react-hooks/set-state-in-effect": "off",
-    },
+export default eslintConfig({
+  typescript: true,
+  frameworks: {
+    react,
   },
-  globalIgnores([".next/**", "dist/**", "node_modules/**"]),
-]);
-
-export default eslintConfig;
+})

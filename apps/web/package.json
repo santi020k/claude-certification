@@ -17,12 +17,14 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@santi020k/eslint-config-basic": "^1.6.0",
+    "@santi020k/eslint-config-next": "^1.6.0",
+    "@santi020k/eslint-config-react": "^1.6.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/node": "^20.19.41",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.4",
-    "eslint-config-next": "16.2.6",
     "tailwindcss": "^4.3.0",
     "typescript": "^5.9.3"
   }
