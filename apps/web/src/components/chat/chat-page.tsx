@@ -9,23 +9,40 @@ import {
   getApiBaseUrl,
   parseRetryAfter,
   readChatResponse,
-  readErrorMessage
+  readErrorMessage,
+  readSpecialistsResponse
 } from '@/components/claude-playground/api'
 import { MarkdownAnswer } from '@/components/claude-playground/primitives/markdown-answer'
 import { AmbientBackground } from '@/components/claude-playground/sections/ambient-background'
-import type { ChatMessage, ChatResponse } from '@/components/claude-playground/types'
+import type { ChatMessage, ChatResponse, Specialist } from '@/components/claude-playground/types'
 
 import { ArrowLeft, Coins, Loader2, RotateCcw, Send } from 'lucide-react'
 
 import { Button } from '@repo/ui/components/ui/button'
 import { Textarea } from '@repo/ui/components/ui/textarea'
 
-const starterMessages: ChatMessage[] = [
-  {
-    role: 'assistant',
-    content: 'Hi. Ask me something, then send a follow-up so you can see the backend keep the conversation context.'
-  }
+// ── Default specialists (shown while the API loads) ────────────────────────────
+
+const DEFAULT_SPECIALISTS: Specialist[] = [
+  { id: 'general', name: 'General Assistant', description: 'A helpful, balanced assistant for everyday questions.' },
+  { id: 'customer_support', name: 'Customer Support', description: 'Friendly support agent — empathetic, solution-focused, and clear.' },
+  { id: 'math_tutor', name: 'Math Tutor', description: 'Patient tutor who guides you step-by-step.' },
+  { id: 'software_developer', name: 'Software Developer', description: 'Senior engineer — concise, production-quality code guidance.' },
+  { id: 'writing_coach', name: 'Writing Coach', description: 'Thoughtful coach who helps you write more clearly.' },
 ]
+
+const DEFAULT_SPECIALIST_ID = 'general'
+
+// ── Session persistence ────────────────────────────────────────────────────────
+
+function buildStarterMessages(specialistName: string): ChatMessage[] {
+  return [
+    {
+      role: 'assistant',
+      content: `Hi! I'm your ${specialistName}. Ask me something, then follow up to see the backend keep the conversation context.`
+    }
+  ]
+}
 
 const chatSessionKey = 'certification.chat.session'
 
@@ -34,14 +51,16 @@ interface ChatSession {
   lastResponse: ChatResponse | null
   maxTokens: number
   messages: ChatMessage[]
+  specialistId: string
 }
 
-function getDefaultChatSession(): ChatSession {
+function getDefaultChatSession(specialistId = DEFAULT_SPECIALIST_ID, specialistName = 'General Assistant'): ChatSession {
   return {
     conversationId: null,
     lastResponse: null,
     maxTokens: 1000,
-    messages: starterMessages
+    messages: buildStarterMessages(specialistName),
+    specialistId,
   }
 }
 
@@ -65,34 +84,44 @@ function readChatSession(): ChatSession {
       maxTokens: typeof parsed.maxTokens === 'number' ? parsed.maxTokens : 1000,
       messages: Array.isArray(parsed.messages) && parsed.messages.length > 0 ?
         parsed.messages :
-        starterMessages
+        buildStarterMessages('General Assistant'),
+      specialistId: typeof parsed.specialistId === 'string' ? parsed.specialistId : DEFAULT_SPECIALIST_ID,
     }
   } catch {
     return getDefaultChatSession()
   }
 }
 
-function isStarterChat(messages: ChatMessage[]): boolean {
-  return messages.length === starterMessages.length &&
-    messages.every((message, index) => message.role === starterMessages[index]?.role &&
-      message.content === starterMessages[index]?.content)
+function isOnlyStarterMessage(messages: ChatMessage[]): boolean {
+  return messages.length === 1 && messages[0]?.role === 'assistant'
 }
+
+// ── Component ──────────────────────────────────────────────────────────────────
 
 export function ChatPage() {
   const messageInputId = useId()
   const messageHelpId = useId()
   const tokenInputId = useId()
+  const specialistSelectId = useId()
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
+
+  // Specialist state
+  const [specialists, setSpecialists] = useState<Specialist[]>(DEFAULT_SPECIALISTS)
+  const [specialistId, setSpecialistId] = useState<string>(DEFAULT_SPECIALIST_ID)
+
+  // Conversation state
   const [conversationId, setConversationId] = useState<string | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>(starterMessages)
+  const [messages, setMessages] = useState<ChatMessage[]>(buildStarterMessages('General Assistant'))
   const [draft, setDraft] = useState('')
   const [maxTokens, setMaxTokens] = useState(1000)
   const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
   const [isSessionReady, setIsSessionReady] = useState(false)
+
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
+
   const trimmed = draft.trim()
   const canSend = trimmed.length > 0 && trimmed.length <= 4_000 && !isSending
 
@@ -101,18 +130,16 @@ export function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isSending])
 
+  // Restore session on mount
   useEffect(() => {
     const animationFrame = window.requestAnimationFrame(() => {
       const session = readChatSession()
 
       setConversationId(session.conversationId)
-
       setMessages(session.messages)
-
       setMaxTokens(session.maxTokens)
-
       setLastResponse(session.lastResponse)
-
+      setSpecialistId(session.specialistId)
       setIsSessionReady(true)
     })
 
@@ -121,13 +148,32 @@ export function ChatPage() {
     }
   }, [])
 
+  // Fetch available specialists from the API
+  useEffect(() => {
+    const controller = new AbortController()
+
+    fetch(`${apiBaseUrl}/api/specialists`, { signal: controller.signal })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to load specialists')
+        return readSpecialistsResponse(res)
+      })
+      .then(data => {
+        setSpecialists(data.specialists)
+      })
+      .catch(() => {
+        // Keep the defaults on failure — the API still works with id strings
+      })
+
+    return () => { controller.abort() }
+  }, [apiBaseUrl])
+
+  // Persist session whenever state changes
   useEffect(() => {
     if (!isSessionReady) return
 
     try {
-      if (!conversationId && !lastResponse && isStarterChat(messages)) {
+      if (!conversationId && !lastResponse && isOnlyStarterMessage(messages)) {
         window.sessionStorage.removeItem(chatSessionKey)
-
         return
       }
 
@@ -136,11 +182,14 @@ export function ChatPage() {
           conversationId,
           lastResponse,
           maxTokens,
-          messages
+          messages,
+          specialistId,
         })
       )
     } catch { /* Browser session storage may be unavailable. */ }
-  }, [conversationId, isSessionReady, lastResponse, maxTokens, messages])
+  }, [conversationId, isSessionReady, lastResponse, maxTokens, messages, specialistId])
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
   async function sendMessage(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -150,11 +199,8 @@ export function ChatPage() {
     const optimisticMessage: ChatMessage = { role: 'user', content: trimmed }
 
     setMessages(current => [...current, optimisticMessage])
-
     setDraft('')
-
     setError(null)
-
     setIsSending(true)
 
     try {
@@ -164,13 +210,13 @@ export function ChatPage() {
         body: JSON.stringify({
           conversation_id: conversationId,
           message: trimmed,
-          max_tokens: maxTokens
+          max_tokens: maxTokens,
+          specialist: specialistId,
         })
       })
 
       if (res.status === 429) {
         const secs = parseRetryAfter(res)
-
         throw new Error(`Rate limit reached. Please wait ${secs}s before trying again.`)
       }
 
@@ -179,38 +225,42 @@ export function ChatPage() {
       const data = await readChatResponse(res)
 
       setConversationId(data.conversation_id)
-
       setMessages(data.messages)
-
       setLastResponse(data)
     } catch (err) {
       setMessages(current => current.filter(message => message !== optimisticMessage))
-
       setError(err instanceof Error ? err.message : 'Claude could not answer right now.')
     } finally {
       setIsSending(false)
-
       textareaRef.current?.focus()
     }
   }
 
-  function resetChat() {
+  function resetChat(nextSpecialistId?: string) {
     try {
       window.sessionStorage.removeItem(chatSessionKey)
     } catch { /* Browser session storage may be unavailable. */ }
 
+    const id = nextSpecialistId ?? specialistId
+    const found = specialists.find(s => s.id === id)
+    const name = found?.name ?? 'General Assistant'
+
     setConversationId(null)
-
-    setMessages(starterMessages)
-
+    setMessages(buildStarterMessages(name))
     setDraft('')
-
     setLastResponse(null)
-
     setError(null)
-
     textareaRef.current?.focus()
   }
+
+  function handleSpecialistChange(nextId: string) {
+    setSpecialistId(nextId)
+    resetChat(nextId)
+  }
+
+  const currentSpecialist = specialists.find(s => s.id === specialistId)
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <main className="relative flex min-h-screen flex-col overflow-hidden">
@@ -240,23 +290,59 @@ export function ChatPage() {
 
             <div className="flex items-center gap-3">
               <ApiStatusIndicator />
-              <Button type="button" variant="outline" size="sm" onClick={resetChat}>
+              <Button type="button" variant="outline" size="sm" onClick={() => { resetChat() }}>
                 <RotateCcw className="size-3.5" />
                 New chat
               </Button>
             </div>
           </nav>
 
-          {/* ── Page title ──────────────────────────────────────────────────── */}
-          <div>
-            <h1 className="text-3xl/tight font-semibold text-foreground">Chat with Claude</h1>
-            <p className="mt-1.5 max-w-2xl text-sm/6 text-muted-foreground">
-              Powered by
-              {' '}
-              <span className="font-mono text-orange-200/80">POST /api/chat</span>
-              {' '}
-              — context lives in the backend, and this tab remembers the thread until New chat.
-            </p>
+          {/* ── Page title + specialist picker ──────────────────────────────── */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h1 className="text-3xl/tight font-semibold text-foreground">Chat with Claude</h1>
+              <p className="mt-1.5 max-w-2xl text-sm/6 text-muted-foreground">
+                Powered by
+                {' '}
+                <span className="font-mono text-orange-200/80">POST /api/chat</span>
+                {' '}
+                — context lives in the backend, and this tab remembers the thread until New chat.
+              </p>
+            </div>
+
+            {/* ── Specialist selector ─────────────────────────────────────── */}
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor={specialistSelectId}
+                className="text-xs font-medium text-muted-foreground"
+              >
+                Specialist
+              </label>
+              <select
+                id={specialistSelectId}
+                value={specialistId}
+                className="
+                  h-9 min-w-[200px] rounded-md border border-white/15 bg-black/25 px-3
+                  text-sm text-foreground outline-none
+                  focus:border-orange-300/40 focus:ring-1 focus:ring-orange-300/20
+                  hover:border-white/25 transition-colors cursor-pointer
+                "
+                onChange={event => { handleSpecialistChange(event.target.value) }}
+              >
+                {specialists.map(s => (
+                  <option key={s.id} value={s.id} className="bg-zinc-900">
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+              {currentSpecialist ?
+                (
+                  <p className="max-w-xs text-xs text-muted-foreground/60">
+                    {currentSpecialist.description}
+                  </p>
+                ) :
+                null}
+            </div>
           </div>
         </header>
 
@@ -299,14 +385,14 @@ export function ChatPage() {
                   animation: 'message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both',
                   animationDelay: `${Math.min(index * 25, 200)}ms`
                 }}
-                aria-label={`From ${message.role === 'user' ? 'you' : 'Claude'}`}
+                aria-label={`From ${message.role === 'user' ? 'you' : currentSpecialist?.name ?? 'Claude'}`}
               >
                 <div
                   className="
                     mb-2 text-xs font-medium text-muted-foreground uppercase
                   "
                 >
-                  {message.role === 'user' ? 'You' : 'Claude'}
+                  {message.role === 'user' ? 'You' : (currentSpecialist?.name ?? 'Claude')}
                 </div>
                 {message.role === 'assistant' ?
                   <MarkdownAnswer content={message.content} /> :
@@ -325,7 +411,9 @@ export function ChatPage() {
                   style={{ animation: 'message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both' }}
                 >
                   <Loader2 className="size-4 animate-spin" />
-                  Claude is thinking…
+                  {currentSpecialist?.name ?? 'Claude'}
+                  {' '}
+                  is thinking…
                 </div>
               ) :
               null}
@@ -349,7 +437,7 @@ export function ChatPage() {
               ref={textareaRef}
               value={draft}
               maxLength={4_000}
-              placeholder="Ask something, then follow up…"
+              placeholder={`Ask ${currentSpecialist?.name ?? 'Claude'} something…`}
               aria-describedby={messageHelpId}
               className="max-h-52 min-h-24 resize-none bg-black/10 text-sm/6"
               onChange={event => {
@@ -358,7 +446,6 @@ export function ChatPage() {
               onKeyDown={event => {
                 if (event.key === 'Enter' && !event.shiftKey) {
                   event.preventDefault()
-
                   event.currentTarget.form?.requestSubmit()
                 }
               }}

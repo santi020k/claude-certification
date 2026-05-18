@@ -26,3 +26,14 @@ export interface HealthResponse {
   anthropic_api_key_configured: boolean
   model: string
 }
+
+export interface Specialist {
+  id: string
+  name: string
+  description: string
+}
+
+export interface SpecialistsResponse {
+  specialists: Specialist[]
+  default: string
+}

@@ -151,6 +151,14 @@ class ChatRequest(BaseModel):
         default=False,
         description="When True, instructs Claude to answer in one sentence.",
     )
+    specialist: str | None = Field(
+        default=None,
+        description=(
+            "Specialist persona id (e.g. 'math_tutor', 'customer_support'). "
+            "Omit or pass null for the default general assistant."
+        ),
+        examples=["math_tutor"],
+    )
 
     @field_validator("message", mode="before")
     @classmethod
@@ -182,3 +190,18 @@ class HealthResponse(BaseModel):
     anthropic_api_key_configured: bool
     model: str
     allowed_origins: list[str]
+
+
+class SpecialistPublic(BaseModel):
+    """Public view of a specialist (no internal system prompt exposed)."""
+
+    id: str = Field(description="Unique identifier for the specialist.")
+    name: str = Field(description="Human-readable display name.")
+    description: str = Field(description="Short description of this specialist's style/focus.")
+
+
+class SpecialistsResponse(BaseModel):
+    """Response returned by GET /api/specialists."""
+
+    specialists: list[SpecialistPublic]
+    default: str = Field(description="The id of the default specialist.")

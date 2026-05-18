@@ -156,21 +156,39 @@ def ask_claude(question: str, max_tokens: int = 1000) -> ClaudeResponseDict:
 def chat_with_claude(
     messages: Sequence[ClaudeMessage],
     max_tokens: int = 1000,
+    system_prompt: str | None = None,
 ) -> ClaudeChatResponseDict:
-    """Send a conversation history to Claude and return the next answer."""
+    """Send a conversation history to Claude and return the next answer.
+
+    Parameters
+    ----------
+    messages:
+        Full conversation history (alternating user/assistant turns).
+    max_tokens:
+        Upper bound on the number of tokens in Claude's response.
+    system_prompt:
+        Optional system prompt that shapes Claude's persona and behaviour.
+        When provided it is passed as the ``system`` parameter so it applies
+        to the entire conversation without consuming a turn in ``messages``.
+    """
     logger.info(
-        "Claude chat request | model=%s max_tokens=%d messages=%d",
+        "Claude chat request | model=%s max_tokens=%d messages=%d specialist_prompt=%s",
         MODEL,
         max_tokens,
         len(messages),
+        "yes" if system_prompt else "no",
     )
 
+    create_kwargs: dict = {
+        "model": MODEL,
+        "max_tokens": max_tokens,
+        "messages": list(messages),
+    }
+    if system_prompt:
+        create_kwargs["system"] = system_prompt
+
     try:
-        response = get_client().messages.create(
-            model=MODEL,
-            max_tokens=max_tokens,
-            messages=list(messages),
-        )
+        response = get_client().messages.create(**create_kwargs)
     except AuthenticationError as exc:
         raise ClaudeAuthenticationError(str(exc)) from exc
     except RateLimitError as exc:

@@ -1,4 +1,4 @@
-import type { AskResponse, ChatResponse, HealthResponse } from './types'
+import type { AskResponse, ChatResponse, HealthResponse, SpecialistsResponse } from './types'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -91,4 +91,18 @@ export async function readHealthResponse(response: Response): Promise<HealthResp
   }
 
   return payload
+}
+
+export async function readSpecialistsResponse(response: Response): Promise<SpecialistsResponse> {
+  const payload: unknown = await response.json()
+
+  if (
+    !isRecord(payload) ||
+    !Array.isArray(payload.specialists) ||
+    typeof payload.default !== 'string'
+  ) {
+    throw new Error('The API returned an invalid specialists payload.')
+  }
+
+  return payload as SpecialistsResponse
 }
