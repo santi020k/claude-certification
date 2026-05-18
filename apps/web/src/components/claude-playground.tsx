@@ -63,7 +63,7 @@ async function readErrorMessage(response: Response) {
 }
 
 export function ClaudePlayground() {
-  const apiBaseUrl = useMemo(getApiBaseUrl, []);
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
   const [question, setQuestion] = useState(starterQuestion);
   const [maxTokens, setMaxTokens] = useState(700);
   const [oneSentence, setOneSentence] = useState(false);

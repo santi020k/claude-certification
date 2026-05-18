@@ -20,6 +20,9 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@ui/components/*": ["../../packages/ui/src/components/*"],
+      "@ui/hooks/*": ["../../packages/ui/src/hooks/*"],
+      "@ui/lib/*": ["../../packages/ui/src/lib/*"],
       "@repo/ui/components/*": ["../../packages/ui/src/components/*"],
       "@repo/ui/lib/*": ["../../packages/ui/src/lib/*"],
       "@repo/ui/hooks/*": ["../../packages/ui/src/hooks/*"],
