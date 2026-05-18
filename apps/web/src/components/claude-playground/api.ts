@@ -1,30 +1,25 @@
-import type { AskResponse, ChatResponse, HealthResponse, SpecialistsResponse } from './types'
+import type { AskResponse, ChatResponse, HealthResponse, Specialist, SpecialistsResponse } from './types'
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 
-const isAskResponse = (value: unknown): value is AskResponse =>
-  isRecord(value) &&
+const isAskResponse = (value: unknown): value is AskResponse => isRecord(value) &&
   typeof value.question === 'string' &&
   typeof value.answer === 'string' &&
   typeof value.model === 'string' &&
   typeof value.input_tokens === 'number' &&
   typeof value.output_tokens === 'number'
 
-const isHealthResponse = (value: unknown): value is HealthResponse =>
-  isRecord(value) &&
+const isHealthResponse = (value: unknown): value is HealthResponse => isRecord(value) &&
   typeof value.status === 'string' &&
   typeof value.environment === 'string' &&
   typeof value.anthropic_api_key_configured === 'boolean' &&
   typeof value.model === 'string'
 
-const isChatMessage = (value: unknown) =>
-  isRecord(value) &&
+const isChatMessage = (value: unknown) => isRecord(value) &&
   (value.role === 'user' || value.role === 'assistant') &&
   typeof value.content === 'string'
 
-const isChatResponse = (value: unknown): value is ChatResponse =>
-  isRecord(value) &&
+const isChatResponse = (value: unknown): value is ChatResponse => isRecord(value) &&
   typeof value.conversation_id === 'string' &&
   typeof value.answer === 'string' &&
   Array.isArray(value.messages) &&
@@ -32,6 +27,17 @@ const isChatResponse = (value: unknown): value is ChatResponse =>
   typeof value.model === 'string' &&
   typeof value.input_tokens === 'number' &&
   typeof value.output_tokens === 'number'
+
+const isSpecialist = (value: unknown): value is Specialist => isRecord(value) &&
+  typeof value.id === 'string' &&
+  typeof value.name === 'string' &&
+  typeof value.description === 'string' &&
+  typeof value.temperature === 'number'
+
+const isSpecialistsResponse = (value: unknown): value is SpecialistsResponse => isRecord(value) &&
+  Array.isArray(value.specialists) &&
+  value.specialists.every(isSpecialist) &&
+  typeof value.default === 'string'
 
 export function getApiBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -96,13 +102,9 @@ export async function readHealthResponse(response: Response): Promise<HealthResp
 export async function readSpecialistsResponse(response: Response): Promise<SpecialistsResponse> {
   const payload: unknown = await response.json()
 
-  if (
-    !isRecord(payload) ||
-    !Array.isArray(payload.specialists) ||
-    typeof payload.default !== 'string'
-  ) {
+  if (!isSpecialistsResponse(payload)) {
     throw new Error('The API returned an invalid specialists payload.')
   }
 
-  return payload as SpecialistsResponse
+  return payload
 }

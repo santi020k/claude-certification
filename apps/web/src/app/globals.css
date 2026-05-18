@@ -95,6 +95,17 @@ body {
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+@keyframes thinking-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(251, 146, 60, 0);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 32px -18px rgba(251, 146, 60, 0.9);
+    border-color: rgba(251, 146, 60, 0.22);
+  }
+}
+
 /* Hero text word-by-word reveal */
 @keyframes hero-word {
   from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
@@ -179,5 +190,3 @@ body {
     scroll-behavior: auto !important;
   }
 }
-
-
