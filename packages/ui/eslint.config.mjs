@@ -19,9 +19,14 @@ export default [
         entryPoint: 'src/globals.css',
         ignore: [
           '^(.*:)?animate-(accordion-down|accordion-up|in|out)$',
+          '^(.*:)?animate-caret-blink$',
           '^(.*:)?fade-(in|out)-0$',
-          '^(.*:)?zoom-(in|out)-95$',
-          '^(.*:)?slide-(in|out)-from-(top|bottom|left|right)-2$'
+          '^(.*:)?fade-(in|out)$',
+          '^(.*:)?zoom-(in|out)-(90|95)$',
+          '^(.*:)?slide-(in|out)-from-(top|bottom|left|right)(-2|-52)?$',
+          '^(.*:)?slide-(in|out)-to-(top|bottom|left|right)(-52)?$',
+          '^origin-top-center$',
+          '^toaster$'
         ]
       }]
     }
