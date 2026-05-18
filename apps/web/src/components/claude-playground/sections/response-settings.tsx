@@ -67,7 +67,12 @@ export function ResponseSettings({
           >
             One sentence
           </Label>
-          <Switch id="one-sentence" checked={oneSentence} onCheckedChange={onOneSentenceChange} />
+          <Switch
+            id="one-sentence"
+            aria-label="One sentence brief mode"
+            checked={oneSentence}
+            onCheckedChange={onOneSentenceChange}
+          />
         </div>
       </div>
     </div>

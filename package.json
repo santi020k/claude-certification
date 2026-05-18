@@ -17,6 +17,8 @@
     "api:test": "pnpm --filter api test",
     "api:check": "pnpm run api:lint && pnpm run api:typecheck && pnpm run api:test",
     "web:test": "pnpm --filter web test",
+    "web:a11y": "pnpm --filter web test:a11y",
+    "test:a11y": "pnpm run web:a11y",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean"
   },

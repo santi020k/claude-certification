@@ -26,35 +26,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/accessibility/analyze": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Analyze File Accessibility
-         * @description Analyze a workspace file or code snippet for accessibility violations using Claude.
-         *
-         *     **Rate limit:** 10 requests per minute per IP.
-         *
-         *     **Example request body**
-         *     ```json
-         *     {
-         *       "file_path": "apps/web/src/app/globals.css"
-         *     }
-         *     ```
-         */
-        post: operations["analyze_file_accessibility_api_accessibility_analyze_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/ask": {
         parameters: {
             query?: never;
@@ -148,99 +119,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /**
-         * AccessibilityAnalyzeRequest
-         * @description Body expected by POST /api/accessibility/analyze.
-         */
-        AccessibilityAnalyzeRequest: {
-            /**
-             * Code
-             * @description Optional source code. If empty, the backend will attempt to read the file from the workspace.
-             */
-            code?: string | null;
-            /**
-             * File Path
-             * @description Path relative to the workspace root or filename.
-             */
-            file_path: string;
-        };
-        /**
-         * AccessibilityAnalyzeResponse
-         * @description Response returned by POST /api/accessibility/analyze.
-         */
-        AccessibilityAnalyzeResponse: {
-            /**
-             * File Path
-             * @description The path of the analyzed file.
-             */
-            file_path: string;
-            /**
-             * Input Tokens
-             * @description Prompt tokens consumed.
-             */
-            input_tokens: number;
-            /**
-             * Model
-             * @description The Claude model used for analysis.
-             */
-            model: string;
-            /**
-             * Output Tokens
-             * @description Completion tokens consumed.
-             */
-            output_tokens: number;
-            /**
-             * Summary
-             * @description A markdown summary of the audit and findings.
-             */
-            summary: string;
-            /**
-             * Violations
-             * @description List of detected accessibility violations.
-             */
-            violations: components["schemas"]["AccessibilityViolation"][];
-        };
-        /**
-         * AccessibilityViolation
-         * @description Represents a specific accessibility issue detected in the code.
-         */
-        AccessibilityViolation: {
-            /**
-             * Description
-             * @description Explanation of the accessibility issue.
-             */
-            description: string;
-            /**
-             * Element
-             * @description The code snippet or element causing the violation.
-             */
-            element: string;
-            /**
-             * Line
-             * @description Line number where the violation is found, or 0 if general.
-             */
-            line: number;
-            /**
-             * Recommendation
-             * @description Actionable suggestion to resolve the issue.
-             */
-            recommendation: string;
-            /**
-             * Severity
-             * @description Severity (critical, serious, moderate, minor)
-             */
-            severity: string;
-            /**
-             * Type
-             * @description Type of violation (e.g., contrast, semantic, keyboard, etc.)
-             */
-            type: string;
-            /**
-             * Wcag Guideline
-             * @description WCAG 2.2 guideline reference (e.g., 1.4.3 Contrast)
-             */
-            wcag_guideline: string;
-        };
         /**
          * AskRequest
          * @description Body expected by POST /api/ask.
@@ -357,39 +235,6 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
-                };
-            };
-        };
-    };
-    analyze_file_accessibility_api_accessibility_analyze_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AccessibilityAnalyzeRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AccessibilityAnalyzeResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

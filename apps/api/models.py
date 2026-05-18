@@ -6,8 +6,7 @@ Pydantic models serve two purposes here:
      against these classes and returns a 422 Unprocessable Entity if the data
      doesn't match.
   2. OpenAPI documentation — the schemas are reflected into the auto-generated
-     /docs (Swagger UI) and /redoc pages, so you get interactive API docs for
-     free.
+     /docs (Swagger UI) and /redoc pages, so you get interactive API docs.
 
 Input sanitisation (AskRequest)
 --------------------------------
@@ -126,40 +125,4 @@ class HealthResponse(BaseModel):
     anthropic_api_key_configured: bool
     model: str
     allowed_origins: list[str]
-
-
-class AccessibilityViolation(BaseModel):
-    """Represents a specific accessibility issue detected in the code."""
-
-    line: int = Field(description="Line number where the violation is found, or 0 if general.")
-    element: str = Field(description="The code snippet or element causing the violation.")
-    type: str = Field(description="Type of violation (e.g., contrast, semantic, keyboard, etc.)")
-    severity: str = Field(description="Severity (critical, serious, moderate, minor)")
-    wcag_guideline: str = Field(description="WCAG 2.2 guideline reference (e.g., 1.4.3 Contrast)")
-    description: str = Field(description="Explanation of the accessibility issue.")
-    recommendation: str = Field(description="Actionable suggestion to resolve the issue.")
-
-
-class AccessibilityAnalyzeRequest(BaseModel):
-    """Body expected by POST /api/accessibility/analyze."""
-
-    file_path: str = Field(
-        ...,
-        description="Path relative to the workspace root or filename."
-    )
-    code: str | None = Field(
-        default=None,
-        description="Optional source code. If empty, the backend will attempt to read the file from the workspace."
-    )
-
-
-class AccessibilityAnalyzeResponse(BaseModel):
-    """Response returned by POST /api/accessibility/analyze."""
-
-    file_path: str = Field(description="The path of the analyzed file.")
-    violations: list[AccessibilityViolation] = Field(description="List of detected accessibility violations.")
-    summary: str = Field(description="A markdown summary of the audit and findings.")
-    model: str = Field(description="The Claude model used for analysis.")
-    input_tokens: int = Field(description="Prompt tokens consumed.")
-    output_tokens: int = Field(description="Completion tokens consumed.")
 
