@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
 
 interface TokenBarProps {
-  label: string
-  value: number
-  max: number
-  color: string
-  delay?: number
+  label: string;
+  value: number;
+  max: number;
+  color: string;
+  delay?: number;
 }
 
 export function TokenBar({
@@ -15,20 +15,20 @@ export function TokenBar({
   value,
   max,
   color,
-  delay = 0
+  delay = 0,
 }: TokenBarProps) {
-  const [width, setWidth] = useState(0)
-  const pct = Math.min(100, (value / max) * 100)
+  const [width, setWidth] = useState(0);
+  const pct = Math.min(100, (value / max) * 100);
 
   useEffect(() => {
     const t = setTimeout(() => {
-      setWidth(pct)
-    }, 80 + delay)
+      setWidth(pct);
+    }, 80 + delay);
 
     return () => {
-      clearTimeout(t)
-    }
-  }, [pct, delay])
+      clearTimeout(t);
+    };
+  }, [pct, delay]);
 
   return (
     <div className="space-y-1.5">
@@ -44,10 +44,10 @@ export function TokenBar({
           `}
           style={{
             width: `${width}%`,
-            transition: 'width 0.8s cubic-bezier(0.22,1,0.36,1)'
+            transition: "width 0.8s cubic-bezier(0.22,1,0.36,1)",
           }}
         />
       </div>
     </div>
-  )
+  );
 }

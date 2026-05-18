@@ -1,24 +1,22 @@
-import { Input } from '@repo/ui/components/ui/input'
-import { Label } from '@repo/ui/components/ui/label'
-import { Switch } from '@repo/ui/components/ui/switch'
+import { Input } from "@repo/ui/components/ui/input";
+import { Label } from "@repo/ui/components/ui/label";
+import { Switch } from "@repo/ui/components/ui/switch";
 
 interface ResponseSettingsProps {
-  maxTokens: number
-  oneSentence: boolean
-  onMaxTokensChange: (maxTokens: number) => void
-  onOneSentenceChange: (oneSentence: boolean) => void
+  maxTokens: number;
+  oneSentence: boolean;
+  onMaxTokensChange: (maxTokens: number) => void;
+  onOneSentenceChange: (oneSentence: boolean) => void;
 }
 
 export function ResponseSettings({
   maxTokens,
   oneSentence,
   onMaxTokensChange,
-  onOneSentenceChange
+  onOneSentenceChange,
 }: ResponseSettingsProps) {
   return (
-    <div
-      className="rounded-xl border border-white/6 bg-white/2.5 p-4"
-    >
+    <div className="rounded-xl border border-white/6 bg-white/2.5 p-4">
       <div className="mb-3 flex items-center justify-between">
         <Label
           htmlFor="max-tokens"
@@ -46,8 +44,8 @@ export function ResponseSettings({
           max={4000}
           step={50}
           value={maxTokens}
-          onChange={event => {
-            onMaxTokensChange(Number(event.target.value))
+          onChange={(event) => {
+            onMaxTokensChange(Number(event.target.value));
           }}
           className="
             h-10 border-white/8 bg-black/10 font-mono text-sm transition-all
@@ -77,5 +75,5 @@ export function ResponseSettings({
         </div>
       </div>
     </div>
-  )
+  );
 }

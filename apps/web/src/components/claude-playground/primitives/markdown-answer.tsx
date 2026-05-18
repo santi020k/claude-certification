@@ -1,106 +1,111 @@
-import { useEffect, useRef, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
+import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
-import remarkGfm from 'remark-gfm'
+import remarkGfm from "remark-gfm";
 
 // Beautiful custom hook for dynamic, character-by-character typing emulation during streaming
 function useTypingEffect(rawText: string, isStreaming: boolean) {
-  const [displayedText, setDisplayedText] = useState(() => isStreaming ? '' : rawText)
-  const rawTextRef = useRef(rawText)
-  const displayedTextRef = useRef(isStreaming ? '' : rawText)
+  const [displayedText, setDisplayedText] = useState(() =>
+    isStreaming ? "" : rawText,
+  );
+  const rawTextRef = useRef(rawText);
+  const displayedTextRef = useRef(isStreaming ? "" : rawText);
 
   useEffect(() => {
-    rawTextRef.current = rawText
-  }, [rawText])
+    rawTextRef.current = rawText;
+  }, [rawText]);
 
   useEffect(() => {
     if (!isStreaming) {
-      const target = rawText
+      const target = rawText;
       void Promise.resolve().then(() => {
-        setDisplayedText(target)
-      })
+        setDisplayedText(target);
+      });
 
-      displayedTextRef.current = rawText
+      displayedTextRef.current = rawText;
 
-      return
+      return;
     }
 
-    let animationFrameId: number
-    let lastTick = Date.now()
+    let animationFrameId: number;
+    let lastTick = Date.now();
 
     const tick = () => {
-      const targetText = rawTextRef.current
-      const currentText = displayedTextRef.current
+      const targetText = rawTextRef.current;
+      const currentText = displayedTextRef.current;
 
       if (currentText === targetText) {
-        animationFrameId = requestAnimationFrame(tick)
+        animationFrameId = requestAnimationFrame(tick);
 
-        return
+        return;
       }
 
-      const now = Date.now()
-      const delta = now - lastTick
-      const charsBehind = targetText.length - currentText.length
+      const now = Date.now();
+      const delta = now - lastTick;
+      const charsBehind = targetText.length - currentText.length;
       // Dynamic typing speed based on how far behind we are:
       // - Small queue (close to live): smooth typing (12ms/char)
       // - Medium queue (slightly behind): faster typing (5ms/char)
       // - Large queue (very behind or stream chunk burst): hyper-catchup (1-2ms/char)
-      let msPerChar = 12
+      let msPerChar = 12;
 
       if (charsBehind > 100) {
-        msPerChar = 1
+        msPerChar = 1;
       } else if (charsBehind > 30) {
-        msPerChar = 4
+        msPerChar = 4;
       }
 
-      const charsToAppend = Math.max(1, Math.floor(delta / msPerChar))
+      const charsToAppend = Math.max(1, Math.floor(delta / msPerChar));
 
       if (charsToAppend > 0) {
-        const nextText = targetText.slice(0, currentText.length + charsToAppend)
+        const nextText = targetText.slice(
+          0,
+          currentText.length + charsToAppend,
+        );
 
-        setDisplayedText(nextText)
+        setDisplayedText(nextText);
 
-        displayedTextRef.current = nextText
+        displayedTextRef.current = nextText;
 
-        lastTick = now
+        lastTick = now;
       }
 
-      animationFrameId = requestAnimationFrame(tick)
-    }
+      animationFrameId = requestAnimationFrame(tick);
+    };
 
-    animationFrameId = requestAnimationFrame(tick)
+    animationFrameId = requestAnimationFrame(tick);
 
     return () => {
-      cancelAnimationFrame(animationFrameId)
-    }
-  }, [isStreaming])
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [isStreaming]);
 
   // If we suddenly toggle or stop streaming, make sure we sync instantly
   useEffect(() => {
     if (!isStreaming) {
-      const target = rawText
+      const target = rawText;
       void Promise.resolve().then(() => {
-        setDisplayedText(target)
-      })
+        setDisplayedText(target);
+      });
 
-      displayedTextRef.current = rawText
+      displayedTextRef.current = rawText;
     }
-  }, [rawText, isStreaming])
+  }, [rawText, isStreaming]);
 
-  return displayedText
+  return displayedText;
 }
 
 export function MarkdownAnswer({
   content,
-  isStreaming = false
+  isStreaming = false,
 }: {
-  content: string
-  isStreaming?: boolean
+  content: string;
+  isStreaming?: boolean;
 }) {
-  const displayedContent = useTypingEffect(content, isStreaming)
+  const displayedContent = useTypingEffect(content, isStreaming);
 
   return (
-    <div className={isStreaming ? 'prose-streaming' : ''}>
+    <div className={isStreaming ? "prose-streaming" : ""}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -189,7 +194,7 @@ export function MarkdownAnswer({
           ),
           code: ({ children, className }) => {
             const isBlock =
-              typeof className === 'string' && className.includes('language-')
+              typeof className === "string" && className.includes("language-");
 
             if (isBlock) {
               return (
@@ -201,7 +206,7 @@ export function MarkdownAnswer({
                 >
                   {children}
                 </code>
-              )
+              );
             }
 
             return (
@@ -213,7 +218,7 @@ export function MarkdownAnswer({
               >
                 {children}
               </code>
-            )
+            );
           },
           pre: ({ children }) => <pre className="my-4">{children}</pre>,
           table: ({ children }) => (
@@ -257,11 +262,11 @@ export function MarkdownAnswer({
               {children}
             </a>
           ),
-          hr: () => <hr className="my-6 border-white/8" />
+          hr: () => <hr className="my-6 border-white/8" />,
         }}
       >
         {displayedContent}
       </ReactMarkdown>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   type SyntheticEvent,
@@ -6,28 +6,28 @@ import {
   useId,
   useMemo,
   useRef,
-  useState
-} from 'react'
+  useState,
+} from "react";
 
-import Link from 'next/link'
+import Link from "next/link";
 
-import { ApiStatusIndicator } from '@/components/api-status/indicator'
+import { ApiStatusIndicator } from "@/components/api-status/indicator";
 import {
   getApiBaseUrl,
   parseRetryAfter,
   readChatResponse,
   readChatStream,
   readErrorMessage,
-  readSpecialistsResponse
-} from '@/components/claude-playground/api'
-import { MarkdownAnswer } from '@/components/claude-playground/primitives/markdown-answer'
-import { TypingDots } from '@/components/claude-playground/primitives/typing-dots'
-import { AmbientBackground } from '@/components/claude-playground/sections/ambient-background'
+  readSpecialistsResponse,
+} from "@/components/claude-playground/api";
+import { MarkdownAnswer } from "@/components/claude-playground/primitives/markdown-answer";
+import { TypingDots } from "@/components/claude-playground/primitives/typing-dots";
+import { AmbientBackground } from "@/components/claude-playground/sections/ambient-background";
 import type {
   ChatMessage,
   ChatResponse,
-  Specialist
-} from '@/components/claude-playground/types'
+  Specialist,
+} from "@/components/claude-playground/types";
 
 import {
   ArrowLeft,
@@ -37,180 +37,180 @@ import {
   Send,
   Thermometer,
   UserRound,
-  WandSparkles
-} from 'lucide-react'
+  WandSparkles,
+} from "lucide-react";
 
-import { Button } from '@repo/ui/components/ui/button'
-import { Textarea } from '@repo/ui/components/ui/textarea'
+import { Button } from "@repo/ui/components/ui/button";
+import { Textarea } from "@repo/ui/components/ui/textarea";
 
 // ── Specialist config (emojis + prompts live here — purely a UI concern) ───────
 
 interface SpecialistUiConfig {
-  emoji: string
-  prompts: [string, string, string]
+  emoji: string;
+  prompts: [string, string, string];
 }
 
 const SPECIALIST_UI: Record<string, SpecialistUiConfig | undefined> = {
   general: {
-    emoji: '🤖',
+    emoji: "🤖",
     prompts: [
-      'What are three things I should know about you?',
-      'Help me think through a tricky decision I\'m facing.',
-      'Explain how the internet actually works, simply.'
-    ]
+      "What are three things I should know about you?",
+      "Help me think through a tricky decision I'm facing.",
+      "Explain how the internet actually works, simply.",
+    ],
   },
   customer_support: {
-    emoji: '🎧',
+    emoji: "🎧",
     prompts: [
-      'I received the wrong item in my order — what do I do?',
-      'How do I request a refund for a digital purchase?',
-      'My account is locked and I can\'t log in — please help.'
-    ]
+      "I received the wrong item in my order — what do I do?",
+      "How do I request a refund for a digital purchase?",
+      "My account is locked and I can't log in — please help.",
+    ],
   },
   math_tutor: {
-    emoji: '📐',
+    emoji: "📐",
     prompts: [
-      'I don\'t understand fractions — can you help?',
-      'What\'s the difference between mean, median, and mode?',
-      'I\'m stuck on this algebra problem: 2x + 5 = 13.'
-    ]
+      "I don't understand fractions — can you help?",
+      "What's the difference between mean, median, and mode?",
+      "I'm stuck on this algebra problem: 2x + 5 = 13.",
+    ],
   },
   software_developer: {
-    emoji: '💻',
+    emoji: "💻",
     prompts: [
-      'Review this code snippet and tell me what could go wrong.',
-      'What\'s the best way to handle errors in a FastAPI app?',
-      'Help me design a clean REST API for a to-do list app.'
-    ]
+      "Review this code snippet and tell me what could go wrong.",
+      "What's the best way to handle errors in a FastAPI app?",
+      "Help me design a clean REST API for a to-do list app.",
+    ],
   },
   writing_coach: {
-    emoji: '✍️',
+    emoji: "✍️",
     prompts: [
       'Give feedback on this sentence: "The thing was very good."',
-      'Help me make this email sound more professional.',
-      'I\'m writing a short story — give me tips on opening hooks.'
-    ]
+      "Help me make this email sound more professional.",
+      "I'm writing a short story — give me tips on opening hooks.",
+    ],
   },
   comedian: {
-    emoji: '😂',
+    emoji: "😂",
     prompts: [
-      'Tell me a joke about programmers.',
-      'Roast my habit of reading documentation last.',
-      'Make up a funny story about a confused AI assistant.'
-    ]
+      "Tell me a joke about programmers.",
+      "Roast my habit of reading documentation last.",
+      "Make up a funny story about a confused AI assistant.",
+    ],
   },
   storyteller: {
-    emoji: '📖',
+    emoji: "📖",
     prompts: [
-      'Start a mystery story set on a remote space station.',
-      'Write the opening paragraph of a fantasy tale.',
-      'Create a compelling villain character for my story.'
-    ]
-  }
-}
+      "Start a mystery story set on a remote space station.",
+      "Write the opening paragraph of a fantasy tale.",
+      "Create a compelling villain character for my story.",
+    ],
+  },
+};
 
 // ── Default specialists shown while the API loads ──────────────────────────────
 
 const DEFAULT_SPECIALISTS: Specialist[] = [
   {
-    id: 'general',
-    name: 'General Assistant',
-    description: 'A helpful, balanced assistant for everyday questions.',
-    temperature: 0.7
+    id: "general",
+    name: "General Assistant",
+    description: "A helpful, balanced assistant for everyday questions.",
+    temperature: 0.7,
   },
   {
-    id: 'customer_support',
-    name: 'Customer Support',
+    id: "customer_support",
+    name: "Customer Support",
     description:
-      'Friendly support agent — empathetic, solution-focused, and clear.',
-    temperature: 0.3
+      "Friendly support agent — empathetic, solution-focused, and clear.",
+    temperature: 0.3,
   },
   {
-    id: 'math_tutor',
-    name: 'Math Tutor',
-    description: 'Patient tutor who guides you step-by-step.',
-    temperature: 0.1
+    id: "math_tutor",
+    name: "Math Tutor",
+    description: "Patient tutor who guides you step-by-step.",
+    temperature: 0.1,
   },
   {
-    id: 'software_developer',
-    name: 'Software Developer',
-    description: 'Senior engineer — concise, production-quality code guidance.',
-    temperature: 0.2
+    id: "software_developer",
+    name: "Software Developer",
+    description: "Senior engineer — concise, production-quality code guidance.",
+    temperature: 0.2,
   },
   {
-    id: 'writing_coach',
-    name: 'Writing Coach',
-    description: 'Thoughtful coach who helps you write more clearly.',
-    temperature: 0.6
+    id: "writing_coach",
+    name: "Writing Coach",
+    description: "Thoughtful coach who helps you write more clearly.",
+    temperature: 0.6,
   },
   {
-    id: 'comedian',
-    name: 'Comedian',
-    description: 'Witty, punny, and delightfully chaotic — brings the laughs.',
-    temperature: 1.0
+    id: "comedian",
+    name: "Comedian",
+    description: "Witty, punny, and delightfully chaotic — brings the laughs.",
+    temperature: 1.0,
   },
   {
-    id: 'storyteller',
-    name: 'Storyteller',
+    id: "storyteller",
+    name: "Storyteller",
     description:
-      'Imaginative author who crafts vivid fiction and immersive worlds.',
-    temperature: 0.9
-  }
-]
+      "Imaginative author who crafts vivid fiction and immersive worlds.",
+    temperature: 0.9,
+  },
+];
 
-const DEFAULT_SPECIALIST_ID = 'general'
-const DEFAULT_TEMPERATURE = 0.7
-const MAX_DRAFT_LENGTH = 4_000
+const DEFAULT_SPECIALIST_ID = "general";
+const DEFAULT_TEMPERATURE = 0.7;
+const MAX_DRAFT_LENGTH = 4_000;
 
 // ── Temperature helpers ────────────────────────────────────────────────────────
 
 interface TempLevel {
-  label: string
-  hint: string
-  colour: string
+  label: string;
+  hint: string;
+  colour: string;
 }
 
 function tempLevel(t: number): TempLevel {
   if (t <= 0.15)
     return {
-      label: 'Stick to the facts',
-      hint: 'Short, precise answers — no surprises.',
-      colour: 'text-blue-300/80'
-    }
+      label: "Stick to the facts",
+      hint: "Short, precise answers — no surprises.",
+      colour: "text-blue-300/80",
+    };
 
   if (t <= 0.35)
     return {
-      label: 'Clear & focused',
-      hint: 'Consistent and direct — great for serious topics.',
-      colour: 'text-teal-300/80'
-    }
+      label: "Clear & focused",
+      hint: "Consistent and direct — great for serious topics.",
+      colour: "text-teal-300/80",
+    };
 
   if (t <= 0.55)
     return {
-      label: 'Balanced',
-      hint: 'A mix of accuracy and a touch of personality.',
-      colour: 'text-green-300/80'
-    }
+      label: "Balanced",
+      hint: "A mix of accuracy and a touch of personality.",
+      colour: "text-green-300/80",
+    };
 
   if (t <= 0.75)
     return {
-      label: 'More expressive',
-      hint: 'Varied phrasing, richer language, more ideas.',
-      colour: 'text-orange-300/80'
-    }
+      label: "More expressive",
+      hint: "Varied phrasing, richer language, more ideas.",
+      colour: "text-orange-300/80",
+    };
 
   if (t <= 0.9)
     return {
-      label: 'Imaginative',
-      hint: 'Unexpected angles — ideal for creative tasks.',
-      colour: 'text-purple-300/80'
-    }
+      label: "Imaginative",
+      hint: "Unexpected angles — ideal for creative tasks.",
+      colour: "text-purple-300/80",
+    };
 
   return {
-    label: 'Surprise me! 🎲',
-    hint: 'Anything can happen — embrace the chaos.',
-    colour: 'text-rose-300/80'
-  }
+    label: "Surprise me! 🎲",
+    hint: "Anything can happen — embrace the chaos.",
+    colour: "text-rose-300/80",
+  };
 }
 
 // ── Session persistence ────────────────────────────────────────────────────────
@@ -218,208 +218,209 @@ function tempLevel(t: number): TempLevel {
 function buildStarterMessages(specialistName: string): ChatMessage[] {
   return [
     {
-      role: 'assistant',
-      content: `Hi! I'm your ${specialistName}. Ask me something, then follow up to see the backend keep the conversation context.`
-    }
-  ]
+      role: "assistant",
+      content: `Hi! I'm your ${specialistName}. Ask me something, then follow up to see the backend keep the conversation context.`,
+    },
+  ];
 }
 
-const CHAT_SESSIONS_KEY = 'certification.chat.sessions.v3'
-const ACTIVE_SPECIALIST_KEY = 'certification.chat.active_specialist.v3'
+const CHAT_SESSIONS_KEY = "certification.chat.sessions.v3";
+const ACTIVE_SPECIALIST_KEY = "certification.chat.active_specialist.v3";
 
 interface AgentChatSession {
-  conversationId: string | null
-  lastResponse: ChatResponse | null
-  maxTokens: number
-  messages: ChatMessage[]
-  streamEnabled: boolean
-  temperature: number
+  conversationId: string | null;
+  lastResponse: ChatResponse | null;
+  maxTokens: number;
+  messages: ChatMessage[];
+  streamEnabled: boolean;
+  temperature: number;
 }
 
-type AgentSessions = Record<string, AgentChatSession | undefined>
+type AgentSessions = Record<string, AgentChatSession | undefined>;
 
 function readAllSessions(): AgentSessions {
-  if (typeof window === 'undefined') return {}
+  if (typeof window === "undefined") return {};
 
   try {
-    const raw = window.localStorage.getItem(CHAT_SESSIONS_KEY)
+    const raw = window.localStorage.getItem(CHAT_SESSIONS_KEY);
 
-    if (!raw) return {}
+    if (!raw) return {};
 
-    return JSON.parse(raw) as AgentSessions
+    return JSON.parse(raw) as AgentSessions;
   } catch {
-    return {}
+    return {};
   }
 }
 
 function writeAllSessions(sessions: AgentSessions) {
-  if (typeof window === 'undefined') return
+  if (typeof window === "undefined") return;
 
   try {
-    window.localStorage.setItem(CHAT_SESSIONS_KEY, JSON.stringify(sessions))
+    window.localStorage.setItem(CHAT_SESSIONS_KEY, JSON.stringify(sessions));
   } catch {}
 }
 
 function readActiveSpecialistId(): string {
-  if (typeof window === 'undefined') return DEFAULT_SPECIALIST_ID
+  if (typeof window === "undefined") return DEFAULT_SPECIALIST_ID;
 
   try {
     return (
       window.localStorage.getItem(ACTIVE_SPECIALIST_KEY) ??
       DEFAULT_SPECIALIST_ID
-    )
+    );
   } catch {
-    return DEFAULT_SPECIALIST_ID
+    return DEFAULT_SPECIALIST_ID;
   }
 }
 
 function writeActiveSpecialistId(id: string) {
-  if (typeof window === 'undefined') return
+  if (typeof window === "undefined") return;
 
   try {
-    window.localStorage.setItem(ACTIVE_SPECIALIST_KEY, id)
+    window.localStorage.setItem(ACTIVE_SPECIALIST_KEY, id);
   } catch {}
 }
 
 function isOnlyStarterMessage(messages: ChatMessage[]): boolean {
-  return messages.length === 1 && messages[0]?.role === 'assistant'
+  return messages.length === 1 && messages[0]?.role === "assistant";
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function ChatPage() {
-  const messageInputId = useId()
-  const messageHelpId = useId()
-  const tokenInputId = useId()
-  const temperatureInputId = useId()
-  const apiBaseUrl = useMemo(() => getApiBaseUrl(), [])
+  const messageInputId = useId();
+  const messageHelpId = useId();
+  const tokenInputId = useId();
+  const temperatureInputId = useId();
+  const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
   const [specialists, setSpecialists] =
-    useState<Specialist[]>(DEFAULT_SPECIALISTS)
+    useState<Specialist[]>(DEFAULT_SPECIALISTS);
 
   const [specialistId, setSpecialistId] = useState<string>(
-    DEFAULT_SPECIALIST_ID
-  )
+    DEFAULT_SPECIALIST_ID,
+  );
 
-  const [temperature, setTemperature] = useState<number>(DEFAULT_TEMPERATURE)
-  const [conversationId, setConversationId] = useState<string | null>(null)
+  const [temperature, setTemperature] = useState<number>(DEFAULT_TEMPERATURE);
+  const [conversationId, setConversationId] = useState<string | null>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>(
-    buildStarterMessages('General Assistant')
-  )
+    buildStarterMessages("General Assistant"),
+  );
 
-  const [draft, setDraft] = useState('')
-  const [maxTokens, setMaxTokens] = useState(1000)
-  const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isSending, setIsSending] = useState(false)
-  const [isSessionReady, setIsSessionReady] = useState(false)
-  const [streamEnabled, setStreamEnabled] = useState(false)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const chipRowRef = useRef<HTMLDivElement>(null)
-  const trimmed = draft.trim()
+  const [draft, setDraft] = useState("");
+  const [maxTokens, setMaxTokens] = useState(1000);
+  const [lastResponse, setLastResponse] = useState<ChatResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isSessionReady, setIsSessionReady] = useState(false);
+  const [streamEnabled, setStreamEnabled] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const chipRowRef = useRef<HTMLDivElement>(null);
+  const trimmed = draft.trim();
 
   const canSend =
-    trimmed.length > 0 && trimmed.length <= MAX_DRAFT_LENGTH && !isSending
+    trimmed.length > 0 && trimmed.length <= MAX_DRAFT_LENGTH && !isSending;
 
   const draftUsage = Math.min(
-    100, Math.round((draft.length / MAX_DRAFT_LENGTH) * 100)
-  )
+    100,
+    Math.round((draft.length / MAX_DRAFT_LENGTH) * 100),
+  );
 
-  const hasOnlyStarter = isOnlyStarterMessage(messages)
+  const hasOnlyStarter = isOnlyStarterMessage(messages);
 
   // Auto-scroll to latest message
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, isSending])
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isSending]);
 
   // Restore sessions on mount
   useEffect(() => {
     const raf = window.requestAnimationFrame(() => {
-      const activeId = readActiveSpecialistId()
-      const allSessions = readAllSessions()
-      const currentSession = allSessions[activeId]
+      const activeId = readActiveSpecialistId();
+      const allSessions = readAllSessions();
+      const currentSession = allSessions[activeId];
 
-      setSpecialistId(activeId)
+      setSpecialistId(activeId);
 
       if (currentSession) {
-        setConversationId(currentSession.conversationId)
+        setConversationId(currentSession.conversationId);
 
-        setMessages(currentSession.messages)
+        setMessages(currentSession.messages);
 
-        setMaxTokens(currentSession.maxTokens)
+        setMaxTokens(currentSession.maxTokens);
 
-        setLastResponse(currentSession.lastResponse)
+        setLastResponse(currentSession.lastResponse);
 
-        setStreamEnabled(currentSession.streamEnabled)
+        setStreamEnabled(currentSession.streamEnabled);
 
-        setTemperature(currentSession.temperature)
+        setTemperature(currentSession.temperature);
       } else {
-        const spec = DEFAULT_SPECIALISTS.find(s => s.id === activeId)
-        const name = spec?.name ?? 'General Assistant'
-        const temp = spec?.temperature ?? DEFAULT_TEMPERATURE
+        const spec = DEFAULT_SPECIALISTS.find((s) => s.id === activeId);
+        const name = spec?.name ?? "General Assistant";
+        const temp = spec?.temperature ?? DEFAULT_TEMPERATURE;
 
-        setConversationId(null)
+        setConversationId(null);
 
-        setMessages(buildStarterMessages(name))
+        setMessages(buildStarterMessages(name));
 
-        setMaxTokens(1000)
+        setMaxTokens(1000);
 
-        setLastResponse(null)
+        setLastResponse(null);
 
-        setStreamEnabled(false)
+        setStreamEnabled(false);
 
-        setTemperature(temp)
+        setTemperature(temp);
       }
 
-      setIsSessionReady(true)
-    })
+      setIsSessionReady(true);
+    });
 
     return () => {
-      window.cancelAnimationFrame(raf)
-    }
-  }, [])
+      window.cancelAnimationFrame(raf);
+    };
+  }, []);
 
   // Scroll active chip into view when specialist changes
   useEffect(() => {
     const chip = chipRowRef.current?.querySelector(
-      `[data-id="${specialistId}"]`
-    )
+      `[data-id="${specialistId}"]`,
+    );
 
     chip?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'center'
-    })
-  }, [specialistId])
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [specialistId]);
 
   // Fetch specialists from API
   useEffect(() => {
-    const controller = new AbortController()
+    const controller = new AbortController();
 
     fetch(`${apiBaseUrl}/api/specialists`, { signal: controller.signal })
-      .then(res => {
-        if (!res.ok) throw new Error('')
+      .then((res) => {
+        if (!res.ok) throw new Error("");
 
-        return readSpecialistsResponse(res)
+        return readSpecialistsResponse(res);
       })
-      .then(data => {
-        setSpecialists(data.specialists)
+      .then((data) => {
+        setSpecialists(data.specialists);
       })
-      .catch(() => {})
+      .catch(() => {});
 
     return () => {
-      controller.abort()
-    }
-  }, [apiBaseUrl])
+      controller.abort();
+    };
+  }, [apiBaseUrl]);
 
   // Persist current specialist's session whenever its state changes
   useEffect(() => {
-    if (!isSessionReady) return
+    if (!isSessionReady) return;
 
     try {
-      const allSessions = readAllSessions()
+      const allSessions = readAllSessions();
 
       allSessions[specialistId] = {
         conversationId,
@@ -427,10 +428,10 @@ export function ChatPage() {
         maxTokens,
         messages,
         streamEnabled,
-        temperature
-      }
+        temperature,
+      };
 
-      writeAllSessions(allSessions)
+      writeAllSessions(allSessions);
     } catch {}
   }, [
     conversationId,
@@ -440,151 +441,155 @@ export function ChatPage() {
     messages,
     specialistId,
     streamEnabled,
-    temperature
-  ])
+    temperature,
+  ]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
   async function sendMessage(event: SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault()
+    event.preventDefault();
 
-    if (!canSend) return
+    if (!canSend) return;
 
-    const optimisticMessage: ChatMessage = { role: 'user', content: trimmed }
+    const optimisticMessage: ChatMessage = { role: "user", content: trimmed };
 
-    setMessages(current => [...current, optimisticMessage])
+    setMessages((current) => [...current, optimisticMessage]);
 
-    setDraft('')
+    setDraft("");
 
-    setError(null)
+    setError(null);
 
-    setIsSending(true)
+    setIsSending(true);
 
     try {
       if (streamEnabled) {
-        await sendStreamingMessage(optimisticMessage)
+        await sendStreamingMessage(optimisticMessage);
 
-        return
+        return;
       }
 
       const res = await fetch(`${apiBaseUrl}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversation_id: conversationId,
           message: trimmed,
           max_tokens: maxTokens,
           specialist: specialistId,
-          temperature
-        })
-      })
+          temperature,
+        }),
+      });
 
       if (res.status === 429)
         throw new Error(
-          `Rate limit reached. Please wait ${parseRetryAfter(res)}s before trying again.`
-        )
+          `Rate limit reached. Please wait ${parseRetryAfter(res)}s before trying again.`,
+        );
 
-      if (!res.ok) throw new Error(await readErrorMessage(res))
+      if (!res.ok) throw new Error(await readErrorMessage(res));
 
-      const data = await readChatResponse(res)
+      const data = await readChatResponse(res);
 
-      setConversationId(data.conversation_id)
+      setConversationId(data.conversation_id);
 
-      setMessages(data.messages)
+      setMessages(data.messages);
 
-      setLastResponse(data)
+      setLastResponse(data);
     } catch (err) {
-      setMessages(current => current.filter(m => m !== optimisticMessage))
+      setMessages((current) => current.filter((m) => m !== optimisticMessage));
 
       setError(
-        err instanceof Error ?
-          err.message :
-          'Claude could not answer right now.'
-      )
+        err instanceof Error
+          ? err.message
+          : "Claude could not answer right now.",
+      );
     } finally {
-      setIsSending(false)
+      setIsSending(false);
 
-      textareaRef.current?.focus()
+      textareaRef.current?.focus();
     }
   }
 
   async function sendStreamingMessage(optimisticMessage: ChatMessage) {
-    const assistantMessage: ChatMessage = { role: 'assistant', content: '' }
+    const assistantMessage: ChatMessage = { role: "assistant", content: "" };
 
-    setMessages(current => [...current, assistantMessage])
+    setMessages((current) => [...current, assistantMessage]);
 
     try {
       const res = await fetch(`${apiBaseUrl}/api/chat/stream`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           conversation_id: conversationId,
           message: optimisticMessage.content,
           max_tokens: maxTokens,
           specialist: specialistId,
-          temperature
-        })
-      })
+          temperature,
+        }),
+      });
 
       if (res.status === 429)
         throw new Error(
-          `Rate limit reached. Please wait ${parseRetryAfter(res)}s before trying again.`
-        )
+          `Rate limit reached. Please wait ${parseRetryAfter(res)}s before trying again.`,
+        );
 
-      if (!res.ok) throw new Error(await readErrorMessage(res))
+      if (!res.ok) throw new Error(await readErrorMessage(res));
 
-      let finalResponse: ChatResponse | null = null
+      let finalResponse: ChatResponse | null = null;
 
       for await (const event of readChatStream(res)) {
-        if (event.type === 'text') {
-          setMessages(current => current.map(m => m === assistantMessage ?
-            { ...m, content: `${m.content}${event.text}` } :
-            m))
+        if (event.type === "text") {
+          setMessages((current) =>
+            current.map((m) =>
+              m === assistantMessage
+                ? { ...m, content: `${m.content}${event.text}` }
+                : m,
+            ),
+          );
 
-          continue
+          continue;
         }
 
-        if (event.type === 'error') throw new Error(event.detail)
+        if (event.type === "error") throw new Error(event.detail);
 
-        finalResponse = event
+        finalResponse = event;
 
-        setConversationId(event.conversation_id)
+        setConversationId(event.conversation_id);
 
-        setMessages(event.messages)
+        setMessages(event.messages);
 
-        setLastResponse(event)
+        setLastResponse(event);
       }
 
       if (!finalResponse)
         throw new Error(
-          'Claude ended the stream before sending a final response.'
-        )
+          "Claude ended the stream before sending a final response.",
+        );
     } catch (err) {
-      setMessages(current => current.filter(m => m !== assistantMessage))
+      setMessages((current) => current.filter((m) => m !== assistantMessage));
 
-      throw err
+      throw err;
     }
   }
 
   function resetChat() {
-    const spec = specialists.find(s => s.id === specialistId)
-    const name = spec?.name ?? 'General Assistant'
-    const temp = spec?.temperature ?? DEFAULT_TEMPERATURE
+    const spec = specialists.find((s) => s.id === specialistId);
+    const name = spec?.name ?? "General Assistant";
+    const temp = spec?.temperature ?? DEFAULT_TEMPERATURE;
 
-    setConversationId(null)
+    setConversationId(null);
 
-    setMessages(buildStarterMessages(name))
+    setMessages(buildStarterMessages(name));
 
-    setDraft('')
+    setDraft("");
 
-    setLastResponse(null)
+    setLastResponse(null);
 
-    setError(null)
+    setError(null);
 
-    setTemperature(temp)
+    setTemperature(temp);
 
     try {
-      const allSessions = readAllSessions()
+      const allSessions = readAllSessions();
 
       allSessions[specialistId] = {
         conversationId: null,
@@ -592,20 +597,20 @@ export function ChatPage() {
         maxTokens: 1000,
         messages: buildStarterMessages(name),
         streamEnabled,
-        temperature: temp
-      }
+        temperature: temp,
+      };
 
-      writeAllSessions(allSessions)
+      writeAllSessions(allSessions);
     } catch {}
 
-    textareaRef.current?.focus()
+    textareaRef.current?.focus();
   }
 
   function handleSpecialistChange(nextId: string) {
-    if (!isSessionReady) return
+    if (!isSessionReady) return;
 
     // Save current specialist's state
-    const allSessions = readAllSessions()
+    const allSessions = readAllSessions();
 
     allSessions[specialistId] = {
       conversationId,
@@ -613,65 +618,64 @@ export function ChatPage() {
       maxTokens,
       messages,
       streamEnabled,
-      temperature
-    }
+      temperature,
+    };
 
-    writeAllSessions(allSessions)
+    writeAllSessions(allSessions);
 
-    setSpecialistId(nextId)
+    setSpecialistId(nextId);
 
-    writeActiveSpecialistId(nextId)
+    writeActiveSpecialistId(nextId);
 
-    const nextSession = allSessions[nextId]
+    const nextSession = allSessions[nextId];
 
     if (nextSession) {
-      setConversationId(nextSession.conversationId)
+      setConversationId(nextSession.conversationId);
 
-      setMessages(nextSession.messages)
+      setMessages(nextSession.messages);
 
-      setMaxTokens(nextSession.maxTokens)
+      setMaxTokens(nextSession.maxTokens);
 
-      setLastResponse(nextSession.lastResponse)
+      setLastResponse(nextSession.lastResponse);
 
-      setStreamEnabled(nextSession.streamEnabled)
+      setStreamEnabled(nextSession.streamEnabled);
 
-      setTemperature(nextSession.temperature)
+      setTemperature(nextSession.temperature);
     } else {
-      const spec = specialists.find(s => s.id === nextId)
-      const name = spec?.name ?? 'General Assistant'
-      const temp = spec?.temperature ?? DEFAULT_TEMPERATURE
+      const spec = specialists.find((s) => s.id === nextId);
+      const name = spec?.name ?? "General Assistant";
+      const temp = spec?.temperature ?? DEFAULT_TEMPERATURE;
 
-      setConversationId(null)
+      setConversationId(null);
 
-      setMessages(buildStarterMessages(name))
+      setMessages(buildStarterMessages(name));
 
-      setMaxTokens(1000)
+      setMaxTokens(1000);
 
-      setLastResponse(null)
+      setLastResponse(null);
 
-      setStreamEnabled(false)
+      setStreamEnabled(false);
 
-      setTemperature(temp)
+      setTemperature(temp);
     }
 
-    setDraft('')
+    setDraft("");
 
-    setError(null)
+    setError(null);
   }
 
   function applyStarterPrompt(prompt: string) {
-    setDraft(prompt)
+    setDraft(prompt);
 
-    textareaRef.current?.focus()
+    textareaRef.current?.focus();
   }
 
-  const currentSpecialist = specialists.find(s => s.id === specialistId)
+  const currentSpecialist = specialists.find((s) => s.id === specialistId);
 
-  const currentUiConfig =
-    SPECIALIST_UI[specialistId] ?? SPECIALIST_UI.general
+  const currentUiConfig = SPECIALIST_UI[specialistId] ?? SPECIALIST_UI.general;
 
-  const starterPrompts = currentUiConfig.prompts
-  const tl = tempLevel(temperature)
+  const starterPrompts = currentUiConfig.prompts;
+  const tl = tempLevel(temperature);
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
@@ -679,7 +683,8 @@ export function ChatPage() {
     <main className="relative flex min-h-screen flex-col">
       <AmbientBackground />
 
-      <section className="
+      <section
+        className="
         relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col gap-5 px-4
         py-6
         sm:px-6
@@ -702,7 +707,8 @@ export function ChatPage() {
               Home
             </Link>
           </Button>
-          <div className="
+          <div
+            className="
             flex items-center gap-2
             sm:gap-3
           "
@@ -712,14 +718,16 @@ export function ChatPage() {
         </nav>
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <header className="
+        <header
+          className="
           animate-fade-in grid gap-5
           lg:grid-cols-[1fr_auto]
         "
         >
           {/* Title + description */}
           <div>
-            <h1 className="
+            <h1
+              className="
               text-3xl/tight font-semibold text-foreground
               sm:text-4xl
             "
@@ -734,7 +742,8 @@ export function ChatPage() {
           </div>
 
           {/* Response style slider (compact, lives in top-right corner) */}
-          <div className="
+          <div
+            className="
             flex w-full flex-col gap-1.5 rounded-xl border border-white/10
             bg-black/20 p-3 backdrop-blur-sm
             lg:w-56
@@ -751,7 +760,8 @@ export function ChatPage() {
                 <Thermometer className="size-3" />
                 Response style
               </label>
-              <span className={`
+              <span
+                className={`
                 text-xs font-semibold
                 ${tl.colour}
               `}
@@ -770,11 +780,12 @@ export function ChatPage() {
                 h-1.5 w-full cursor-pointer appearance-none rounded-full
                 bg-white/10 accent-orange-400
               "
-              onChange={e => {
-                setTemperature(Number(e.target.value))
+              onChange={(e) => {
+                setTemperature(Number(e.target.value));
               }}
             />
-            <div className="
+            <div
+              className="
               flex justify-between text-[10px] text-muted-foreground/40
             "
             >
@@ -795,9 +806,9 @@ export function ChatPage() {
             role="group"
             aria-label="Select a specialist"
           >
-            {specialists.map(s => {
-              const isActive = s.id === specialistId
-              const ui = SPECIALIST_UI[s.id]
+            {specialists.map((s) => {
+              const isActive = s.id === specialistId;
+              const ui = SPECIALIST_UI[s.id];
 
               return (
                 <button
@@ -805,7 +816,7 @@ export function ChatPage() {
                   data-id={s.id}
                   type="button"
                   onClick={() => {
-                    handleSpecialistChange(s.id)
+                    handleSpecialistChange(s.id);
                   }}
                   className={`
                     flex shrink-0 items-center gap-2 rounded-xl border px-3.5
@@ -813,118 +824,107 @@ export function ChatPage() {
                     focus-visible:ring-2 focus-visible:ring-orange-300/50
                     focus-visible:outline-none
                     ${
-                isActive ?
-                  `
+                      isActive
+                        ? `
                     -translate-y-0.5 border-orange-300/40 bg-orange-300/12
                     text-orange-100 shadow-lg shadow-orange-950/20
-                  ` :
                   `
+                        : `
                     border-white/10 bg-white/4 text-muted-foreground
                     hover:-translate-y-0.5 hover:border-white/20
                     hover:bg-white/7 hover:text-foreground
                   `
-                }
+                    }
                   `}
                   aria-pressed={isActive}
                 >
                   <span className="text-base leading-none" aria-hidden="true">
-                    {ui?.emoji ?? '🤖'}
+                    {ui?.emoji ?? "🤖"}
                   </span>
                   <span className="whitespace-nowrap">{s.name}</span>
                 </button>
-              )
+              );
             })}
           </div>
 
           {/* Active specialist description */}
-          {currentSpecialist ?
-            (
-              <p className="pl-1 text-xs text-muted-foreground/60">
-                <span className="font-medium text-muted-foreground/80">
-                  {currentSpecialist.name}
-                </span>
-                {' '}
-                —
-                {' '}
-                {currentSpecialist.description}
-              </p>
-            ) :
-            null}
+          {currentSpecialist ? (
+            <p className="pl-1 text-xs text-muted-foreground/60">
+              <span className="font-medium text-muted-foreground/80">
+                {currentSpecialist.name}
+              </span>{" "}
+              — {currentSpecialist.description}
+            </p>
+          ) : null}
         </div>
 
         {/* ── Error banner ─────────────────────────────────────────────────── */}
-        {error ?
-          (
-            <div
-              className="
+        {error ? (
+          <div
+            className="
                 animate-slide-up-fade rounded-lg border border-rose-500/25
                 bg-rose-500/8 px-4 py-3 text-sm text-rose-200
               "
-              role="alert"
-            >
-              {error}
-            </div>
-          ) :
-          null}
+            role="alert"
+          >
+            {error}
+          </div>
+        ) : null}
 
         {/* ── Chat window ──────────────────────────────────────────────────── */}
-        <div className="
+        <div
+          className="
           flex min-h-[56vh] flex-1 flex-col rounded-2xl border border-white/10
           bg-white/3 shadow-2xl shadow-black/25 backdrop-blur-md
         "
         >
           {/* Thread header */}
-          <div className="
+          <div
+            className="
             flex flex-wrap items-center justify-between gap-3 border-b
             border-white/8 bg-black/15 px-4 py-3
           "
           >
             <div className="flex items-center gap-3">
-              <div className="
+              <div
+                className="
                 grid size-9 shrink-0 place-items-center rounded-xl border
                 border-orange-200/15 bg-orange-300/10 text-lg
               "
               >
-                {currentUiConfig?.emoji ?? '🤖'}
+                {currentUiConfig?.emoji ?? "🤖"}
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
-                  {currentSpecialist?.name ?? 'Claude'}
+                  {currentSpecialist?.name ?? "Claude"}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {messages.length}
-                  {' '}
-                  {messages.length === 1 ? 'message' : 'messages'}
-                  {' '}
-                  in this
+                  {messages.length}{" "}
+                  {messages.length === 1 ? "message" : "messages"} in this
                   thread
                 </p>
               </div>
             </div>
 
-            <div className="
+            <div
+              className="
               flex items-center gap-2
               sm:gap-3
             "
             >
-              {lastResponse ?
-                (
-                  <p className="
+              {lastResponse ? (
+                <p
+                  className="
                     inline-flex items-center gap-1.5 rounded-full border
                     border-white/10 bg-black/20 px-3 py-1 text-xs
                     text-muted-foreground/70
                   "
-                  >
-                    <Coins className="size-3" />
-                    {lastResponse.input_tokens}
-                    {' '}
-                    in /
-                    {lastResponse.output_tokens}
-                    {' '}
-                    out
-                  </p>
-                ) :
-                null}
+                >
+                  <Coins className="size-3" />
+                  {lastResponse.input_tokens} in /{lastResponse.output_tokens}{" "}
+                  out
+                </p>
+              ) : null}
 
               <Button
                 type="button"
@@ -935,7 +935,7 @@ export function ChatPage() {
                   hover:-translate-y-0.5 hover:border-orange-200/30
                 "
                 onClick={() => {
-                  resetChat()
+                  resetChat();
                 }}
               >
                 <RotateCcw className="size-3.5" />
@@ -949,7 +949,7 @@ export function ChatPage() {
             className="flex-1 space-y-5 px-4 py-5"
             style={{
               maskImage:
-                'linear-gradient(to bottom, transparent, black 18px, black calc(100% - 18px), transparent)'
+                "linear-gradient(to bottom, transparent, black 18px, black calc(100% - 18px), transparent)",
             }}
             role="log"
             aria-live="polite"
@@ -960,28 +960,25 @@ export function ChatPage() {
                 key={`${message.role}-${index}-${message.content.slice(0, 16)}`}
                 className={`
                   flex gap-3
-                  ${message.role === 'user' ?
-                'justify-end' :
-                'justify-start'}
+                  ${message.role === "user" ? "justify-end" : "justify-start"}
                 `}
                 style={{
                   animation:
-                    'message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both',
-                  animationDelay: `${Math.min(index * 35, 240)}ms`
+                    "message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
+                  animationDelay: `${Math.min(index * 35, 240)}ms`,
                 }}
               >
                 {/* Assistant avatar */}
-                {message.role === 'assistant' ?
-                  (
-                    <div className="
+                {message.role === "assistant" ? (
+                  <div
+                    className="
                       mt-1 grid size-8 shrink-0 place-items-center rounded-full
                       border border-white/10 bg-black/25 text-sm
                     "
-                    >
-                      {currentUiConfig?.emoji ?? '🤖'}
-                    </div>
-                  ) :
-                  null}
+                  >
+                    {currentUiConfig?.emoji ?? "🤖"}
+                  </div>
+                ) : null}
 
                 <article
                   className={`
@@ -990,97 +987,91 @@ export function ChatPage() {
                     hover:shadow-xl
                     sm:max-w-[75%]
                     ${
-              message.role === 'user' ?
-                `
+                      message.role === "user"
+                        ? `
                   border-orange-200/20 bg-orange-300/10 text-orange-50
                   shadow-orange-950/10
-                ` :
-                'border-white/8 bg-black/20 text-foreground shadow-black/10'
-              }
+                `
+                        : "border-white/8 bg-black/20 text-foreground shadow-black/10"
+                    }
                   `}
-                  aria-label={`From ${message.role === 'user' ? 'you' : (currentSpecialist?.name ?? 'Claude')}`}
+                  aria-label={`From ${message.role === "user" ? "you" : (currentSpecialist?.name ?? "Claude")}`}
                 >
-                  <p className="
+                  <p
+                    className="
                     mb-2 text-[11px] font-semibold tracking-wide
                     text-muted-foreground/60 uppercase
                   "
                   >
-                    {message.role === 'user' ?
-                      'You' :
-                      (currentSpecialist?.name ?? 'Claude')}
+                    {message.role === "user"
+                      ? "You"
+                      : (currentSpecialist?.name ?? "Claude")}
                   </p>
-                  {message.role === 'assistant' ?
-                    (
-                      <MarkdownAnswer
-                        content={message.content}
-                        isStreaming={isSending ? index === messages.length - 1 : null}
-                      />
-                    ) :
-                    (
-                      <p className="text-sm/6 whitespace-pre-wrap">
-                        {message.content}
-                      </p>
-                    )}
+                  {message.role === "assistant" ? (
+                    <MarkdownAnswer
+                      content={message.content}
+                      isStreaming={
+                        isSending ? index === messages.length - 1 : null
+                      }
+                    />
+                  ) : (
+                    <p className="text-sm/6 whitespace-pre-wrap">
+                      {message.content}
+                    </p>
+                  )}
                 </article>
 
                 {/* User avatar */}
-                {message.role === 'user' ?
-                  (
-                    <div className="
+                {message.role === "user" ? (
+                  <div
+                    className="
                       mt-1 grid size-8 shrink-0 place-items-center rounded-full
                       border border-orange-200/15 bg-orange-300/10
                       text-orange-100
                     "
-                    >
-                      <UserRound className="size-4" />
-                    </div>
-                  ) :
-                  null}
+                  >
+                    <UserRound className="size-4" />
+                  </div>
+                ) : null}
               </div>
             ))}
 
             {/* Thinking indicator */}
-            {isSending && !streamEnabled ?
-              (
-                <div
-                  className="
+            {isSending && !streamEnabled ? (
+              <div
+                className="
                     inline-flex items-center gap-3 rounded-2xl border
                     border-white/10 bg-black/20 px-4 py-3 text-sm
                     text-muted-foreground
                   "
-                  role="status"
-                  style={{
-                    animation:
-                    'message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both'
-                  }}
-                >
-                  <Loader2 className="size-4 animate-spin text-orange-200/80" />
-                  <span>
-                    {currentSpecialist?.name ?? 'Claude'}
-                    {' '}
-                    is thinking
-                  </span>
-                  <TypingDots />
-                </div>
-              ) :
-              null}
+                role="status"
+                style={{
+                  animation:
+                    "message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both",
+                }}
+              >
+                <Loader2 className="size-4 animate-spin text-orange-200/80" />
+                <span>{currentSpecialist?.name ?? "Claude"} is thinking</span>
+                <TypingDots />
+              </div>
+            ) : null}
 
             {/* Starter prompts — specialist-specific */}
-            {hasOnlyStarter ?
-              (
-                <div className="
+            {hasOnlyStarter ? (
+              <div
+                className="
                   animate-slide-up-fade grid gap-2 pt-2
                   sm:grid-cols-3
                 "
-                >
-                  {starterPrompts.map(prompt => (
-                    <button
-                      key={prompt}
-                      type="button"
-                      onClick={() => {
-                        applyStarterPrompt(prompt)
-                      }}
-                      className="
+              >
+                {starterPrompts.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => {
+                      applyStarterPrompt(prompt);
+                    }}
+                    className="
                         min-h-16 rounded-xl border border-white/10 bg-black/12
                         px-3.5 py-3 text-left text-xs/5 text-muted-foreground/70
                         transition-all
@@ -1089,13 +1080,12 @@ export function ChatPage() {
                         focus-visible:ring-2 focus-visible:ring-orange-300/40
                         focus-visible:outline-none
                       "
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              ) :
-              null}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            ) : null}
 
             <div ref={bottomRef} />
           </div>
@@ -1116,7 +1106,7 @@ export function ChatPage() {
               ref={textareaRef}
               value={draft}
               maxLength={MAX_DRAFT_LENGTH}
-              placeholder={`Ask ${currentSpecialist?.name ?? 'Claude'} something…`}
+              placeholder={`Ask ${currentSpecialist?.name ?? "Claude"} something…`}
               aria-describedby={messageHelpId}
               className="
                 max-h-52 min-h-24 resize-none rounded-xl border-white/15
@@ -1125,14 +1115,14 @@ export function ChatPage() {
                 focus-visible:border-orange-200/40 focus-visible:bg-black/25
                 focus-visible:ring-orange-300/20
               "
-              onChange={e => {
-                setDraft(e.target.value)
+              onChange={(e) => {
+                setDraft(e.target.value);
               }}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
 
-                  e.currentTarget.form?.requestSubmit()
+                  e.currentTarget.form?.requestSubmit();
                 }
               }}
             />
@@ -1160,14 +1150,15 @@ export function ChatPage() {
                       hover:border-white/20
                       focus:border-orange-200/35 focus:outline-none
                     "
-                    onChange={e => {
-                      setMaxTokens(Number(e.target.value))
+                    onChange={(e) => {
+                      setMaxTokens(Number(e.target.value));
                     }}
                   />
                 </label>
 
                 {/* Character usage bar */}
-                <div className="
+                <div
+                  className="
                   flex items-center gap-2 text-xs text-muted-foreground/60
                 "
                 >
@@ -1181,14 +1172,13 @@ export function ChatPage() {
                     />
                   </div>
                   <span className="tabular-nums">
-                    {draft.length}
-                    /
-                    {MAX_DRAFT_LENGTH}
+                    {draft.length}/{MAX_DRAFT_LENGTH}
                   </span>
                 </div>
 
                 {/* Stream toggle */}
-                <label className="
+                <label
+                  className="
                   flex cursor-pointer items-center gap-2 rounded-lg border
                   border-white/10 bg-black/15 px-2.5 py-1.5 text-xs
                   text-muted-foreground transition-colors
@@ -1200,8 +1190,8 @@ export function ChatPage() {
                     checked={streamEnabled}
                     disabled={isSending}
                     className="size-3.5 accent-orange-400"
-                    onChange={e => {
-                      setStreamEnabled(e.target.checked)
+                    onChange={(e) => {
+                      setStreamEnabled(e.target.checked);
                     }}
                   />
                   Stream message
@@ -1210,7 +1200,8 @@ export function ChatPage() {
 
               {/* Right controls */}
               <div className="flex items-center gap-3">
-                <p className="
+                <p
+                  className="
                   hidden items-center gap-1.5 text-xs text-muted-foreground/45
                   sm:flex
                 "
@@ -1229,13 +1220,11 @@ export function ChatPage() {
                     disabled:shadow-none
                   "
                 >
-                  {isSending ?
-                    (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) :
-                    (
-                      <Send className="size-4" />
-                    )}
+                  {isSending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Send className="size-4" />
+                  )}
                   Send
                 </Button>
               </div>
@@ -1244,5 +1233,5 @@ export function ChatPage() {
         </div>
       </section>
     </main>
-  )
+  );
 }

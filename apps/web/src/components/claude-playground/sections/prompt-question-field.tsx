@@ -1,14 +1,14 @@
-import type { RefObject } from 'react'
+import type { RefObject } from "react";
 
-import { Label } from '@repo/ui/components/ui/label'
-import { Textarea } from '@repo/ui/components/ui/textarea'
+import { Label } from "@repo/ui/components/ui/label";
+import { Textarea } from "@repo/ui/components/ui/textarea";
 
 interface PromptQuestionFieldProps {
-  canSubmit: boolean
-  oneSentence: boolean
-  question: string
-  textareaRef: RefObject<HTMLTextAreaElement | null>
-  onQuestionChange: (question: string) => void
+  canSubmit: boolean;
+  oneSentence: boolean;
+  question: string;
+  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  onQuestionChange: (question: string) => void;
 }
 
 export function PromptQuestionField({
@@ -16,7 +16,7 @@ export function PromptQuestionField({
   oneSentence,
   question,
   textareaRef,
-  onQuestionChange
+  onQuestionChange,
 }: PromptQuestionFieldProps) {
   return (
     <div className="space-y-3">
@@ -35,15 +35,13 @@ export function PromptQuestionField({
             rounded-full border px-2 py-0.5 font-mono text-[10px]
             transition-colors duration-200
             ${
-    question.length > 3600 ?
-      'border-orange-300/25 bg-orange-200/10 text-orange-100' :
-      'border-white/8 bg-white/2.5 text-muted-foreground/50'
-    }
+              question.length > 3600
+                ? "border-orange-300/25 bg-orange-200/10 text-orange-100"
+                : "border-white/8 bg-white/2.5 text-muted-foreground/50"
+            }
           `}
         >
-          {question.length.toLocaleString()}
-          {' '}
-          / 4 000
+          {question.length.toLocaleString()} / 4 000
         </span>
       </div>
       <div
@@ -57,8 +55,8 @@ export function PromptQuestionField({
           id="question"
           ref={textareaRef}
           value={question}
-          onChange={event => {
-            onQuestionChange(event.target.value)
+          onChange={(event) => {
+            onQuestionChange(event.target.value);
           }}
           placeholder="Ask Claude something useful…"
           className="
@@ -74,12 +72,12 @@ export function PromptQuestionField({
             bg-black/10 px-4 py-2 text-xs text-muted-foreground/45
           "
         >
-          <span>{canSubmit ? 'Ready to ask' : 'Min 3 chars'}</span>
+          <span>{canSubmit ? "Ready to ask" : "Min 3 chars"}</span>
           <span className="font-mono">
-            {oneSentence ? 'brief mode' : 'full answer'}
+            {oneSentence ? "brief mode" : "full answer"}
           </span>
         </div>
       </div>
     </div>
-  )
+  );
 }

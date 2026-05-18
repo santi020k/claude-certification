@@ -1,70 +1,70 @@
-import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 
-import { ApiStatusProvider } from '@/components/api-status/context'
+import { ApiStatusProvider } from "@/components/api-status/context";
 
-import './globals.css'
+import "./globals.css";
 
 const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin']
-})
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin']
-})
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
-const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Claude Certification Playground',
-    template: '%s · Claude Certification'
+    default: "Claude Certification Playground",
+    template: "%s · Claude Certification",
   },
   description:
-    'A production-shaped FastAPI + Next.js playground for exploring the Anthropic Claude API. Tune prompts, inspect token usage, and verify your backend — all from one focused interface.',
+    "A production-shaped FastAPI + Next.js playground for exploring the Anthropic Claude API. Tune prompts, inspect token usage, and verify your backend — all from one focused interface.",
   keywords: [
-    'Anthropic',
-    'Claude AI',
-    'FastAPI',
-    'Next.js',
-    'AI playground',
-    'Claude API',
-    'LLM',
-    'chatbot',
-    'certification'
+    "Anthropic",
+    "Claude AI",
+    "FastAPI",
+    "Next.js",
+    "AI playground",
+    "Claude API",
+    "LLM",
+    "chatbot",
+    "certification",
   ],
-  authors: [{ name: 'santi020k', url: 'https://github.com/santi020k' }],
-  creator: 'santi020k',
+  authors: [{ name: "santi020k", url: "https://github.com/santi020k" }],
+  creator: "santi020k",
 
   // ── Open Graph ────────────────────────────────────────────────────────────
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
+    type: "website",
+    locale: "en_US",
     url: siteUrl,
-    siteName: 'Claude Certification Playground',
-    title: 'Claude Certification Playground',
+    siteName: "Claude Certification Playground",
+    title: "Claude Certification Playground",
     description:
-      'Ask Claude anything from a production-shaped FastAPI + Next.js playground. Tune prompts, inspect token usage, and verify your backend.',
+      "Ask Claude anything from a production-shaped FastAPI + Next.js playground. Tune prompts, inspect token usage, and verify your backend.",
     images: [
       {
-        url: '/brand/logo.svg',
+        url: "/brand/logo.svg",
         width: 920,
         height: 220,
-        alt: 'Claude Certification Playground'
-      }
-    ]
+        alt: "Claude Certification Playground",
+      },
+    ],
   },
 
   // ── Twitter / X card ──────────────────────────────────────────────────────
   twitter: {
-    card: 'summary_large_image',
-    title: 'Claude Certification Playground',
+    card: "summary_large_image",
+    title: "Claude Certification Playground",
     description:
-      'Ask Claude anything from a production-shaped FastAPI + Next.js playground.',
-    creator: '@santi020k'
+      "Ask Claude anything from a production-shaped FastAPI + Next.js playground.",
+    creator: "@santi020k",
   },
 
   // ── Robots ────────────────────────────────────────────────────────────────
@@ -74,32 +74,32 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1
-    }
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
 
   // ── Icons ─────────────────────────────────────────────────────────────────
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico' }
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
     ],
-    apple: '/brand/icon.svg'
-  }
-}
+    apple: "/brand/icon.svg",
+  },
+};
 
 export const viewport: Viewport = {
-  themeColor: '#191714',
-  width: 'device-width',
-  initialScale: 1
-}
+  themeColor: "#191714",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html
@@ -114,5 +114,5 @@ export default function RootLayout({
         <ApiStatusProvider>{children}</ApiStatusProvider>
       </body>
     </html>
-  )
+  );
 }
