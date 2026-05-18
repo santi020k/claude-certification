@@ -21,31 +21,31 @@ The server will start at **http://localhost:8000**.
 
 ## Interactive docs
 
-| URL | Description |
-|-----|-------------|
-| http://localhost:8000/docs | Swagger UI — try endpoints directly in browser |
-| http://localhost:8000/redoc | ReDoc — clean reference docs |
+| URL                         | Description                                    |
+| --------------------------- | ---------------------------------------------- |
+| http://localhost:8000/docs  | Swagger UI — try endpoints directly in browser |
+| http://localhost:8000/redoc | ReDoc — clean reference docs                   |
 
 ## Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/` | Root health check |
-| GET | `/api/health` | Detailed health + env info |
-| POST | `/api/ask` | Ask Claude any question |
-| GET | `/api/ask/demo` | Pre-baked quantum computing demo |
+| Method | Path            | Description                      |
+| ------ | --------------- | -------------------------------- |
+| GET    | `/`             | Root health check                |
+| GET    | `/api/health`   | Detailed health + env info       |
+| POST   | `/api/ask`      | Ask Claude any question          |
+| GET    | `/api/ask/demo` | Pre-baked quantum computing demo |
 
 ## Backend structure
 
 The API is intentionally split by responsibility:
 
-| File | Responsibility |
-|------|----------------|
-| `config.py` | Reads and validates environment variables in one place |
-| `models.py` | Pydantic request/response schemas and input sanitisation |
-| `routers/*.py` | HTTP endpoints only: validate, call services, map errors |
-| `services/claude.py` | Anthropic SDK client, Claude API call, SDK error wrapping |
-| `middleware/*.py` | Cross-cutting API protections like rate limits and headers |
+| File                 | Responsibility                                             |
+| -------------------- | ---------------------------------------------------------- |
+| `config.py`          | Reads and validates environment variables in one place     |
+| `models.py`          | Pydantic request/response schemas and input sanitisation   |
+| `routers/*.py`       | HTTP endpoints only: validate, call services, map errors   |
+| `services/claude.py` | Anthropic SDK client, Claude API call, SDK error wrapping  |
+| `middleware/*.py`    | Cross-cutting API protections like rate limits and headers |
 
 When adding new functionality, keep route handlers thin. Put external API calls
 or business logic in `services/`, define payloads in `models.py`, and wire the
@@ -65,7 +65,10 @@ Import this as a **Raw JSON** collection in Postman:
 
 ```json
 {
-  "info": { "name": "Certification API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+  "info": {
+    "name": "Certification API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
   "item": [
     {
       "name": "Health Check",
@@ -73,7 +76,10 @@ Import this as a **Raw JSON** collection in Postman:
     },
     {
       "name": "Ask Demo (Quantum)",
-      "request": { "method": "GET", "url": "http://localhost:8000/api/ask/demo" }
+      "request": {
+        "method": "GET",
+        "url": "http://localhost:8000/api/ask/demo"
+      }
     },
     {
       "name": "Ask Custom Question",

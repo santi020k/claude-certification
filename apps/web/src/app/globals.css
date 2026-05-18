@@ -181,6 +181,29 @@ body {
   outline-offset: 2px;
 }
 
+/* ── AI Streaming Typing Cursor ────────────────────────────────────────────── */
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.prose-streaming > p:last-child::after,
+.prose-streaming > pre:last-child code::after,
+.prose-streaming > ul:last-child > li:last-child::after,
+.prose-streaming > ol:last-child > li:last-child::after,
+.prose-streaming > blockquote:last-child > p:last-child::after {
+  content: "▊";
+  display: inline-block;
+  vertical-align: baseline;
+  margin-left: 5px;
+  font-size: 1.05em;
+  line-height: 1;
+  color: #f97316; /* Tailwind orange-500 */
+  text-shadow: 0 0 8px rgba(249, 115, 22, 0.45);
+  animation: cursor-blink 0.8s step-end infinite;
+}
+
 /* Respect user prefers-reduced-motion settings */
 @media (prefers-reduced-motion: reduce) {
   * {

@@ -71,16 +71,16 @@ Avoid:
 
 ## Color Palette
 
-| Token | Hex | Use |
-|-------|-----|-----|
-| Ink | `#191714` | Main dark background, logo base |
-| Cocoa | `#2B241F` | Dark cards, icon fields |
-| Umber | `#3D332A` | Borders, subtle raised surfaces |
-| Clay | `#CC785C` | Primary action, certification mark, active states |
-| Soft Clay | `#D98B70` | Hover states and warm highlights |
-| Bone | `#F7F3EA` | High-contrast text and light surfaces |
-| Sand | `#D8CBB8` | Muted text on dark backgrounds |
-| Taupe | `#8C7B6B` | Low-emphasis labels and dividers |
+| Token     | Hex       | Use                                               |
+| --------- | --------- | ------------------------------------------------- |
+| Ink       | `#191714` | Main dark background, logo base                   |
+| Cocoa     | `#2B241F` | Dark cards, icon fields                           |
+| Umber     | `#3D332A` | Borders, subtle raised surfaces                   |
+| Clay      | `#CC785C` | Primary action, certification mark, active states |
+| Soft Clay | `#D98B70` | Hover states and warm highlights                  |
+| Bone      | `#F7F3EA` | High-contrast text and light surfaces             |
+| Sand      | `#D8CBB8` | Muted text on dark backgrounds                    |
+| Taupe     | `#8C7B6B` | Low-emphasis labels and dividers                  |
 
 Recommended gradients:
 
@@ -160,15 +160,15 @@ Interaction states should be explicit:
 
 Use `lucide-react` icons. Preferred icon meanings:
 
-| Icon | Use |
-|------|-----|
-| `Sparkles` | Claude, generated answer, demo |
-| `Send` | Submit prompt |
-| `Activity` | API health |
-| `Copy` | Copy answer |
-| `Check` | Success or copied state |
-| `AlertCircle` | Error |
-| `LoaderCircle` | Loading |
+| Icon           | Use                            |
+| -------------- | ------------------------------ |
+| `Sparkles`     | Claude, generated answer, demo |
+| `Send`         | Submit prompt                  |
+| `Activity`     | API health                     |
+| `Copy`         | Copy answer                    |
+| `Check`        | Success or copied state        |
+| `AlertCircle`  | Error                          |
+| `LoaderCircle` | Loading                        |
 
 ## Accessibility
 

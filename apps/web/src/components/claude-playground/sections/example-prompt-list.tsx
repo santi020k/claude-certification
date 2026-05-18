@@ -1,38 +1,40 @@
-import type { RefObject } from 'react'
+import type { RefObject } from "react";
 
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight } from "lucide-react";
 
-import { EXAMPLE_PROMPTS } from '../constants'
+import { EXAMPLE_PROMPTS } from "../constants";
 
 interface ExamplePromptListProps {
-  textareaRef: RefObject<HTMLTextAreaElement | null>
-  onQuestionChange: (question: string) => void
+  textareaRef: RefObject<HTMLTextAreaElement | null>;
+  onQuestionChange: (question: string) => void;
 }
 
-export function ExamplePromptList({ textareaRef, onQuestionChange }: ExamplePromptListProps) {
+export function ExamplePromptList({
+  textareaRef,
+  onQuestionChange,
+}: ExamplePromptListProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="
+        <p
+          className="
           text-[10px] tracking-widest text-muted-foreground/60 font-medium uppercase
         "
         >
           Try an example
         </p>
         <span className="text-[10px] text-muted-foreground/50">
-          {EXAMPLE_PROMPTS.length}
-          {' '}
-          presets
+          {EXAMPLE_PROMPTS.length} presets
         </span>
       </div>
       <div className="grid gap-2">
-        {EXAMPLE_PROMPTS.map(prompt => (
+        {EXAMPLE_PROMPTS.map((prompt) => (
           <button
             key={prompt}
             type="button"
             onClick={() => {
-              onQuestionChange(prompt)
-              textareaRef.current?.focus()
+              onQuestionChange(prompt);
+              textareaRef.current?.focus();
             }}
             className="
               group text-muted-foreground/65
@@ -43,7 +45,8 @@ export function ExamplePromptList({ textareaRef, onQuestionChange }: ExampleProm
               hover:border-orange-300/20 hover:bg-orange-200/8
             "
           >
-            <span className="
+            <span
+              className="
               flex size-5 shrink-0 items-center justify-center
               rounded-full bg-orange-200/8 text-orange-200/60
               transition-colors
@@ -51,7 +54,8 @@ export function ExamplePromptList({ textareaRef, onQuestionChange }: ExampleProm
               group-hover:text-orange-100
             "
             >
-              <ChevronRight className="
+              <ChevronRight
+                className="
                 size-3 transition-transform duration-200
                 group-hover:translate-x-0.5
               "
@@ -62,5 +66,5 @@ export function ExamplePromptList({ textareaRef, onQuestionChange }: ExampleProm
         ))}
       </div>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { ChatPage } from '@/components/chat/chat-page'
+import { ChatPage } from "@/components/chat/chat-page";
 
 export default function ChatRoute() {
-  return <ChatPage />
+  return <ChatPage />;
 }

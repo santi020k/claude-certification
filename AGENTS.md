@@ -1,7 +1,7 @@
 # AGENTS.md — AI Context for the Certification Project
 
 This file provides Codex (and any AI coding assistant) with the context it
-needs to contribute effectively to this codebase.  It also serves as a
+needs to contribute effectively to this codebase. It also serves as a
 reference for developers learning the Anthropic SDK.
 
 ---
@@ -9,6 +9,7 @@ reference for developers learning the Anthropic SDK.
 ## Project Purpose
 
 A full-stack **learning / certification project** that demonstrates how to:
+
 - Call the Codex API from a Python backend (FastAPI)
 - Expose the results through a REST API consumed by a Next.js frontend
 - Structure a real monorepo (Turborepo + pnpm) with Python + TypeScript
@@ -45,11 +46,11 @@ MODEL = "Codex-sonnet-4-0"   # fast + capable; good for most tasks
 
 Other available models (as of the project's creation):
 
-| Model | Best for |
-|---|---|
-| `Codex-opus-4-0` | Complex reasoning, long documents |
+| Model              | Best for                                   |
+| ------------------ | ------------------------------------------ |
+| `Codex-opus-4-0`   | Complex reasoning, long documents          |
 | `Codex-sonnet-4-0` | Balanced — speed + intelligence ✅ default |
-| `Codex-haiku-4-5` | Ultra-fast, lightweight tasks |
+| `Codex-haiku-4-5`  | Ultra-fast, lightweight tasks              |
 
 ### Basic message call
 
@@ -150,14 +151,14 @@ print(response.usage.output_tokens)  # completion tokens
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | ✅ | Your Anthropic API key |
-| `MODEL` | optional | Override default model (default: `Codex-sonnet-4-0`) |
-| `ALLOWED_ORIGINS` | optional | Comma-separated CORS origins |
-| `APP_ENV` | optional | `development` or `production` |
-| `API_HOST` | optional | Bind address (default: `0.0.0.0`) |
-| `API_PORT` | optional | Port (default: `8000`) |
+| Variable            | Required | Description                                          |
+| ------------------- | -------- | ---------------------------------------------------- |
+| `ANTHROPIC_API_KEY` | ✅       | Your Anthropic API key                               |
+| `MODEL`             | optional | Override default model (default: `Codex-sonnet-4-0`) |
+| `ALLOWED_ORIGINS`   | optional | Comma-separated CORS origins                         |
+| `APP_ENV`           | optional | `development` or `production`                        |
+| `API_HOST`          | optional | Bind address (default: `0.0.0.0`)                    |
+| `API_PORT`          | optional | Port (default: `8000`)                               |
 
 Copy `.env.template` → `.env` and fill in `ANTHROPIC_API_KEY` before running.
 

@@ -4,428 +4,428 @@
  */
 
 export interface paths {
-    "/": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Root
-         * @description Root endpoint — quick sanity check.
-         *
-         *     Paste `http://localhost:8000/` in a browser to confirm the server is up.
-         */
-        get: operations["root__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/ask": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Ask Question
-         * @description Send any question to Claude and receive a structured JSON answer.
-         *
-         *     **Rate limit:** 10 requests per minute per IP.
-         *
-         *     **Example request body**
-         *     ```json
-         *     {
-         *       "question": "Explain Python decorators in simple terms",
-         *       "max_tokens": 500,
-         *       "one_sentence": false
-         *     }
-         *     ```
-         *
-         *     When `one_sentence` is `true`, the question is prefixed with a brevity
-         *     instruction so Claude keeps its reply to a single sentence — handy for
-         *     quick demos or UI cards.
-         */
-        post: operations["ask_question_api_ask_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Root
+     * @description Root endpoint — quick sanity check.
+     *
+     *     Paste `http://localhost:8000/` in a browser to confirm the server is up.
+     */
+    get: operations["root__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/ask": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/ask/demo": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Ask Demo
-         * @description Runs the classic quickstart demo question:
-         *     *"What is quantum computing? Answer in one sentence."*
-         *
-         *     **Rate limit:** 5 requests per minute per IP.
-         *
-         *     This is a GET endpoint so you can test it directly in a browser or with:
-         *
-         *     ```bash
-         *     curl http://localhost:8000/api/ask/demo
-         *     ```
-         *
-         *     No request body needed.
-         */
-        get: operations["ask_demo_api_ask_demo_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Ask Question
+     * @description Send any question to Claude and receive a structured JSON answer.
+     *
+     *     **Rate limit:** 10 requests per minute per IP.
+     *
+     *     **Example request body**
+     *     ```json
+     *     {
+     *       "question": "Explain Python decorators in simple terms",
+     *       "max_tokens": 500,
+     *       "one_sentence": false
+     *     }
+     *     ```
+     *
+     *     When `one_sentence` is `true`, the question is prefixed with a brevity
+     *     instruction so Claude keeps its reply to a single sentence — handy for
+     *     quick demos or UI cards.
+     */
+    post: operations["ask_question_api_ask_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/ask/demo": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/chat": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Chat
-         * @description Continue a Claude conversation.
-         *
-         *     Omit `conversation_id` to start a new conversation. Send the returned id
-         *     with later messages to keep the same context.
-         */
-        post: operations["chat_api_chat_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /**
+     * Ask Demo
+     * @description Runs the classic quickstart demo question:
+     *     *"What is quantum computing? Answer in one sentence."*
+     *
+     *     **Rate limit:** 5 requests per minute per IP.
+     *
+     *     This is a GET endpoint so you can test it directly in a browser or with:
+     *
+     *     ```bash
+     *     curl http://localhost:8000/api/ask/demo
+     *     ```
+     *
+     *     No request body needed.
+     */
+    get: operations["ask_demo_api_ask_demo_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/chat": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Health Check
-         * @description Detailed health check — returns environment info.
-         *
-         *     **Never** exposes the actual API key value; only reports whether it's set.
-         *     Safe to call from monitoring tools or a frontend status page.
-         */
-        get: operations["health_check_api_health_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /**
+     * Chat
+     * @description Continue a Claude conversation.
+     *
+     *     Omit `conversation_id` to start a new conversation. Send the returned id
+     *     with later messages to keep the same context.
+     */
+    post: operations["chat_api_chat_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/health": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /**
+     * Health Check
+     * @description Detailed health check — returns environment info.
+     *
+     *     **Never** exposes the actual API key value; only reports whether it's set.
+     *     Safe to call from monitoring tools or a frontend status page.
+     */
+    get: operations["health_check_api_health_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /**
-         * AskRequest
-         * @description Body expected by POST /api/ask.
-         */
-        AskRequest: {
-            /**
-             * Max Tokens
-             * @description Upper limit on Claude's response length (tokens).
-             * @default 1000
-             */
-            max_tokens?: number;
-            /**
-             * One Sentence
-             * @description When True, instructs Claude to answer in a single sentence.
-             * @default false
-             */
-            one_sentence?: boolean;
-            /**
-             * Question
-             * @description The question you want Claude to answer.
-             * @example Explain Python decorators in simple terms
-             */
-            question: string;
-        };
-        /**
-         * AskResponse
-         * @description Response returned by POST /api/ask and GET /api/ask/demo.
-         */
-        AskResponse: {
-            /**
-             * Answer
-             * @description Claude's answer.
-             */
-            answer: string;
-            /**
-             * Input Tokens
-             * @description Prompt tokens consumed (for billing reference).
-             */
-            input_tokens: number;
-            /**
-             * Model
-             * @description The Claude model that generated the answer.
-             */
-            model: string;
-            /**
-             * Output Tokens
-             * @description Completion tokens consumed (for billing reference).
-             */
-            output_tokens: number;
-            /**
-             * Question
-             * @description The original question that was sent to Claude.
-             */
-            question: string;
-        };
-        /**
-         * ChatMessage
-         * @description One message in a Claude chat conversation.
-         */
-        ChatMessage: {
-            /** Content */
-            content: string;
-            /**
-             * Role
-             * @enum {string}
-             */
-            role: "user" | "assistant";
-        };
-        /**
-         * ChatRequest
-         * @description Body expected by POST /api/chat.
-         */
-        ChatRequest: {
-            /**
-             * Conversation Id
-             * @description Existing conversation id. Omit it to start a new chat.
-             */
-            conversation_id?: string | null;
-            /**
-             * Max Tokens
-             * @description Upper limit on Claude's next response length (tokens).
-             * @default 1000
-             */
-            max_tokens?: number;
-            /**
-             * Message
-             * @description The next user message in the conversation.
-             * @example Can you explain that with a small Python example?
-             */
-            message: string;
-            /**
-             * One Sentence
-             * @description When True, instructs Claude to answer in one sentence.
-             * @default false
-             */
-            one_sentence?: boolean;
-        };
-        /**
-         * ChatResponse
-         * @description Response returned by POST /api/chat.
-         */
-        ChatResponse: {
-            /** Answer */
-            answer: string;
-            /** Conversation Id */
-            conversation_id: string;
-            /** Input Tokens */
-            input_tokens: number;
-            /** Messages */
-            messages: components["schemas"]["ChatMessage"][];
-            /** Model */
-            model: string;
-            /** Output Tokens */
-            output_tokens: number;
-        };
-        /** HTTPValidationError */
-        HTTPValidationError: {
-            /** Detail */
-            detail?: components["schemas"]["ValidationError"][];
-        };
-        /**
-         * HealthResponse
-         * @description Response returned by GET /api/health.
-         */
-        HealthResponse: {
-            /** Allowed Origins */
-            allowed_origins: string[];
-            /** Anthropic Api Key Configured */
-            anthropic_api_key_configured: boolean;
-            /** Environment */
-            environment: string;
-            /** Model */
-            model: string;
-            /** Status */
-            status: string;
-        };
-        /** ValidationError */
-        ValidationError: {
-            /** Context */
-            ctx?: Record<string, never>;
-            /** Input */
-            input?: unknown;
-            /** Location */
-            loc: (string | number)[];
-            /** Message */
-            msg: string;
-            /** Error Type */
-            type: string;
-        };
+  schemas: {
+    /**
+     * AskRequest
+     * @description Body expected by POST /api/ask.
+     */
+    AskRequest: {
+      /**
+       * Max Tokens
+       * @description Upper limit on Claude's response length (tokens).
+       * @default 1000
+       */
+      max_tokens?: number;
+      /**
+       * One Sentence
+       * @description When True, instructs Claude to answer in a single sentence.
+       * @default false
+       */
+      one_sentence?: boolean;
+      /**
+       * Question
+       * @description The question you want Claude to answer.
+       * @example Explain Python decorators in simple terms
+       */
+      question: string;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    /**
+     * AskResponse
+     * @description Response returned by POST /api/ask and GET /api/ask/demo.
+     */
+    AskResponse: {
+      /**
+       * Answer
+       * @description Claude's answer.
+       */
+      answer: string;
+      /**
+       * Input Tokens
+       * @description Prompt tokens consumed (for billing reference).
+       */
+      input_tokens: number;
+      /**
+       * Model
+       * @description The Claude model that generated the answer.
+       */
+      model: string;
+      /**
+       * Output Tokens
+       * @description Completion tokens consumed (for billing reference).
+       */
+      output_tokens: number;
+      /**
+       * Question
+       * @description The original question that was sent to Claude.
+       */
+      question: string;
+    };
+    /**
+     * ChatMessage
+     * @description One message in a Claude chat conversation.
+     */
+    ChatMessage: {
+      /** Content */
+      content: string;
+      /**
+       * Role
+       * @enum {string}
+       */
+      role: "user" | "assistant";
+    };
+    /**
+     * ChatRequest
+     * @description Body expected by POST /api/chat.
+     */
+    ChatRequest: {
+      /**
+       * Conversation Id
+       * @description Existing conversation id. Omit it to start a new chat.
+       */
+      conversation_id?: string | null;
+      /**
+       * Max Tokens
+       * @description Upper limit on Claude's next response length (tokens).
+       * @default 1000
+       */
+      max_tokens?: number;
+      /**
+       * Message
+       * @description The next user message in the conversation.
+       * @example Can you explain that with a small Python example?
+       */
+      message: string;
+      /**
+       * One Sentence
+       * @description When True, instructs Claude to answer in one sentence.
+       * @default false
+       */
+      one_sentence?: boolean;
+    };
+    /**
+     * ChatResponse
+     * @description Response returned by POST /api/chat.
+     */
+    ChatResponse: {
+      /** Answer */
+      answer: string;
+      /** Conversation Id */
+      conversation_id: string;
+      /** Input Tokens */
+      input_tokens: number;
+      /** Messages */
+      messages: components["schemas"]["ChatMessage"][];
+      /** Model */
+      model: string;
+      /** Output Tokens */
+      output_tokens: number;
+    };
+    /** HTTPValidationError */
+    HTTPValidationError: {
+      /** Detail */
+      detail?: components["schemas"]["ValidationError"][];
+    };
+    /**
+     * HealthResponse
+     * @description Response returned by GET /api/health.
+     */
+    HealthResponse: {
+      /** Allowed Origins */
+      allowed_origins: string[];
+      /** Anthropic Api Key Configured */
+      anthropic_api_key_configured: boolean;
+      /** Environment */
+      environment: string;
+      /** Model */
+      model: string;
+      /** Status */
+      status: string;
+    };
+    /** ValidationError */
+    ValidationError: {
+      /** Context */
+      ctx?: Record<string, never>;
+      /** Input */
+      input?: unknown;
+      /** Location */
+      loc: (string | number)[];
+      /** Message */
+      msg: string;
+      /** Error Type */
+      type: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    root__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
-                };
-            };
-        };
+  root__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    ask_question_api_ask_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AskRequest"];
-            };
+        content: {
+          "application/json": {
+            [key: string]: string;
+          };
         };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AskResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
+      };
     };
-    ask_demo_api_ask_demo_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AskResponse"];
-                };
-            };
-        };
+  };
+  ask_question_api_ask_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    chat_api_chat_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ChatRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChatResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["AskRequest"];
+      };
     };
-    health_check_api_health_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HealthResponse"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["AskResponse"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
     };
+  };
+  ask_demo_api_ask_demo_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AskResponse"];
+        };
+      };
+    };
+  };
+  chat_api_chat_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ChatRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ChatResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  health_check_api_health_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HealthResponse"];
+        };
+      };
+    };
+  };
 }

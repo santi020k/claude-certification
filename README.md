@@ -46,11 +46,11 @@ certification/
 
 ## Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Node.js | ≥ 20 |
-| pnpm | ≥ 10 |
-| Python | ≥ 3.11 |
+| Tool    | Version |
+| ------- | ------- |
+| Node.js | ≥ 20    |
+| pnpm    | ≥ 10    |
+| Python  | ≥ 3.11  |
 
 ---
 
@@ -105,14 +105,14 @@ by `NEXT_PUBLIC_API_URL`, usually `http://localhost:8000` in development.
 
 ## API Endpoints
 
-| Method | URL | Description |
-|--------|-----|-------------|
-| `GET` | `http://localhost:8000/` | Root — is the server alive? |
-| `GET` | `http://localhost:8000/api/health` | Health + environment info |
-| `GET` | `http://localhost:8000/api/ask/demo` | Demo: quantum computing (one sentence) |
-| `POST` | `http://localhost:8000/api/ask` | Ask Claude anything |
-| — | `http://localhost:8000/docs` | Swagger UI (interactive) |
-| — | `http://localhost:8000/redoc` | ReDoc UI |
+| Method | URL                                  | Description                            |
+| ------ | ------------------------------------ | -------------------------------------- |
+| `GET`  | `http://localhost:8000/`             | Root — is the server alive?            |
+| `GET`  | `http://localhost:8000/api/health`   | Health + environment info              |
+| `GET`  | `http://localhost:8000/api/ask/demo` | Demo: quantum computing (one sentence) |
+| `POST` | `http://localhost:8000/api/ask`      | Ask Claude anything                    |
+| —      | `http://localhost:8000/docs`         | Swagger UI (interactive)               |
+| —      | `http://localhost:8000/redoc`        | ReDoc UI                               |
 
 ### POST /api/ask — example
 
@@ -132,18 +132,19 @@ curl -X POST http://localhost:8000/api/ask \
 
 This repo ships with custom slash commands under `.claude/commands/`:
 
-| Command | What it does |
-|---------|-------------|
+| Command           | What it does                                            |
+| ----------------- | ------------------------------------------------------- |
 | `/ask <question>` | POST a question to the local API and print the response |
-| `/health` | Check the backend health endpoint |
-| `/dev` | Show instructions to start the full dev stack |
-| `/test-api` | Smoke-test all four endpoints in one go |
+| `/health`         | Check the backend health endpoint                       |
+| `/dev`            | Show instructions to start the full dev stack           |
+| `/test-api`       | Smoke-test all four endpoints in one go                 |
 
 ---
 
 ## Claude / Anthropic SDK
 
 See **[CLAUDE.md](./CLAUDE.md)** for a full reference including:
+
 - Current model names and when to use each
 - Basic message call, system prompts, multi-turn chat, streaming
 - Token counting and usage billing info

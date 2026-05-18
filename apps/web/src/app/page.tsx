@@ -1,30 +1,36 @@
-import Link from 'next/link'
+import Link from "next/link";
 
-import { ApiStatusIndicator } from '@/components/api-status/indicator'
-import { AmbientBackground } from '@/components/claude-playground/sections/ambient-background'
+import { ApiStatusIndicator } from "@/components/api-status/indicator";
+import { AmbientBackground } from "@/components/claude-playground/sections/ambient-background";
 
-import { ArrowRight, Bot, FlaskConical, MessageSquare, Zap } from 'lucide-react'
+import {
+  ArrowRight,
+  Bot,
+  FlaskConical,
+  MessageSquare,
+  Zap,
+} from "lucide-react";
 
-import { Button } from '@repo/ui/components/ui/button'
+import { Button } from "@repo/ui/components/ui/button";
 
 const features = [
   {
-    href: '/chat',
-    title: 'Multi-turn Chat',
+    href: "/chat",
+    title: "Multi-turn Chat",
     description:
-      'Server-side conversation memory with each follow-up. The backend maintains history via conversation IDs — no state bloat on the client.',
+      "Server-side conversation memory with each follow-up. The backend maintains history via conversation IDs — no state bloat on the client.",
     icon: MessageSquare,
-    badge: 'POST /api/chat'
+    badge: "POST /api/chat",
   },
   {
-    href: '/playground',
-    title: 'Prompt Playground',
+    href: "/playground",
+    title: "Prompt Playground",
     description:
-      'Single-turn experiments with token controls, one-sentence mode, and live health checks. The fastest way to iterate on a prompt.',
+      "Single-turn experiments with token controls, one-sentence mode, and live health checks. The fastest way to iterate on a prompt.",
     icon: FlaskConical,
-    badge: 'POST /api/ask'
-  }
-]
+    badge: "POST /api/ask",
+  },
+];
 
 export default function Home() {
   return (
@@ -51,8 +57,12 @@ export default function Home() {
               <Bot className="size-5 text-orange-100" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">Certification</p>
-              <p className="text-xs text-muted-foreground">Anthropic SDK workspace</p>
+              <p className="text-sm font-semibold text-foreground">
+                Certification
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Anthropic SDK workspace
+              </p>
             </div>
           </div>
 
@@ -75,7 +85,7 @@ export default function Home() {
                 border border-orange-200/20 bg-orange-300/8 px-3 py-1 text-xs
                 font-medium text-orange-200/80
               "
-              style={{ animationDelay: '0ms' }}
+              style={{ animationDelay: "0ms" }}
             >
               <Zap className="size-3" />
               FastAPI · Next.js · Anthropic SDK
@@ -87,7 +97,7 @@ export default function Home() {
                 text-foreground
                 sm:text-5xl/tight
               "
-              style={{ animationDelay: '80ms' }}
+              style={{ animationDelay: "80ms" }}
             >
               Learn the Claude API by building real features.
             </h1>
@@ -96,7 +106,7 @@ export default function Home() {
               className="
                 animate-hero-word mt-5 max-w-xl text-base/7 text-muted-foreground
               "
-              style={{ animationDelay: '160ms' }}
+              style={{ animationDelay: "160ms" }}
             >
               Each page is a focused, production-shaped exercise — from
               single-turn prompts to multi-turn conversations. Tune your
@@ -106,7 +116,7 @@ export default function Home() {
 
             <div
               className="animate-hero-word mt-8 flex flex-wrap gap-3"
-              style={{ animationDelay: '240ms' }}
+              style={{ animationDelay: "240ms" }}
             >
               <Button asChild size="lg">
                 <Link href="/chat">
@@ -150,7 +160,9 @@ export default function Home() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="font-semibold text-foreground">{item.title}</h2>
+                      <h2 className="font-semibold text-foreground">
+                        {item.title}
+                      </h2>
                       <span
                         className="
                           hidden rounded-sm border border-white/10 bg-white/5 px-1.5
@@ -178,5 +190,5 @@ export default function Home() {
         </div>
       </section>
     </main>
-  )
+  );
 }

@@ -20,18 +20,14 @@
           },
           "question": {
             "description": "The question you want Claude to answer.",
-            "examples": [
-              "Explain Python decorators in simple terms"
-            ],
+            "examples": ["Explain Python decorators in simple terms"],
             "maxLength": 4000,
             "minLength": 3,
             "title": "Question",
             "type": "string"
           }
         },
-        "required": [
-          "question"
-        ],
+        "required": ["question"],
         "title": "AskRequest",
         "type": "object"
       },
@@ -84,18 +80,12 @@
             "type": "string"
           },
           "role": {
-            "enum": [
-              "user",
-              "assistant"
-            ],
+            "enum": ["user", "assistant"],
             "title": "Role",
             "type": "string"
           }
         },
-        "required": [
-          "role",
-          "content"
-        ],
+        "required": ["role", "content"],
         "title": "ChatMessage",
         "type": "object"
       },
@@ -126,9 +116,7 @@
           },
           "message": {
             "description": "The next user message in the conversation.",
-            "examples": [
-              "Can you explain that with a small Python example?"
-            ],
+            "examples": ["Can you explain that with a small Python example?"],
             "maxLength": 4000,
             "minLength": 1,
             "title": "Message",
@@ -141,9 +129,7 @@
             "type": "boolean"
           }
         },
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "title": "ChatRequest",
         "type": "object"
       },
@@ -271,11 +257,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError",
         "type": "object"
       }
@@ -309,9 +291,7 @@
           }
         },
         "summary": "Root",
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     },
     "/api/ask": {
@@ -351,9 +331,7 @@
           }
         },
         "summary": "Ask Question",
-        "tags": [
-          "claude"
-        ]
+        "tags": ["claude"]
       }
     },
     "/api/ask/demo": {
@@ -373,9 +351,7 @@
           }
         },
         "summary": "Ask Demo",
-        "tags": [
-          "claude"
-        ]
+        "tags": ["claude"]
       }
     },
     "/api/chat": {
@@ -415,9 +391,7 @@
           }
         },
         "summary": "Chat",
-        "tags": [
-          "chat"
-        ]
+        "tags": ["chat"]
       }
     },
     "/api/health": {
@@ -437,9 +411,7 @@
           }
         },
         "summary": "Health Check",
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     }
   }
