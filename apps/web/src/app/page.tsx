@@ -17,7 +17,7 @@ const features = [
     badge: 'POST /api/chat'
   },
   {
-    href: '/exercises/claude',
+    href: '/playground',
     title: 'Prompt Playground',
     description:
       'Single-turn experiments with token controls, one-sentence mode, and live health checks. The fastest way to iterate on a prompt.',
@@ -115,7 +115,7 @@ export default function Home() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg">
-                <Link href="/exercises/claude">
+                <Link href="/playground">
                   <FlaskConical className="size-4" />
                   Open playground
                 </Link>

@@ -240,7 +240,7 @@ export function ChatPage() {
               {' '}
               <span className="font-mono text-orange-200/80">POST /api/chat</span>
               {' '}
-              — conversation history lives in the backend, not the browser.
+              — context lives in the backend, and this tab remembers the thread until New chat.
             </p>
           </div>
 
@@ -283,12 +283,15 @@ export function ChatPage() {
               <article
                 key={`${message.role}-${index}-${message.content.slice(0, 16)}`}
                 className={`
-                  animate-message-in max-w-[92%] rounded-xl border px-4 py-3
+                  max-w-[92%] rounded-xl border px-4 py-3
                   ${message.role === 'user' ?
                 'ml-auto border-orange-200/20 bg-orange-300/10 text-orange-50' :
                 'border-white/10 bg-black/18 text-foreground'}
                 `}
-                style={{ animationDelay: `${Math.min(index * 25, 200)}ms` }}
+                style={{
+                  animation: 'message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both',
+                  animationDelay: `${Math.min(index * 25, 200)}ms`
+                }}
                 aria-label={`From ${message.role === 'user' ? 'you' : 'Claude'}`}
               >
                 <div
@@ -307,11 +310,12 @@ export function ChatPage() {
               (
                 <div
                   className="
-                    animate-message-in inline-flex items-center gap-2 rounded-xl
-                    border border-white/10 bg-black/18 px-3 py-2 text-sm
+                    inline-flex items-center gap-2 rounded-xl border
+                    border-white/10 bg-black/18 px-3 py-2 text-sm
                     text-muted-foreground
                   "
                   role="status"
+                  style={{ animation: 'message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both' }}
                 >
                   <Loader2 className="size-4 animate-spin" />
                   Claude is thinking…

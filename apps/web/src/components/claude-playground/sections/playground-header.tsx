@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { Activity, ChevronRight, LoaderCircle } from 'lucide-react'
+import { Activity, ArrowLeft, ChevronRight, LoaderCircle } from 'lucide-react'
 
 import { EXAMPLE_PROMPTS } from '../constants'
 import { formatModel } from '../format'
@@ -134,6 +134,12 @@ export function PlaygroundHeader({
         sm:items-end
       "
       >
+        <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Link href="/">
+            <ArrowLeft className="size-3.5" />
+            Back to home
+          </Link>
+        </Button>
         <Button
           type="button"
           variant="outline"

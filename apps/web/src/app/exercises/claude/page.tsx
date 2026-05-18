@@ -1,9 +1,5 @@
-import { ClaudePlayground } from '@/components/claude-playground'
+import { redirect } from 'next/navigation'
 
-export default function ClaudeExercisePage() {
-  return (
-    <main className="flex flex-1 flex-col">
-      <ClaudePlayground />
-    </main>
-  )
+export default function ClaudeExerciseRedirect() {
+  redirect('/playground')
 }
