@@ -15,4 +15,4 @@ select = ["E", "F", "I", "UP"]
 ignore = ["E501"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["config", "models", "services", "routers"]
+known-first-party = ["config", "middleware", "models", "routers", "services"]

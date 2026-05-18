@@ -17,25 +17,58 @@ Usage
 """
 
 import logging
-import os
 from functools import lru_cache
 from typing import Any
 
-from anthropic import Anthropic
+from anthropic import (
+    APIConnectionError,
+    APIError,
+    APITimeoutError,
+    Anthropic,
+    AuthenticationError,
+    RateLimitError,
+)
 
-from config import MODEL
+from config import ANTHROPIC_API_KEY_CONFIGURED, ANTHROPIC_TIMEOUT_SECONDS, MODEL
 
 logger = logging.getLogger("claude-certification.api")
 
 logger.info("Claude service ready — model: %s", MODEL)
 
 
+class ClaudeServiceError(RuntimeError):
+    """Base error for Claude service failures that routes can map to HTTP."""
+
+    status_code = 502
+    public_message = "Failed to get a response from Claude. Please try again."
+
+
+class ClaudeConfigurationError(ClaudeServiceError):
+    status_code = 503
+    public_message = "Claude is not configured on the server."
+
+
+class ClaudeAuthenticationError(ClaudeServiceError):
+    status_code = 503
+    public_message = "Claude authentication failed. Check the server API key."
+
+
+class ClaudeRateLimitError(ClaudeServiceError):
+    status_code = 429
+    public_message = "Claude is currently rate limited. Please try again shortly."
+
+
+class ClaudeTimeoutError(ClaudeServiceError):
+    status_code = 504
+    public_message = "Claude took too long to respond. Please try again."
+
+
 @lru_cache
 def get_client() -> Anthropic:
     """Create the Anthropic client when the first Claude request arrives."""
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        raise RuntimeError("ANTHROPIC_API_KEY is not configured")
-    return Anthropic()
+    if not ANTHROPIC_API_KEY_CONFIGURED:
+        raise ClaudeConfigurationError("ANTHROPIC_API_KEY is not configured")
+    return Anthropic(timeout=ANTHROPIC_TIMEOUT_SECONDS)
 
 
 def extract_text(content_blocks: list[Any]) -> str:
@@ -75,13 +108,29 @@ def ask_claude(question: str, max_tokens: int = 1000) -> dict[str, object]:
     anthropic.APIError (and subclasses) if the Anthropic API call fails.
     Callers should wrap this in a try/except and raise HTTPException.
     """
-    logger.info("→ Claude | question: %.80s…", question)
-
-    response = get_client().messages.create(
-        model=MODEL,
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": question}],
+    logger.info(
+        "Claude request | model=%s max_tokens=%d question_chars=%d",
+        MODEL,
+        max_tokens,
+        len(question),
     )
+
+    try:
+        response = get_client().messages.create(
+            model=MODEL,
+            max_tokens=max_tokens,
+            messages=[{"role": "user", "content": question}],
+        )
+    except AuthenticationError as exc:
+        raise ClaudeAuthenticationError(str(exc)) from exc
+    except RateLimitError as exc:
+        raise ClaudeRateLimitError(str(exc)) from exc
+    except APITimeoutError as exc:
+        raise ClaudeTimeoutError(str(exc)) from exc
+    except APIConnectionError as exc:
+        raise ClaudeServiceError("Claude connection failed") from exc
+    except APIError as exc:
+        raise ClaudeServiceError(str(exc)) from exc
 
     answer_text = extract_text(response.content)
 

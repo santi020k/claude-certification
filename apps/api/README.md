@@ -35,6 +35,30 @@ The server will start at **http://localhost:8000**.
 | POST | `/api/ask` | Ask Claude any question |
 | GET | `/api/ask/demo` | Pre-baked quantum computing demo |
 
+## Backend structure
+
+The API is intentionally split by responsibility:
+
+| File | Responsibility |
+|------|----------------|
+| `config.py` | Reads and validates environment variables in one place |
+| `models.py` | Pydantic request/response schemas and input sanitisation |
+| `routers/*.py` | HTTP endpoints only: validate, call services, map errors |
+| `services/claude.py` | Anthropic SDK client, Claude API call, SDK error wrapping |
+| `middleware/*.py` | Cross-cutting API protections like rate limits and headers |
+
+When adding new functionality, keep route handlers thin. Put external API calls
+or business logic in `services/`, define payloads in `models.py`, and wire the
+new router in `main.py`.
+
+## Security defaults
+
+- CORS allows only `ALLOWED_ORIGINS`; wildcard origins are rejected in production.
+- `POST /api/ask` and `GET /api/ask/demo` are rate-limited per client IP.
+- Request bodies are capped by `MAX_REQUEST_BODY_BYTES` before the route runs.
+- User questions are sanitised before they reach logs or the Anthropic SDK.
+- Claude API errors are mapped to safe HTTP responses without leaking secrets.
+
 ## Postman collection
 
 Import this as a **Raw JSON** collection in Postman:

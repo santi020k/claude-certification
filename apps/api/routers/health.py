@@ -13,7 +13,7 @@ import logging
 
 from fastapi import APIRouter
 
-from config import ALLOWED_ORIGINS, ANTHROPIC_API_KEY, APP_ENV, MODEL
+from config import ALLOWED_ORIGINS, ANTHROPIC_API_KEY_CONFIGURED, APP_ENV, MODEL
 from models import HealthResponse
 
 logger = logging.getLogger("claude-certification.api")
@@ -45,13 +45,16 @@ def health_check() -> HealthResponse:
     **Never** exposes the actual API key value; only reports whether it's set.
     Safe to call from monitoring tools or a frontend status page.
     """
-    api_key_configured = bool(ANTHROPIC_API_KEY)
-    logger.info("GET /api/health — env=%s, api_key_set=%s", APP_ENV, api_key_configured)
+    logger.info(
+        "GET /api/health — env=%s, api_key_set=%s",
+        APP_ENV,
+        ANTHROPIC_API_KEY_CONFIGURED,
+    )
 
     return HealthResponse(
         status="ok",
         environment=APP_ENV,
-        anthropic_api_key_configured=api_key_configured,
+        anthropic_api_key_configured=ANTHROPIC_API_KEY_CONFIGURED,
         model=MODEL,
         allowed_origins=ALLOWED_ORIGINS,
     )

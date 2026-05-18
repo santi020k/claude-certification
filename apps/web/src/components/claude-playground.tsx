@@ -363,17 +363,30 @@ export function ClaudePlayground() {
 
   const doAsk = useCallback(async () => {
     if (!canSubmit) return;
+    // Client-side guard (belt + suspenders with the hook)
+    if (isLimited) {
+      setError(`Too many requests — wait ${cooldownSeconds}s before trying again.`);
+      return;
+    }
+    recordRequest();
     setIsAsking(true);
     setError(null);
+    setRetryAfter(null);
     setCopied(false);
     const t0 = Date.now();
     try {
-      const q = oneSentence ? `${question.trim()} Answer in one sentence.` : question.trim();
+      const q = oneSentence ? `${trimmed} Answer in one sentence.` : trimmed;
       const res = await fetch(`${apiBaseUrl}/api/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q, max_tokens: maxTokens, one_sentence: false }),
       });
+      if (res.status === 429) {
+        const secs = parseRetryAfter(res);
+        setRetryAfter(secs);
+        setError(`Rate limit reached. Please wait ${secs}s before trying again.`);
+        return;
+      }
       if (!res.ok) throw new Error(await readErrorMessage(res));
       setAnswer((await res.json()) as AskResponse);
       setAnswerKey((k) => k + 1);
@@ -383,7 +396,7 @@ export function ClaudePlayground() {
     } finally {
       setIsAsking(false);
     }
-  }, [apiBaseUrl, canSubmit, maxTokens, oneSentence, question]);
+  }, [apiBaseUrl, canSubmit, cooldownSeconds, isLimited, maxTokens, oneSentence, recordRequest, trimmed]);
 
   async function askClaude(e?: FormEvent<HTMLFormElement>) {
     e?.preventDefault();
@@ -391,12 +404,24 @@ export function ClaudePlayground() {
   }
 
   async function runDemo() {
+    if (isLimited || retryAfter !== null) {
+      setError("Rate limit reached — wait a moment before running the demo.");
+      return;
+    }
+    recordRequest();
     setIsAsking(true);
     setError(null);
+    setRetryAfter(null);
     setCopied(false);
     const t0 = Date.now();
     try {
       const res = await fetch(`${apiBaseUrl}/api/ask/demo`);
+      if (res.status === 429) {
+        const secs = parseRetryAfter(res);
+        setRetryAfter(secs);
+        setError(`Rate limit reached. Please wait ${secs}s before trying again.`);
+        return;
+      }
       if (!res.ok) throw new Error(await readErrorMessage(res));
       const data = (await res.json()) as AskResponse;
       setAnswer(data);
@@ -438,6 +463,7 @@ export function ClaudePlayground() {
     setAnswer(null);
     setError(null);
     setResponseTime(null);
+    setRetryAfter(null);
     textareaRef.current?.focus();
   }
 
@@ -683,8 +709,8 @@ export function ClaudePlayground() {
                       type="button"
                       variant="outline"
                       onClick={runDemo}
-                      disabled={isAsking}
-                      className="flex-1 gap-2 border-white/10 bg-white/[0.04] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] sm:flex-none"
+                      disabled={isAsking || isLimited || retryAfter !== null}
+                      className="flex-1 gap-2 border-white/10 bg-white/[0.04] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] disabled:opacity-50 sm:flex-none"
                     >
                       <Zap className="size-4" />
                       Demo
@@ -706,7 +732,23 @@ export function ClaudePlayground() {
                   </div>
 
                   <div className="flex items-center justify-between gap-3 text-xs text-white/18">
-                    <span className="truncate">Enter a prompt, then ask Claude.</span>
+                    {/* Rate-limit status */}
+                    {retryAfter !== null ? (
+                      <span className="flex items-center gap-1.5 font-mono text-rose-400/80">
+                        <span className="inline-block size-1.5 rounded-full bg-rose-400 animate-pulse" />
+                        Rate limited — retry in {retryAfter}s
+                      </span>
+                    ) : isLimited ? (
+                      <span className="flex items-center gap-1.5 font-mono text-amber-400/80">
+                        <span className="inline-block size-1.5 rounded-full bg-amber-400 animate-pulse" />
+                        Slow down — retry in {cooldownSeconds}s
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-white/20">
+                        <span className="tabular-nums font-mono">{remaining}/{CLIENT_RATE_LIMIT}</span>
+                        <span>req/min remaining</span>
+                      </span>
+                    )}
                     <span className="hidden shrink-0 items-center gap-1 sm:flex">
                       <kbd className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]">⌘</kbd>
                       +

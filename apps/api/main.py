@@ -33,7 +33,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from config import ALLOWED_ORIGINS, API_HOST, API_PORT, logger
+from config import ALLOWED_ORIGINS, API_HOST, API_PORT, ASK_RATE_LIMIT, DEMO_RATE_LIMIT, logger
 from middleware.rate_limit import limiter
 from middleware.security import SecurityHeadersMiddleware
 from routers import claude as claude_router
@@ -48,8 +48,8 @@ app = FastAPI(
         "REST API wrapping Anthropic Claude — learning / certification project.\n\n"
         "Interactive docs → **/docs** (Swagger UI) or **/redoc** (ReDoc).\n\n"
         "**Rate limits** (per remote IP):\n"
-        "- `POST /api/ask` — 10 requests / minute\n"
-        "- `GET /api/ask/demo` — 5 requests / minute\n"
+        f"- `POST /api/ask` — {ASK_RATE_LIMIT}\n"
+        f"- `GET /api/ask/demo` — {DEMO_RATE_LIMIT}\n"
     ),
     version="0.2.0",
 )
@@ -74,7 +74,7 @@ logger.info("CORS allowed origins: %s", ALLOWED_ORIGINS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    allow_credentials="*" not in ALLOWED_ORIGINS,
     allow_methods=["GET", "POST", "OPTIONS"],   # explicit — no PUT/DELETE/PATCH
     allow_headers=["Content-Type", "Accept"],
 )

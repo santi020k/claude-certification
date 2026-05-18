@@ -18,54 +18,99 @@ Adds two protections:
 """
 
 import logging
+from collections.abc import Awaitable, Callable
 
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.datastructures import Headers, MutableHeaders
+from starlette.responses import JSONResponse
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from config import MAX_REQUEST_BODY_BYTES
 
 logger = logging.getLogger("claude-certification.api")
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
-MAX_BODY_BYTES: int = 16_384  # 16 KB — well above any valid request body
-
 SECURITY_HEADERS: dict[str, str] = {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
-    "X-XSS-Protection": "1; mode=block",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
 }
 
 
+class RequestBodyTooLarge(Exception):
+    """Raised when the incoming request body exceeds the configured limit."""
+
+
+def _too_large_response() -> JSONResponse:
+    return JSONResponse(
+        {
+            "detail": (
+                "Request body too large. Maximum allowed size is "
+                f"{MAX_REQUEST_BODY_BYTES // 1024} KB."
+            )
+        },
+        status_code=413,
+    )
+
+
 # ── Middleware ─────────────────────────────────────────────────────────────────
 
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Inject security headers and enforce a maximum request body size."""
+class SecurityHeadersMiddleware:
+    """
+    Inject security headers and enforce a maximum request body size.
 
-    async def dispatch(self, request: Request, call_next) -> Response:
-        # ── Body size guard ────────────────────────────────────────────────────
-        raw_content_length = request.headers.get("content-length")
+    This is ASGI middleware instead of BaseHTTPMiddleware so the size limit also
+    applies to streamed/chunked request bodies that do not send Content-Length.
+    """
+
+    def __init__(self, app: ASGIApp) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers = Headers(scope=scope)
+        raw_content_length = headers.get("content-length")
         if raw_content_length:
             try:
-                if int(raw_content_length) > MAX_BODY_BYTES:
+                if int(raw_content_length) > MAX_REQUEST_BODY_BYTES:
                     logger.warning(
                         "413 — oversized body from %s (%s bytes declared)",
-                        request.client.host if request.client else "unknown",
+                        scope.get("client", ["unknown"])[0],
                         raw_content_length,
                     )
-                    return JSONResponse(
-                        {"detail": f"Request body too large. Maximum allowed size is {MAX_BODY_BYTES // 1024} KB."},
-                        status_code=413,
-                    )
+                    await _too_large_response()(scope, receive, send)
+                    return
             except ValueError:
                 pass  # malformed Content-Length — let FastAPI deal with it
 
-        # ── Normal request ─────────────────────────────────────────────────────
-        response: Response = await call_next(request)
+        received_body_bytes = 0
 
-        # ── Inject headers ─────────────────────────────────────────────────────
-        for header, value in SECURITY_HEADERS.items():
-            response.headers[header] = value
+        async def limited_receive() -> Message:
+            nonlocal received_body_bytes
 
-        return response
+            message = await receive()
+            if message["type"] == "http.request":
+                received_body_bytes += len(message.get("body", b""))
+                if received_body_bytes > MAX_REQUEST_BODY_BYTES:
+                    raise RequestBodyTooLarge
+            return message
+
+        async def send_with_security_headers(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                response_headers = MutableHeaders(scope=message)
+                for header, value in SECURITY_HEADERS.items():
+                    response_headers[header] = value
+            await send(message)
+
+        try:
+            await self.app(scope, limited_receive, send_with_security_headers)
+        except RequestBodyTooLarge:
+            logger.warning(
+                "413 — oversized streamed body from %s",
+                scope.get("client", ["unknown"])[0],
+            )
+            await _too_large_response()(scope, receive, send_with_security_headers)

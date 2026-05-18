@@ -26,9 +26,10 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Request
 
+from config import ASK_RATE_LIMIT, DEMO_RATE_LIMIT
 from middleware.rate_limit import limiter
 from models import AskRequest, AskResponse
-from services.claude import ask_claude
+from services.claude import ClaudeServiceError, ask_claude
 
 logger = logging.getLogger("claude-certification.api")
 
@@ -36,7 +37,7 @@ router = APIRouter(prefix="/api", tags=["claude"])
 
 
 @router.post("/ask", response_model=AskResponse)
-@limiter.limit("10/minute")
+@limiter.limit(ASK_RATE_LIMIT)
 def ask_question(request: Request, body: AskRequest) -> AskResponse:
     """
     Send any question to Claude and receive a structured JSON answer.
@@ -61,26 +62,33 @@ def ask_question(request: Request, body: AskRequest) -> AskResponse:
         question = f"{question} Answer in one sentence."
 
     logger.info(
-        "POST /api/ask — ip=%s one_sentence=%s | %.60s…",
+        "POST /api/ask — ip=%s one_sentence=%s max_tokens=%d question_chars=%d",
         request.client.host if request.client else "unknown",
         body.one_sentence,
-        question,
+        body.max_tokens,
+        len(question),
     )
 
     try:
         result = ask_claude(question, max_tokens=body.max_tokens)
-    except Exception as exc:
-        logger.error("Anthropic API error: %s", exc, exc_info=True)
+    except ClaudeServiceError as exc:
+        logger.warning("Claude service error: %s", exc, exc_info=True)
         raise HTTPException(
-            status_code=502,
-            detail="Failed to get a response from Claude. Please try again.",
+            status_code=exc.status_code,
+            detail=exc.public_message,
+        ) from exc
+    except Exception as exc:
+        logger.exception("Unexpected error in POST /api/ask")
+        raise HTTPException(
+            status_code=500,
+            detail="Unexpected server error. Please try again.",
         ) from exc
 
     return AskResponse(**result)
 
 
 @router.get("/ask/demo", response_model=AskResponse)
-@limiter.limit("5/minute")
+@limiter.limit(DEMO_RATE_LIMIT)
 def ask_demo(request: Request) -> AskResponse:
     """
     Runs the classic quickstart demo question:
@@ -106,11 +114,17 @@ def ask_demo(request: Request) -> AskResponse:
             "What is quantum computing? Answer in one sentence.",
             max_tokens=200,
         )
-    except Exception as exc:
-        logger.error("Demo endpoint error: %s", exc, exc_info=True)
+    except ClaudeServiceError as exc:
+        logger.warning("Claude demo service error: %s", exc, exc_info=True)
         raise HTTPException(
-            status_code=502,
-            detail="Failed to get a response from Claude. Please try again.",
+            status_code=exc.status_code,
+            detail=exc.public_message,
+        ) from exc
+    except Exception as exc:
+        logger.exception("Unexpected error in GET /api/ask/demo")
+        raise HTTPException(
+            status_code=500,
+            detail="Unexpected server error. Please try again.",
         ) from exc
 
     return AskResponse(**result)
