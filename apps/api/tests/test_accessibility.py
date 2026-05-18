@@ -30,7 +30,7 @@ def test_accessibility_run_real_audit() -> None:
         return
 
     target_files = [
-        "apps/web/src/components/claude-playground.tsx",
+        "apps/web/src/app/page.tsx",
         "apps/web/src/app/globals.css",
     ]
 
