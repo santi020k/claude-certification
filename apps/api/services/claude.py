@@ -17,8 +17,9 @@ Usage
 """
 
 import logging
+from collections.abc import Sequence
 from functools import lru_cache
-from typing import Any
+from typing import TypedDict
 
 from anthropic import (
     Anthropic,
@@ -28,6 +29,7 @@ from anthropic import (
     AuthenticationError,
     RateLimitError,
 )
+from anthropic.types import ContentBlock, TextBlock
 
 from config import ANTHROPIC_API_KEY_CONFIGURED, ANTHROPIC_TIMEOUT_SECONDS, MODEL
 
@@ -63,6 +65,14 @@ class ClaudeTimeoutError(ClaudeServiceError):
     public_message = "Claude took too long to respond. Please try again."
 
 
+class ClaudeResponseDict(TypedDict):
+    question: str
+    answer: str
+    model: str
+    input_tokens: int
+    output_tokens: int
+
+
 @lru_cache
 def get_client() -> Anthropic:
     """Create the Anthropic client when the first Claude request arrives."""
@@ -71,19 +81,21 @@ def get_client() -> Anthropic:
     return Anthropic(timeout=ANTHROPIC_TIMEOUT_SECONDS)
 
 
-def extract_text(content_blocks: list[Any]) -> str:
+def extract_text(content_blocks: Sequence[ContentBlock]) -> str:
     """Collect text from Claude content blocks without assuming their order."""
-    parts = [
-        block.text.strip()
-        for block in content_blocks
-        if getattr(block, "type", None) == "text" and getattr(block, "text", "").strip()
-    ]
+    parts = []
+    for block in content_blocks:
+        if isinstance(block, TextBlock):
+            text = block.text.strip()
+            if text:
+                parts.append(text)
+
     if not parts:
         raise RuntimeError("Claude returned no text content")
     return "\n\n".join(parts)
 
 
-def ask_claude(question: str, max_tokens: int = 1000) -> dict[str, Any]:
+def ask_claude(question: str, max_tokens: int = 1000) -> ClaudeResponseDict:
     """
     Send *question* to Claude and return a structured dict.
 

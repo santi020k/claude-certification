@@ -1,10 +1,12 @@
-from types import SimpleNamespace
-from typing import Any
-
 from fastapi.testclient import TestClient
 
 from main import app
-from services.claude import ClaudeServiceError, ClaudeTimeoutError, extract_text
+from services.claude import (
+    ClaudeResponseDict,
+    ClaudeServiceError,
+    ClaudeTimeoutError,
+    extract_text,
+)
 
 client = TestClient(app)
 
@@ -48,7 +50,7 @@ def test_ask_rejects_short_question() -> None:
 
 
 def test_ask_uses_claude_service(monkeypatch) -> None:
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         return {
             "question": question,
             "answer": "A focused test answer.",
@@ -75,9 +77,9 @@ def test_ask_uses_claude_service(monkeypatch) -> None:
 
 
 def test_ask_sanitises_question_before_service(monkeypatch) -> None:
-    captured: dict[str, Any] = {}
+    captured: dict[str, str] = {}
 
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         captured["question"] = question
         return {
             "question": question,
@@ -103,7 +105,7 @@ def test_ask_sanitises_question_before_service(monkeypatch) -> None:
 
 
 def test_ask_maps_claude_service_errors(monkeypatch) -> None:
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         raise ClaudeTimeoutError("timeout")
 
     monkeypatch.setattr("routers.claude.ask_claude", fake_ask_claude)
@@ -118,17 +120,19 @@ def test_ask_maps_claude_service_errors(monkeypatch) -> None:
 
 
 def test_extract_text_combines_text_blocks() -> None:
+    from anthropic.types import TextBlock, ToolUseBlock
+
     content = [
-        SimpleNamespace(type="tool_use", text="ignored"),
-        SimpleNamespace(type="text", text=" First block "),
-        SimpleNamespace(type="text", text="Second block"),
+        ToolUseBlock(id="1", input={}, name="my_tool", type="tool_use"),
+        TextBlock(text=" First block ", type="text"),
+        TextBlock(text="Second block", type="text"),
     ]
 
     assert extract_text(content) == "First block\n\nSecond block"
 
 
 def test_ask_demo_endpoint(monkeypatch) -> None:
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         assert question == "What is quantum computing? Answer in one sentence."
         assert max_tokens == 200
         return {
@@ -149,7 +153,7 @@ def test_ask_demo_endpoint(monkeypatch) -> None:
 
 
 def test_ask_demo_maps_errors(monkeypatch) -> None:
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         raise ClaudeServiceError("service error")
 
     monkeypatch.setattr("routers.claude.ask_claude", fake_ask_claude)
@@ -161,7 +165,7 @@ def test_ask_demo_maps_errors(monkeypatch) -> None:
 
 def test_ask_rate_limit_error(monkeypatch) -> None:
     from services.claude import ClaudeRateLimitError
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         raise ClaudeRateLimitError("rate limit exceeded")
 
     monkeypatch.setattr("routers.claude.ask_claude", fake_ask_claude)
@@ -176,7 +180,7 @@ def test_ask_rate_limit_error(monkeypatch) -> None:
 
 def test_ask_authentication_error(monkeypatch) -> None:
     from services.claude import ClaudeAuthenticationError
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         raise ClaudeAuthenticationError("bad key")
 
     monkeypatch.setattr("routers.claude.ask_claude", fake_ask_claude)
@@ -190,7 +194,7 @@ def test_ask_authentication_error(monkeypatch) -> None:
 
 
 def test_ask_unexpected_error(monkeypatch) -> None:
-    def fake_ask_claude(question: str, max_tokens: int) -> dict[str, Any]:
+    def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         raise RuntimeError("Something went horribly wrong internally")
 
     monkeypatch.setattr("routers.claude.ask_claude", fake_ask_claude)
@@ -205,8 +209,10 @@ def test_ask_unexpected_error(monkeypatch) -> None:
 
 def test_extract_text_raises_when_no_text() -> None:
     import pytest
+    from anthropic.types import ToolUseBlock
+
     content = [
-        SimpleNamespace(type="tool_use", text="ignored"),
+        ToolUseBlock(id="1", input={}, name="my_tool", type="tool_use"),
     ]
     with pytest.raises(RuntimeError, match="Claude returned no text content"):
         extract_text(content)
