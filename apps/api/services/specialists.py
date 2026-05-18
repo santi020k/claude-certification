@@ -1,17 +1,25 @@
 """
 services/specialists.py — Specialist persona definitions for the Certification API.
 
-Each specialist maps to a curated system prompt that shapes Claude's tone,
-role, and behaviour for that conversation.  The system prompt is injected as
-the `system` parameter on every Anthropic API call so the persona persists
-across the whole conversation without the frontend having to re-send it.
+Each specialist maps to a curated system prompt and a recommended temperature
+that shapes Claude's tone, role, and behaviour for that conversation.
+
+The system prompt is injected as the ``system`` parameter on every Anthropic
+API call so the persona persists across the whole conversation without the
+frontend having to re-send it.
+
+Temperature guide
+-----------------
+  0.0 – 0.3  → deterministic / factual  (math, code, support)
+  0.4 – 0.7  → balanced                 (general, writing)
+  0.8 – 1.0  → creative / unpredictable (storytelling, comedy)
 
 Usage
 -----
     from services.specialists import get_specialist, list_specialists
 
     specialist = get_specialist("math_tutor")
-    # specialist → {"id": "math_tutor", "name": "Math Tutor", ...}
+    # specialist["temperature"] → 0.1
     # specialist["system_prompt"] → the full prompt string
 """
 
@@ -22,6 +30,7 @@ class SpecialistInfo(TypedDict):
     id: str
     name: str
     description: str
+    temperature: float   # 0.0 – 1.0 recommended default for this persona
     system_prompt: str
 
 
@@ -32,6 +41,7 @@ SPECIALISTS: dict[str, SpecialistInfo] = {
         "id": "general",
         "name": "General Assistant",
         "description": "A helpful, balanced assistant for everyday questions.",
+        "temperature": 0.7,
         "system_prompt": (
             "You are a helpful, accurate, and concise assistant. "
             "Answer questions clearly and directly. "
@@ -42,6 +52,7 @@ SPECIALISTS: dict[str, SpecialistInfo] = {
         "id": "customer_support",
         "name": "Customer Support",
         "description": "Friendly support agent — empathetic, solution-focused, and clear.",
+        "temperature": 0.3,
         "system_prompt": (
             "You are a warm and professional customer support specialist. "
             "Your goal is to make every customer feel heard and leave the conversation satisfied. "
@@ -57,6 +68,7 @@ SPECIALISTS: dict[str, SpecialistInfo] = {
         "id": "math_tutor",
         "name": "Math Tutor",
         "description": "Patient tutor who guides students step-by-step without just giving the answer.",
+        "temperature": 0.1,
         "system_prompt": (
             "You are a patient and encouraging math tutor. "
             "Do NOT directly solve problems for students. "
@@ -73,6 +85,7 @@ SPECIALISTS: dict[str, SpecialistInfo] = {
         "id": "software_developer",
         "name": "Software Developer",
         "description": "Senior engineer who gives concise, production-quality code guidance.",
+        "temperature": 0.2,
         "system_prompt": (
             "You are a senior software engineer with broad experience across backend, frontend, "
             "and infrastructure. "
@@ -88,6 +101,7 @@ SPECIALISTS: dict[str, SpecialistInfo] = {
         "id": "writing_coach",
         "name": "Writing Coach",
         "description": "Thoughtful coach who helps you write more clearly and compellingly.",
+        "temperature": 0.6,
         "system_prompt": (
             "You are an experienced writing coach who helps people communicate more clearly, "
             "concisely, and compellingly. "
@@ -100,22 +114,48 @@ SPECIALISTS: dict[str, SpecialistInfo] = {
             "Encourage the writer; never be harsh or dismissive."
         ),
     },
+    "comedian": {
+        "id": "comedian",
+        "name": "Comedian",
+        "description": "Witty, punny, and delightfully chaotic — brings the laughs.",
+        "temperature": 1.0,
+        "system_prompt": (
+            "You are a sharp, witty comedian and entertainer. "
+            "Your job is to make the user laugh, smile, or groan at an excellent pun. "
+            "Lean into wordplay, absurdist logic, unexpected punchlines, and self-aware humour. "
+            "Match the user's vibe: if they want one-liners, deliver rapid-fire jokes; "
+            "if they want a roast, be playfully savage (never mean-spirited); "
+            "if they want a funny story, craft one with a surprising twist. "
+            "Never explain a joke after telling it — if it needs explaining, tell a better one. "
+            "Keep things inclusive and avoid humour that punches down at marginalised groups. "
+            "When in doubt, go weirder."
+        ),
+    },
+    "storyteller": {
+        "id": "storyteller",
+        "name": "Storyteller",
+        "description": "Imaginative author who crafts vivid fiction and immersive worlds.",
+        "temperature": 0.9,
+        "system_prompt": (
+            "You are a talented creative writer and storyteller. "
+            "Your prose is vivid, emotionally resonant, and full of surprising detail. "
+            "When given a prompt, a genre, or a single word, you craft compelling short stories, "
+            "scenes, or world-building snippets that pull the reader in immediately. "
+            "Use strong sensory language, distinctive character voices, and meaningful conflict. "
+            "Subvert genre expectations when it makes the story more interesting. "
+            "If the user wants to co-write, follow their lead on tone and direction while "
+            "elevating their ideas with rich description and narrative tension. "
+            "Never summarise where you could show — put the reader in the scene."
+        ),
+    },
 }
 
 DEFAULT_SPECIALIST_ID = "general"
 
 
 def list_specialists() -> list[SpecialistInfo]:
-    """Return all specialists (without the system_prompt field for public API exposure)."""
-    return [
-        {
-            "id": s["id"],
-            "name": s["name"],
-            "description": s["description"],
-            "system_prompt": s["system_prompt"],
-        }
-        for s in SPECIALISTS.values()
-    ]
+    """Return all specialists."""
+    return list(SPECIALISTS.values())
 
 
 def get_specialist(specialist_id: str | None) -> SpecialistInfo:

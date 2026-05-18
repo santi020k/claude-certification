@@ -159,6 +159,16 @@ class ChatRequest(BaseModel):
         ),
         examples=["math_tutor"],
     )
+    temperature: float | None = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Sampling temperature (0.0 = deterministic, 1.0 = most creative). "
+            "When omitted the specialist's recommended default is used."
+        ),
+        examples=[0.7],
+    )
 
     @field_validator("message", mode="before")
     @classmethod
@@ -198,6 +208,7 @@ class SpecialistPublic(BaseModel):
     id: str = Field(description="Unique identifier for the specialist.")
     name: str = Field(description="Human-readable display name.")
     description: str = Field(description="Short description of this specialist's style/focus.")
+    temperature: float = Field(description="Recommended sampling temperature for this specialist (0.0–1.0).")
 
 
 class SpecialistsResponse(BaseModel):

@@ -157,6 +157,7 @@ def chat_with_claude(
     messages: Sequence[ClaudeMessage],
     max_tokens: int = 1000,
     system_prompt: str | None = None,
+    temperature: float = 0.7,
 ) -> ClaudeChatResponseDict:
     """Send a conversation history to Claude and return the next answer.
 
@@ -170,12 +171,17 @@ def chat_with_claude(
         Optional system prompt that shapes Claude's persona and behaviour.
         When provided it is passed as the ``system`` parameter so it applies
         to the entire conversation without consuming a turn in ``messages``.
+    temperature:
+        Sampling temperature in the range [0.0, 1.0].
+        0.0 = deterministic / factual; 1.0 = most creative / unpredictable.
+        Defaults to 0.7 (balanced).
     """
     logger.info(
-        "Claude chat request | model=%s max_tokens=%d messages=%d specialist_prompt=%s",
+        "Claude chat request | model=%s max_tokens=%d messages=%d temperature=%.2f specialist_prompt=%s",
         MODEL,
         max_tokens,
         len(messages),
+        temperature,
         "yes" if system_prompt else "no",
     )
 
@@ -183,6 +189,7 @@ def chat_with_claude(
         "model": MODEL,
         "max_tokens": max_tokens,
         "messages": list(messages),
+        "temperature": temperature,
     }
     if system_prompt:
         create_kwargs["system"] = system_prompt

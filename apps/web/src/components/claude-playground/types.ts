@@ -31,6 +31,7 @@ export interface Specialist {
   id: string
   name: string
   description: string
+  temperature: number
 }
 
 export interface SpecialistsResponse {

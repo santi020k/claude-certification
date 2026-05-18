@@ -22,8 +22,10 @@ def get_specialists() -> SpecialistsResponse:
     Return the list of available specialist personas.
 
     Each specialist shapes Claude's tone, role, and behaviour via a server-side
-    system prompt.  The ``id`` field is what you pass as ``specialist`` in
-    ``POST /api/chat``.
+    system prompt.  The ``id`` is what you pass as ``specialist`` in
+    ``POST /api/chat``.  The ``temperature`` field is the recommended sampling
+    default — pass it back in ``POST /api/chat`` to get the intended feel, or
+    override it to your liking.
 
     ```bash
     curl http://localhost:8000/api/specialists
@@ -31,7 +33,12 @@ def get_specialists() -> SpecialistsResponse:
     """
     return SpecialistsResponse(
         specialists=[
-            SpecialistPublic(id=s["id"], name=s["name"], description=s["description"])
+            SpecialistPublic(
+                id=s["id"],
+                name=s["name"],
+                description=s["description"],
+                temperature=s["temperature"],
+            )
             for s in list_specialists()
         ],
         default=DEFAULT_SPECIALIST_ID,
@@ -42,14 +49,14 @@ def get_specialists() -> SpecialistsResponse:
 @limiter.limit(CHAT_RATE_LIMIT)
 def chat(request: Request, response: Response, body: ChatRequest) -> ChatResponse:
     """
-    Continue a Claude conversation with an optional specialist persona.
+    Continue a Claude conversation with an optional specialist persona and temperature.
 
     Omit `conversation_id` to start a new conversation. Send the returned id
     with later messages to keep the same context.
 
     Pass a `specialist` id (from `GET /api/specialists`) to give Claude a
-    specific persona — e.g. a patient math tutor or a customer support agent.
-    Omit it (or send `null`) for the default general assistant.
+    specific persona.  Pass `temperature` (0.0–1.0) to control creativity —
+    omit it to use the specialist's recommended default.
     """
     conversation_id, history = conversation_store.get_or_create(body.conversation_id)
     user_message = body.message
@@ -60,11 +67,15 @@ def chat(request: Request, response: Response, body: ChatRequest) -> ChatRespons
 
     specialist = get_specialist(body.specialist)
 
+    # Use explicitly provided temperature, fall back to the specialist's preset.
+    temperature = body.temperature if body.temperature is not None else specialist["temperature"]
+
     logger.info(
-        "POST /api/chat — ip=%s conversation_id=%s specialist=%s history=%d max_tokens=%d",
+        "POST /api/chat — ip=%s conversation_id=%s specialist=%s temperature=%.2f history=%d max_tokens=%d",
         request.client.host if request.client else "unknown",
         conversation_id,
         specialist["id"],
+        temperature,
         len(history),
         body.max_tokens,
     )
@@ -74,6 +85,7 @@ def chat(request: Request, response: Response, body: ChatRequest) -> ChatRespons
             messages,
             max_tokens=body.max_tokens,
             system_prompt=specialist["system_prompt"],
+            temperature=temperature,
         )
     except ClaudeServiceError as exc:
         logger.warning("Claude chat service error: %s", exc, exc_info=True)
