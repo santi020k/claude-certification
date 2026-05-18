@@ -1,12 +1,12 @@
-import Image from "next/image";
+import Image from 'next/image'
 
 export function PlaygroundFooter({ apiBaseUrl }: { apiBaseUrl: string }) {
   return (
     <footer
       className="
-      animate-slide-up-fade flex flex-wrap items-center justify-between gap-4
-      border-t border-white/6 pt-6 text-xs delay-375
-    "
+        animate-slide-up-fade flex flex-wrap items-center justify-between gap-4
+        border-t border-white/6 pt-6 text-xs delay-375
+      "
     >
       <div className="flex items-center gap-3">
         <a
@@ -27,9 +27,9 @@ export function PlaygroundFooter({ apiBaseUrl }: { apiBaseUrl: string }) {
           />
           <span
             className="
-            font-medium text-white/30 transition-colors duration-200
-            group-hover:text-white/70
-          "
+              font-medium text-white/30 transition-colors duration-200
+              group-hover:text-white/70
+            "
           >
             santi020k.com
           </span>
@@ -82,5 +82,5 @@ export function PlaygroundFooter({ apiBaseUrl }: { apiBaseUrl: string }) {
         </a>
       </div>
     </footer>
-  );
+  )
 }

@@ -1,36 +1,36 @@
-import Link from "next/link";
+import Link from 'next/link'
 
-import { ApiStatusIndicator } from "@/components/api-status/indicator";
-import { AmbientBackground } from "@/components/claude-playground/sections/ambient-background";
+import { ApiStatusIndicator } from '@/components/api-status/indicator'
+import { AmbientBackground } from '@/components/claude-playground/sections/ambient-background'
 
 import {
   ArrowRight,
   Bot,
   FlaskConical,
   MessageSquare,
-  Zap,
-} from "lucide-react";
+  Zap
+} from 'lucide-react'
 
-import { Button } from "@repo/ui/components/ui/button";
+import { Button } from '@repo/ui/components/ui/button'
 
 const features = [
   {
-    href: "/chat",
-    title: "Multi-turn Chat",
+    href: '/chat',
+    title: 'Multi-turn Chat',
     description:
-      "Server-side conversation memory with each follow-up. The backend maintains history via conversation IDs — no state bloat on the client.",
+      'Server-side conversation memory with each follow-up. The backend maintains history via conversation IDs — no state bloat on the client.',
     icon: MessageSquare,
-    badge: "POST /api/chat",
+    badge: 'POST /api/chat'
   },
   {
-    href: "/playground",
-    title: "Prompt Playground",
+    href: '/playground',
+    title: 'Prompt Playground',
     description:
-      "Single-turn experiments with token controls, one-sentence mode, and live health checks. The fastest way to iterate on a prompt.",
+      'Single-turn experiments with token controls, one-sentence mode, and live health checks. The fastest way to iterate on a prompt.',
     icon: FlaskConical,
-    badge: "POST /api/ask",
-  },
-];
+    badge: 'POST /api/ask'
+  }
+]
 
 export default function Home() {
   return (
@@ -39,8 +39,7 @@ export default function Home() {
 
       <section
         className="
-          relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4
-          py-10
+          relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10
           sm:px-6
           lg:px-10
         "
@@ -81,11 +80,11 @@ export default function Home() {
           <div className="max-w-2xl">
             <p
               className="
-                animate-hero-word mb-4 inline-flex items-center gap-2 rounded-full
-                border border-orange-200/20 bg-orange-300/8 px-3 py-1 text-xs
-                font-medium text-orange-200/80
+                animate-hero-word mb-4 inline-flex items-center gap-2
+                rounded-full border border-orange-200/20 bg-orange-300/8 px-3
+                py-1 text-xs font-medium text-orange-200/80
               "
-              style={{ animationDelay: "0ms" }}
+              style={{ animationDelay: '0ms' }}
             >
               <Zap className="size-3" />
               FastAPI · Next.js · Anthropic SDK
@@ -97,16 +96,17 @@ export default function Home() {
                 text-foreground
                 sm:text-5xl/tight
               "
-              style={{ animationDelay: "80ms" }}
+              style={{ animationDelay: '80ms' }}
             >
               Learn the Claude API by building real features.
             </h1>
 
             <p
               className="
-                animate-hero-word mt-5 max-w-xl text-base/7 text-muted-foreground
+                animate-hero-word mt-5 max-w-xl text-base/7
+                text-muted-foreground
               "
-              style={{ animationDelay: "160ms" }}
+              style={{ animationDelay: '160ms' }}
             >
               Each page is a focused, production-shaped exercise — from
               single-turn prompts to multi-turn conversations. Tune your
@@ -116,7 +116,7 @@ export default function Home() {
 
             <div
               className="animate-hero-word mt-8 flex flex-wrap gap-3"
-              style={{ animationDelay: "240ms" }}
+              style={{ animationDelay: '240ms' }}
             >
               <Button asChild size="lg">
                 <Link href="/chat">
@@ -151,8 +151,9 @@ export default function Home() {
                 <div className="flex items-start gap-4">
                   <div
                     className="
-                      flex size-10 shrink-0 items-center justify-center rounded-lg
-                      bg-orange-300/10 text-orange-100 transition-colors
+                      flex size-10 shrink-0 items-center justify-center
+                      rounded-lg bg-orange-300/10 text-orange-100
+                      transition-colors
                       group-hover:bg-orange-300/16
                     "
                   >
@@ -165,8 +166,9 @@ export default function Home() {
                       </h2>
                       <span
                         className="
-                          hidden rounded-sm border border-white/10 bg-white/5 px-1.5
-                          py-0.5 font-mono text-[10px] text-muted-foreground/70
+                          hidden rounded-sm border border-white/10 bg-white/5
+                          px-1.5 py-0.5 font-mono text-[10px]
+                          text-muted-foreground/70
                           sm:inline
                         "
                       >
@@ -190,5 +192,5 @@ export default function Home() {
         </div>
       </section>
     </main>
-  );
+  )
 }
