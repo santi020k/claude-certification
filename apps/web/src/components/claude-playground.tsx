@@ -1,6 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Activity,
   AlertCircle,
@@ -75,7 +78,17 @@ async function readErrorMessage(response: Response): Promise<string> {
 }
 
 function formatModel(model: string): string {
-  return model.replace("claude-", "").replace(/-/g, " ");
+  const normalized = model
+    .replace(/^claude-/, "")
+    .replace(/-\d{8}$/, "")
+    .replace(/-\d{4}\d*$/, "")
+    .replace(/-/g, " ")
+    .replace(/\b(\w)/g, (match) => match.toUpperCase())
+    .replace(/\b4 0\b/g, "4")
+    .replace(/\b3 5\b/g, "3.5")
+    .replace(/\b3 7\b/g, "3.7");
+
+  return normalized.startsWith("Claude") ? normalized : `Claude ${normalized}`;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -138,6 +151,103 @@ function SkeletonLine({ w = "100%", delay = 0 }: { w?: string; delay?: number })
       className="shimmer h-3 rounded-full"
       style={{ width: w, animationDelay: `${delay}ms` }}
     />
+  );
+}
+
+function MarkdownAnswer({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        h1: ({ children }) => (
+          <h1 className="mt-2 text-2xl font-semibold leading-tight text-foreground first:mt-0">
+            {children}
+          </h1>
+        ),
+        h2: ({ children }) => (
+          <h2 className="mt-7 border-b border-white/8 pb-2 text-xl font-semibold leading-tight text-foreground first:mt-0">
+            {children}
+          </h2>
+        ),
+        h3: ({ children }) => (
+          <h3 className="mt-6 text-base font-semibold leading-tight text-orange-100 first:mt-0">
+            {children}
+          </h3>
+        ),
+        h4: ({ children }) => (
+          <h4 className="mt-5 text-sm font-semibold uppercase tracking-wide text-muted-foreground first:mt-0">
+            {children}
+          </h4>
+        ),
+        p: ({ children }) => (
+          <p className="my-3 leading-7 text-foreground/85 first:mt-0 last:mb-0">
+            {children}
+          </p>
+        ),
+        ul: ({ children }) => (
+          <ul className="my-3 space-y-2 pl-5 text-foreground/85 marker:text-orange-300/70">
+            {children}
+          </ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="my-3 list-decimal space-y-2 pl-5 text-foreground/85 marker:text-orange-300/70">
+            {children}
+          </ol>
+        ),
+        li: ({ children }) => <li className="pl-1 leading-7">{children}</li>,
+        blockquote: ({ children }) => (
+          <blockquote className="my-4 border-l-2 border-orange-300/40 pl-4 text-muted-foreground">
+            {children}
+          </blockquote>
+        ),
+        code: ({ children, className }) => {
+          const isBlock = typeof className === "string" && className.includes("language-");
+
+          if (isBlock) {
+            return (
+              <code className="block overflow-x-auto rounded-xl border border-white/8 bg-[#15110e] p-4 font-mono text-xs leading-6 text-orange-50/90">
+                {children}
+              </code>
+            );
+          }
+
+          return (
+            <code className="rounded-md border border-white/8 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[0.85em] text-orange-100">
+              {children}
+            </code>
+          );
+        },
+        pre: ({ children }) => <pre className="my-4 overflow-x-auto">{children}</pre>,
+        table: ({ children }) => (
+          <div className="my-4 overflow-x-auto rounded-xl border border-white/8">
+            <table className="w-full border-collapse text-left text-sm">{children}</table>
+          </div>
+        ),
+        th: ({ children }) => (
+          <th className="border-b border-white/8 bg-white/[0.04] px-3 py-2 font-semibold text-foreground">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="border-b border-white/6 px-3 py-2 text-foreground/80 last:border-b-0">
+            {children}
+          </td>
+        ),
+        a: ({ children, href }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-orange-200 underline decoration-orange-300/40 underline-offset-4 transition hover:text-orange-100"
+          >
+            {children}
+          </a>
+        ),
+        hr: () => <hr className="my-6 border-white/8" />,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
   );
 }
 
@@ -273,12 +383,26 @@ export function ClaudePlayground() {
         {/* ── HEADER ──────────────────────────────────────────────────────────── */}
         <header className="animate-slide-up-fade delay-0 flex flex-col gap-7 rounded-2xl border border-white/8 bg-white/[0.025] p-8 shadow-2xl backdrop-blur-md sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-5">
-            {/* Badges */}
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="gap-1.5 border-orange-500/30 bg-orange-500/10 px-3 py-1 text-orange-300 hover:bg-orange-500/15">
-                <Sparkles className="size-3" />
-                Claude Certification
-              </Badge>
+            {/* Logo + badges */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Brand logo */}
+              <a
+                href="https://santi020k.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-2.5 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-1.5 transition-all duration-200 hover:border-white/16 hover:bg-white/[0.07]"
+              >
+                <Image
+                  src="/brand/icon.svg"
+                  alt="Claude Certification icon"
+                  width={22}
+                  height={22}
+                  className="rounded-sm opacity-90"
+                />
+                <span className="text-xs font-medium text-foreground/70 group-hover:text-foreground/90">
+                  Claude Certification
+                </span>
+              </a>
               <Badge variant="outline" className="border-white/10 px-3 py-1 text-muted-foreground">
                 FastAPI + Next.js
               </Badge>
@@ -317,6 +441,18 @@ export function ClaudePlayground() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Full logo — visible only on wide screens */}
+          <div className="hidden lg:block">
+            <Image
+              src="/brand/logo.svg"
+              alt="Claude Certification Playground"
+              width={320}
+              height={76}
+              className="rounded-xl opacity-[0.12] transition-opacity duration-300 hover:opacity-[0.22]"
+              priority
+            />
           </div>
 
           {/* Health */}
@@ -647,12 +783,42 @@ export function ClaudePlayground() {
         </section>
 
         {/* ── FOOTER ──────────────────────────────────────────────────────────── */}
-        <footer className="animate-slide-up-fade delay-375 flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-6 text-xs">
-          <div className="flex items-center gap-2 text-white/25">
-            <span className="font-mono">claude-certification</span>
-            <span className="text-white/15">·</span>
-            <span>FastAPI + Next.js + Anthropic SDK</span>
+        <footer className="animate-slide-up-fade delay-375 flex flex-wrap items-center justify-between gap-4 border-t border-white/6 pt-6 text-xs">
+          {/* Left — author attribution */}
+          <div className="flex items-center gap-3">
+            <a
+              href="https://santi020k.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2 transition-all duration-200"
+            >
+              <Image
+                src="/brand/icon.svg"
+                alt="santi020k logo"
+                width={18}
+                height={18}
+                className="rounded-sm opacity-40 transition-opacity duration-200 group-hover:opacity-80"
+              />
+              <span className="font-medium text-white/30 transition-colors duration-200 group-hover:text-white/70">
+                santi020k.com
+              </span>
+            </a>
+            <span className="text-white/10">·</span>
+            <a
+              href="https://github.com/santi020k/claude-certification"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-white/25 transition-colors duration-200 hover:text-white/60"
+            >
+              {/* GitHub mark inline SVG */}
+              <svg viewBox="0 0 16 16" className="size-3.5 fill-current" aria-hidden="true">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+              </svg>
+              <span>santi020k/claude-certification</span>
+            </a>
           </div>
+
+          {/* Right — docs links */}
           <div className="flex items-center gap-4">
             <a
               href="https://docs.anthropic.com"

@@ -45,6 +45,7 @@ export const metadata: Metadata = {
     title: "Claude Certification Playground",
     description:
       "Ask Claude anything from a production-shaped FastAPI + Next.js playground. Tune prompts, inspect token usage, and verify your backend.",
+    images: [{ url: "/brand/logo.svg", width: 920, height: 220, alt: "Claude Certification Playground" }],
   },
 
   // ── Twitter / X card ──────────────────────────────────────────────────────
