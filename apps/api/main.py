@@ -45,6 +45,7 @@ from middleware.rate_limit import limiter
 from middleware.security import SecurityHeadersMiddleware
 from routers import claude as claude_router
 from routers import health as health_router
+from routers import accessibility as accessibility_router
 
 # ---------------------------------------------------------------------------
 # App
@@ -91,6 +92,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 app.include_router(health_router.router)
 app.include_router(claude_router.router)
+app.include_router(accessibility_router.router)
 
 # ---------------------------------------------------------------------------
 # Dev entry-point

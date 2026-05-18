@@ -45,7 +45,7 @@ function Slider({
         data-slot="slider-track"
         className={cn(
           `
-            bg-muted relative grow overflow-hidden rounded-full
+            relative grow overflow-hidden rounded-full bg-muted
             data-[orientation=horizontal]:h-1.5
             data-[orientation=horizontal]:w-full
             data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5
@@ -56,7 +56,7 @@ function Slider({
           data-slot="slider-range"
           className={cn(
             `
-              bg-primary absolute
+              absolute bg-primary
               data-[orientation=horizontal]:h-full
               data-[orientation=vertical]:w-full
             `
@@ -68,8 +68,8 @@ function Slider({
           data-slot="slider-thumb"
           key={index}
           className="
-            border-primary ring-ring/50 block size-4 shrink-0 rounded-full
-            border bg-white shadow-sm transition-[color,box-shadow]
+            block size-4 shrink-0 rounded-full border border-primary bg-white
+            shadow-sm ring-ring/50 transition-[color,box-shadow]
             hover:ring-4
             focus-visible:ring-4 focus-visible:outline-hidden
             disabled:pointer-events-none disabled:opacity-50

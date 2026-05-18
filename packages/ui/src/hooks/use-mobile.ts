@@ -1,9 +1,7 @@
 import * as React from 'react'
 
 const MOBILE_BREAKPOINT = 768
-
 const getIsMobileSnapshot = () => window.innerWidth < MOBILE_BREAKPOINT
-
 const getServerIsMobileSnapshot = () => false
 
 const subscribeToViewport = (onStoreChange: () => void) => {
@@ -18,8 +16,6 @@ const subscribeToViewport = (onStoreChange: () => void) => {
 
 export function useIsMobile() {
   return React.useSyncExternalStore(
-    subscribeToViewport,
-    getIsMobileSnapshot,
-    getServerIsMobileSnapshot
+    subscribeToViewport, getIsMobileSnapshot, getServerIsMobileSnapshot
   )
 }

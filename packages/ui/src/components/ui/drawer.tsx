@@ -60,7 +60,7 @@ function DrawerContent({
       <DrawerPrimitive.Content
         data-slot="drawer-content"
         className={cn(
-          'group/drawer-content bg-background fixed z-50 flex h-auto flex-col', `
+          'group/drawer-content fixed z-50 flex h-auto flex-col bg-background', `
             data-[vaul-drawer-direction=top]:inset-x-0
             data-[vaul-drawer-direction=top]:top-0
             data-[vaul-drawer-direction=top]:mb-24
@@ -91,7 +91,7 @@ function DrawerContent({
         {...props}
       >
         <div className="
-          bg-muted mx-auto mt-4 hidden h-2 w-[100px] shrink-0 rounded-full
+          mx-auto mt-4 hidden h-2 w-[100px] shrink-0 rounded-full bg-muted
           group-data-[vaul-drawer-direction=bottom]/drawer-content:block
         "
         />
@@ -135,7 +135,7 @@ function DrawerTitle({
   return (
     <DrawerPrimitive.Title
       data-slot="drawer-title"
-      className={cn('text-foreground font-semibold', className)}
+      className={cn('font-semibold text-foreground', className)}
       {...props}
     />
   )
@@ -148,7 +148,7 @@ function DrawerDescription({
   return (
     <DrawerPrimitive.Description
       data-slot="drawer-description"
-      className={cn('text-muted-foreground text-sm', className)}
+      className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
   )

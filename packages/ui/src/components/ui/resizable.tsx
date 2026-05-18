@@ -40,13 +40,11 @@ function ResizableHandle({
       data-slot="resizable-handle"
       className={cn(
         `
-          bg-border
-          focus-visible:ring-ring
-          relative flex w-px items-center justify-center
+          relative flex w-px items-center justify-center bg-border
           after:absolute after:inset-y-0 after:left-1/2 after:w-1
           after:-translate-x-1/2
-          focus-visible:ring-1 focus-visible:ring-offset-1
-          focus-visible:outline-hidden
+          focus-visible:ring-1 focus-visible:ring-ring
+          focus-visible:ring-offset-1 focus-visible:outline-hidden
           aria-[orientation=horizontal]:h-px
           aria-[orientation=horizontal]:w-full
           aria-[orientation=horizontal]:after:left-0
@@ -62,8 +60,8 @@ function ResizableHandle({
       {withHandle ?
         (
           <div className="
-            bg-border z-10 flex h-4 w-3 items-center justify-center rounded-xs
-            border
+            z-10 flex h-4 w-3 items-center justify-center rounded-xs border
+            bg-border
           "
           >
             <GripVerticalIcon className="size-2.5" />

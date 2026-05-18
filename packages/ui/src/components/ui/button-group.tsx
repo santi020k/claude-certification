@@ -65,7 +65,7 @@ function ButtonGroupText({
     <Comp
       className={cn(
         `
-          bg-muted flex items-center gap-2 rounded-md border px-4 text-sm
+          flex items-center gap-2 rounded-md border bg-muted px-4 text-sm
           font-medium shadow-xs
           [&_svg]:pointer-events-none
           [&_svg:not([class*='size-'])]:size-4
@@ -87,7 +87,7 @@ function ButtonGroupSeparator({
       orientation={orientation}
       className={cn(
         `
-          bg-input relative m-0! self-stretch
+          relative m-0! self-stretch bg-input
           data-[orientation=vertical]:h-auto
         `, className
       )}

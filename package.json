@@ -10,9 +10,11 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "types:api": "PYTHONPATH=apps/api apps/api/.venv/bin/python scripts/export-openapi.py && openapi-typescript packages/shared/openapi.json --default-non-nullable false -o packages/shared/src/openapi.d.ts",
     "api:lint": "cd apps/api && python -m ruff check .",
-    "api:test": "cd apps/api && python -m pytest",
+    "api:test": "pnpm --filter api test",
+    "web:test": "pnpm --filter web test",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean"
   },
