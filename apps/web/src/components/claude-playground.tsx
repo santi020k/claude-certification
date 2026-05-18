@@ -35,23 +35,7 @@ import { Input } from '@repo/ui/components/ui/input'
 import { Label } from '@repo/ui/components/ui/label'
 import { Switch } from '@repo/ui/components/ui/switch'
 import { Textarea } from '@repo/ui/components/ui/textarea'
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-interface AskResponse {
-  question: string
-  answer: string
-  model: string
-  input_tokens: number
-  output_tokens: number
-}
-
-interface HealthResponse {
-  status: string
-  environment: string
-  anthropic_api_key_configured: boolean
-  model: string
-}
+import type { AskRequest, AskResponse, HealthResponse } from '@repo/shared'
 
 // ── Rate-limit constants ───────────────────────────────────────────────────────
 // Mirror the backend limits so the client can self-throttle before even hitting
@@ -179,7 +163,11 @@ function useClientRateLimit(limit: number, windowMs: number) {
 function TokenBar({
   label, value, max, color, delay = 0
 }: {
-  label: string; value: number; max: number; color: string; delay?: number
+  label: string
+  value: number
+  max: number
+  color: string
+  delay?: number
 }) {
   const [width, setWidth] = useState(0)
   const pct = Math.min(100, (value / max) * 100)
@@ -497,11 +485,12 @@ export function ClaudePlayground() {
 
     try {
       const q = oneSentence ? `${trimmed} Answer in one sentence.` : trimmed
+      const body: AskRequest = { question: q, max_tokens: maxTokens, one_sentence: false }
 
       const res = await fetch(`${apiBaseUrl}/api/ask`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, max_tokens: maxTokens, one_sentence: false })
+        body: JSON.stringify(body)
       })
 
       if (res.status === 429) {
