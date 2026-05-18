@@ -19,12 +19,18 @@ from models import (
     SpecialistsResponse,
 )
 from services.claude import (
+    ClaudeMessage,
     ClaudeServiceError,
     chat_with_claude,
     stream_chat_with_claude,
 )
 from services.conversations import conversation_store
-from services.specialists import DEFAULT_SPECIALIST_ID, get_specialist, list_specialists
+from services.specialists import (
+    DEFAULT_SPECIALIST_ID,
+    SpecialistInfo,
+    get_specialist,
+    list_specialists,
+)
 
 logger = logging.getLogger("claude-certification.api")
 
@@ -33,13 +39,14 @@ router = APIRouter(prefix="/api", tags=["chat"])
 
 def _chat_inputs(
     body: ChatRequest,
-) -> tuple[str, list[dict[str, str]], dict, float]:
+) -> tuple[str, list[ClaudeMessage], SpecialistInfo, float]:
     conversation_id, history = conversation_store.get_or_create(body.conversation_id)
     user_message = body.message
     if body.one_sentence:
         user_message = f"{user_message} Answer in one sentence."
 
-    messages = [*history, {"role": "user", "content": user_message}]
+    user_msg_dict: ClaudeMessage = {"role": "user", "content": user_message}
+    messages = [*history, user_msg_dict]
     specialist = get_specialist(body.specialist)
     temperature = body.temperature if body.temperature is not None else specialist["temperature"]
 
@@ -120,11 +127,12 @@ def chat(request: Request, response: Response, body: ChatRequest) -> ChatRespons
             detail="Unexpected server error. Please try again.",
         ) from exc
 
+    new_message: ClaudeMessage = {"role": "assistant", "content": result["answer"]}
     saved_messages = conversation_store.save(
         conversation_id,
         [
             *messages,
-            {"role": "assistant", "content": result["answer"]},
+            new_message,
         ],
     )
 
@@ -177,11 +185,12 @@ def chat_stream(request: Request, response: Response, body: ChatRequest) -> Stre
                     continue
 
                 answer = chunk["text"] or "".join(answer_parts)
+                new_message: ClaudeMessage = {"role": "assistant", "content": answer}
                 saved_messages = conversation_store.save(
                     conversation_id,
                     [
                         *messages,
-                        {"role": "assistant", "content": answer},
+                        new_message,
                     ],
                 )
                 yield json.dumps(

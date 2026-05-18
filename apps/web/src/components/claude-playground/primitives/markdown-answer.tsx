@@ -88,7 +88,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
           if (isBlock) {
             return (
               <code className="
-                block overflow-x-auto rounded-xl border border-white/8
+                block rounded-xl border border-white/8
                 bg-[#15110e] p-4 font-mono text-xs/6 text-orange-50/90
               "
               >
@@ -107,9 +107,9 @@ export function MarkdownAnswer({ content }: { content: string }) {
             </code>
           )
         },
-        pre: ({ children }) => <pre className="my-4 overflow-x-auto">{children}</pre>,
+        pre: ({ children }) => <pre className="my-4">{children}</pre>,
         table: ({ children }) => (
-          <div className="my-4 overflow-x-auto rounded-xl border border-white/8">
+          <div className="my-4 rounded-xl border border-white/8">
             <table className="w-full border-collapse text-left text-sm">{children}</table>
           </div>
         ),

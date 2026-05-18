@@ -213,7 +213,7 @@ export function ClaudePlayground() {
 
   return (
     <div className="
-      bg-background relative flex min-h-screen flex-col overflow-hidden
+      bg-background relative flex min-h-screen flex-col
     "
     >
       <AmbientBackground />

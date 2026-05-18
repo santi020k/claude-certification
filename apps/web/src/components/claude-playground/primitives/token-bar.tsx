@@ -30,7 +30,7 @@ export function TokenBar({ label, value, max, color, delay = 0 }: TokenBarProps)
         <span>{label}</span>
         <span className="font-mono tabular-nums">{value.toLocaleString()}</span>
       </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
+      <div className="h-1.5 w-full  rounded-full bg-white/5">
         <div
           className={`
             h-full rounded-full

@@ -2,7 +2,7 @@ export function AmbientBackground() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 overflow-hidden"
+      className="pointer-events-none fixed inset-0 "
     >
       <div className="
         blob-1 absolute -top-48 -left-48 size-[700px] rounded-full

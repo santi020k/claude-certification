@@ -213,7 +213,7 @@ def test_chat_starts_and_continues_conversation(monkeypatch) -> None:
     conversation_store.clear_all()
     captured_lengths: list[int] = []
 
-    def fake_chat_with_claude(messages, max_tokens: int) -> ClaudeChatResponseDict:
+    def fake_chat_with_claude(messages, max_tokens: int, **kwargs) -> ClaudeChatResponseDict:
         captured_lengths.append(len(messages))
         return {
             "answer": f"Reply {len(messages)}",
@@ -296,7 +296,7 @@ def test_chat_stream_saves_final_conversation(monkeypatch) -> None:
 
 
 def test_chat_maps_claude_errors(monkeypatch) -> None:
-    def fake_chat_with_claude(messages, max_tokens: int) -> ClaudeChatResponseDict:
+    def fake_chat_with_claude(messages, max_tokens: int, **kwargs) -> ClaudeChatResponseDict:
         raise ClaudeTimeoutError("timeout")
 
     monkeypatch.setattr("routers.chat.chat_with_claude", fake_chat_with_claude)

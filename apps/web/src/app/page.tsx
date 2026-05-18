@@ -28,7 +28,7 @@ const features = [
 
 export default function Home() {
   return (
-    <main className="relative flex min-h-screen flex-col overflow-hidden">
+    <main className="relative flex min-h-screen flex-col">
       <AmbientBackground />
 
       <section

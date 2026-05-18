@@ -34,9 +34,9 @@ export function PromptQuestionField({
           rounded-full border px-2 py-0.5 font-mono text-[10px]
           transition-colors duration-200
           ${question.length > 3600 ?
-      'border-orange-300/25 bg-orange-200/10 text-orange-100' :
-      'text-muted-foreground/50 border-white/8 bg-white/2.5'
-    }
+            'border-orange-300/25 bg-orange-200/10 text-orange-100' :
+            'text-muted-foreground/50 border-white/8 bg-white/2.5'
+          }
         `}
         >
           {question.length.toLocaleString()}
@@ -45,7 +45,7 @@ export function PromptQuestionField({
         </span>
       </div>
       <div className="
-        input-focus overflow-hidden rounded-xl border border-white/8
+        input-focus  rounded-xl border border-white/8
         bg-[#29241f] transition-all duration-200
         focus-within:border-orange-300/30
       "

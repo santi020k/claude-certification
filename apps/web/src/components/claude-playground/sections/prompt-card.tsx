@@ -54,7 +54,7 @@ export function PromptCard({
 }: PromptCardProps) {
   return (
     <Card className="
-      animate-slide-up-fade card-hover overflow-hidden rounded-2xl
+      animate-slide-up-fade card-hover  rounded-2xl
       border-white/8 bg-[#211d19]/80 shadow-2xl shadow-black/30
       backdrop-blur-md delay-150
     "

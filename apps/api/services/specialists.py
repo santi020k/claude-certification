@@ -22,7 +22,6 @@ Usage
     # specialist["temperature"] → 0.1
     # specialist["system_prompt"] → the full prompt string
 """
-
 from typing import TypedDict
 
 
