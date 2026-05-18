@@ -443,18 +443,6 @@ export function ClaudePlayground() {
             </div>
           </div>
 
-          {/* Full logo — visible only on wide screens */}
-          <div className="hidden lg:block">
-            <Image
-              src="/brand/logo.svg"
-              alt="Claude Certification Playground"
-              width={320}
-              height={76}
-              className="rounded-xl opacity-[0.12] transition-opacity duration-300 hover:opacity-[0.22]"
-              priority
-            />
-          </div>
-
           {/* Health */}
           <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <Button
@@ -633,7 +621,7 @@ export function ClaudePlayground() {
             {/* RESPONSE CARD */}
             <Card className="animate-slide-up-fade delay-225 card-hover flex min-h-[30rem] flex-col rounded-2xl border-white/8 bg-white/[0.025] shadow-2xl backdrop-blur-md">
               <CardHeader className="border-b border-white/6 px-7 pb-5 pt-7">
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between gap-4">
                   <div>
                     <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">
                       Response
@@ -642,11 +630,24 @@ export function ClaudePlayground() {
                       Claude output appears here.
                     </CardDescription>
                   </div>
-                  {answer && responseTime && (
-                    <Badge variant="outline" className="animate-scale-in border-white/10 font-mono text-[11px] text-muted-foreground/60">
-                      {(responseTime / 1000).toFixed(1)}s
-                    </Badge>
-                  )}
+                  <div className="flex shrink-0 items-center gap-2">
+                    {answer && responseTime && (
+                      <Badge variant="outline" className="animate-scale-in border-white/10 font-mono text-[11px] text-muted-foreground/60">
+                        {(responseTime / 1000).toFixed(1)}s
+                      </Badge>
+                    )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={copyAnswer}
+                      disabled={!answer?.answer}
+                      className="gap-2 border-white/10 bg-white/[0.03] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07]"
+                    >
+                      {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+                      {copied ? "Copied" : "Copy"}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
 
@@ -671,15 +672,15 @@ export function ClaudePlayground() {
                   /* Answer — re-animates on each new answer via key */
                   <div key={answerKey} className="animate-answer-reveal flex flex-1 flex-col gap-5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge className="border-orange-500/25 bg-orange-500/10 font-mono text-[11px] text-orange-300">
+                      <Badge className="rounded-md border-orange-300/20 bg-orange-200/10 px-2.5 py-1 text-xs font-medium text-orange-100">
                         {formatModel(answer.model)}
                       </Badge>
                     </div>
 
                     <div className="flex-1 rounded-xl border border-white/8 bg-black/25 p-6">
-                      <p className="whitespace-pre-wrap text-sm leading-8 text-foreground/90">
-                        {answer.answer}
-                      </p>
+                      <div className="text-sm">
+                        <MarkdownAnswer content={answer.answer} />
+                      </div>
                     </div>
 
                     <div className="space-y-4 rounded-xl border border-white/6 bg-white/[0.02] p-5">
@@ -729,7 +730,7 @@ export function ClaudePlayground() {
                   className="gap-2 border-white/10 bg-white/[0.03] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07]"
                 >
                   {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
-                  {copied ? "Copied!" : "Copy answer"}
+                  {copied ? "Copied!" : "Copy Markdown"}
                 </Button>
               </CardFooter>
             </Card>
@@ -793,11 +794,11 @@ export function ClaudePlayground() {
               className="group flex items-center gap-2 transition-all duration-200"
             >
               <Image
-                src="/brand/icon.svg"
-                alt="santi020k logo"
+                src="/brand/santi020k.svg"
+                alt="santi020k"
                 width={18}
                 height={18}
-                className="rounded-sm opacity-40 transition-opacity duration-200 group-hover:opacity-80"
+                className="opacity-40 transition-opacity duration-200 group-hover:opacity-80"
               />
               <span className="font-medium text-white/30 transition-colors duration-200 group-hover:text-white/70">
                 santi020k.com

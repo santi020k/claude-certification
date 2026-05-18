@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="S2K Mark">
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #5a0fdb; }
+      .symbol { stroke: #110c1d; }
+    }
+  </style>
+  <rect class="bg" width="128" height="128" rx="28" fill="#5a0fdb" />
+  <path class="symbol" d="M 40 44 L 64 64 L 40 84" fill="none" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <line class="symbol" x1="74" y1="84" x2="96" y2="84" stroke="#FFFFFF" stroke-width="12" stroke-linecap="round" />
+</svg>
