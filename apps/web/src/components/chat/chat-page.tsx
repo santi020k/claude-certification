@@ -218,22 +218,37 @@ export function ChatPage() {
 
       <section className="
         relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4
-        py-8
+        py-10
         sm:px-6
         lg:px-10
       "
       >
-        <header className="
-          animate-fade-in flex flex-wrap items-start justify-between gap-4
-        "
-        >
-          <div>
-            <Button asChild variant="ghost" size="sm" className="mb-3 -ml-3">
+        <header className="animate-fade-in flex flex-col gap-5">
+          {/* ── Nav row ────────────────────────────────────────────────────── */}
+          <nav className="flex items-center justify-between">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="-ml-3 text-muted-foreground hover:text-foreground"
+            >
               <Link href="/">
                 <ArrowLeft className="size-4" />
                 Home
               </Link>
             </Button>
+
+            <div className="flex items-center gap-3">
+              <ApiStatusIndicator />
+              <Button type="button" variant="outline" size="sm" onClick={resetChat}>
+                <RotateCcw className="size-3.5" />
+                New chat
+              </Button>
+            </div>
+          </nav>
+
+          {/* ── Page title ──────────────────────────────────────────────────── */}
+          <div>
             <h1 className="text-3xl/tight font-semibold text-foreground">Chat with Claude</h1>
             <p className="mt-1.5 max-w-2xl text-sm/6 text-muted-foreground">
               Powered by
@@ -242,14 +257,6 @@ export function ChatPage() {
               {' '}
               — context lives in the backend, and this tab remembers the thread until New chat.
             </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <ApiStatusIndicator />
-            <Button type="button" variant="outline" size="sm" onClick={resetChat}>
-              <RotateCcw className="size-3.5" />
-              New chat
-            </Button>
           </div>
         </header>
 

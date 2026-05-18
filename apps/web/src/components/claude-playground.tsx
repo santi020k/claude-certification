@@ -226,7 +226,6 @@ export function ClaudePlayground() {
       "
       >
         <PlaygroundHeader
-          apiBaseUrl={apiBaseUrl}
           health={health}
           isChecking={isChecking}
           onCheckHealth={checkHealth}

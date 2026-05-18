@@ -114,7 +114,7 @@ export default function Home() {
                   Start chatting
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" className="p-4">
                 <Link href="/playground">
                   <FlaskConical className="size-4" />
                   Open playground
