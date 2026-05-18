@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 
 import { Activity, ChevronRight, LoaderCircle } from 'lucide-react'
 
@@ -34,10 +35,8 @@ export function PlaygroundHeader({
     >
       <div className="space-y-5">
         <div className="flex flex-wrap items-center gap-3">
-          <a
-            href="https://santi020k.com"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/"
             className="
               group flex items-center gap-2.5 rounded-xl border border-white/8
               bg-white/4 px-3 py-1.5 transition-all duration-200
@@ -58,7 +57,7 @@ export function PlaygroundHeader({
             >
               Claude Certification
             </span>
-          </a>
+          </Link>
           <Badge
             variant="outline"
             className="border-white/10 px-3 py-1 text-muted-foreground"

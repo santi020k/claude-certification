@@ -72,6 +72,12 @@ function readChatSession(): ChatSession {
   }
 }
 
+function isStarterChat(messages: ChatMessage[]): boolean {
+  return messages.length === starterMessages.length &&
+    messages.every((message, index) => message.role === starterMessages[index]?.role &&
+      message.content === starterMessages[index]?.content)
+}
+
 export function ChatPage() {
   const messageInputId = useId()
   const messageHelpId = useId()
@@ -119,9 +125,14 @@ export function ChatPage() {
     if (!isSessionReady) return
 
     try {
+      if (!conversationId && !lastResponse && isStarterChat(messages)) {
+        window.sessionStorage.removeItem(chatSessionKey)
+
+        return
+      }
+
       window.sessionStorage.setItem(
-        chatSessionKey,
-        JSON.stringify({
+        chatSessionKey, JSON.stringify({
           conversationId,
           lastResponse,
           maxTokens,
@@ -212,7 +223,10 @@ export function ChatPage() {
         lg:px-10
       "
       >
-        <header className="animate-fade-in flex flex-wrap items-start justify-between gap-4">
+        <header className="
+          animate-fade-in flex flex-wrap items-start justify-between gap-4
+        "
+        >
           <div>
             <Button asChild variant="ghost" size="sm" className="mb-3 -ml-3">
               <Link href="/">
@@ -222,9 +236,11 @@ export function ChatPage() {
             </Button>
             <h1 className="text-3xl/tight font-semibold text-foreground">Chat with Claude</h1>
             <p className="mt-1.5 max-w-2xl text-sm/6 text-muted-foreground">
-              Powered by{' '}
+              Powered by
+              {' '}
               <span className="font-mono text-orange-200/80">POST /api/chat</span>
-              {' '}— conversation history lives in the backend, not the browser.
+              {' '}
+              — conversation history lives in the backend, not the browser.
             </p>
           </div>
 
@@ -237,17 +253,19 @@ export function ChatPage() {
           </div>
         </header>
 
-        {error && (
-          <div
-            className="
-              animate-slide-up-fade rounded-lg border border-rose-500/25
-              bg-rose-500/8 px-4 py-3 text-sm text-rose-200
-            "
-            role="alert"
-          >
-            {error}
-          </div>
-        )}
+        {error ?
+          (
+            <div
+              className="
+                animate-slide-up-fade rounded-lg border border-rose-500/25
+                bg-rose-500/8 px-4 py-3 text-sm text-rose-200
+              "
+              role="alert"
+            >
+              {error}
+            </div>
+          ) :
+          null}
 
         <div
           className="
@@ -271,12 +289,12 @@ export function ChatPage() {
                 'border-white/10 bg-black/18 text-foreground'}
                 `}
                 style={{ animationDelay: `${Math.min(index * 25, 200)}ms` }}
+                aria-label={`From ${message.role === 'user' ? 'you' : 'Claude'}`}
               >
                 <div
                   className="
                     mb-2 text-xs font-medium text-muted-foreground uppercase
                   "
-                  aria-label={`From ${message.role === 'user' ? 'you' : 'Claude'}`}
                 >
                   {message.role === 'user' ? 'You' : 'Claude'}
                 </div>
@@ -285,19 +303,21 @@ export function ChatPage() {
                   <p className="text-sm/6 whitespace-pre-wrap">{message.content}</p>}
               </article>
             ))}
-            {isSending && (
-              <div
-                className="
-                  animate-message-in inline-flex items-center gap-2 rounded-xl
-                  border border-white/10 bg-black/18 px-3 py-2 text-sm
-                  text-muted-foreground
-                "
-                role="status"
-              >
-                <Loader2 className="size-4 animate-spin" />
-                Claude is thinking…
-              </div>
-            )}
+            {isSending ?
+              (
+                <div
+                  className="
+                    animate-message-in inline-flex items-center gap-2 rounded-xl
+                    border border-white/10 bg-black/18 px-3 py-2 text-sm
+                    text-muted-foreground
+                  "
+                  role="status"
+                >
+                  <Loader2 className="size-4 animate-spin" />
+                  Claude is thinking…
+                </div>
+              ) :
+              null}
 
             {/* Auto-scroll anchor */}
             <div ref={bottomRef} />
@@ -318,7 +338,7 @@ export function ChatPage() {
               ref={textareaRef}
               value={draft}
               maxLength={4_000}
-              placeholder="Ask something, then follow up…  Enter to send"
+              placeholder="Ask something, then follow up…"
               aria-describedby={messageHelpId}
               className="max-h-52 min-h-24 resize-none bg-black/10 text-sm/6"
               onChange={event => {
@@ -359,12 +379,22 @@ export function ChatPage() {
               </label>
 
               <div className="flex items-center gap-3">
-                {lastResponse && (
-                  <p className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
-                    <Coins className="size-3" />
-                    {lastResponse.input_tokens} in / {lastResponse.output_tokens} out
-                  </p>
-                )}
+                {lastResponse ?
+                  (
+                    <p className="
+                      flex items-center gap-1.5 text-xs text-muted-foreground/70
+                    "
+                    >
+                      <Coins className="size-3" />
+                      {lastResponse.input_tokens}
+                      {' '}
+                      in /
+                      {lastResponse.output_tokens}
+                      {' '}
+                      out
+                    </p>
+                  ) :
+                  null}
                 <Button type="submit" disabled={!canSend}>
                   {isSending ?
                     <Loader2 className="size-4 animate-spin" /> :
