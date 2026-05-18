@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
@@ -32,7 +31,7 @@ import { Label } from "@repo/ui/components/ui/label";
 import { Switch } from "@repo/ui/components/ui/switch";
 import { Textarea } from "@repo/ui/components/ui/textarea";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type AskResponse = {
   question: string;
@@ -49,7 +48,7 @@ type HealthResponse = {
   model: string;
 };
 
-// ── Constants ────────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 
 const STARTER_QUESTION =
   "Explain how Claude can help a small engineering team review pull requests.";
@@ -61,7 +60,7 @@ const EXAMPLE_PROMPTS = [
   "Summarise the CAP theorem in three bullet points.",
 ];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getApiBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -71,9 +70,7 @@ async function readErrorMessage(response: Response): Promise<string> {
   try {
     const payload = (await response.json()) as { detail?: unknown };
     if (typeof payload.detail === "string") return payload.detail;
-  } catch {
-    /* ignore */
-  }
+  } catch { /* ignore */ }
   return "The API returned an unexpected response.";
 }
 
@@ -84,27 +81,28 @@ function formatModel(model: string): string {
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function TokenBar({
-  label,
-  value,
-  max,
-  color,
+  label, value, max, color, delay = 0,
 }: {
-  label: string;
-  value: number;
-  max: number;
-  color: string;
+  label: string; value: number; max: number; color: string; delay?: number;
 }) {
+  const [width, setWidth] = useState(0);
   const pct = Math.min(100, (value / max) * 100);
+
+  useEffect(() => {
+    const t = setTimeout(() => setWidth(pct), 80 + delay);
+    return () => clearTimeout(t);
+  }, [pct, delay]);
+
   return (
-    <div className="space-y-1">
+    <div className="space-y-1.5">
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>{label}</span>
-        <span className="font-mono">{value.toLocaleString()}</span>
+        <span className="font-mono tabular-nums">{value.toLocaleString()}</span>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-white/5">
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/5">
         <div
-          className={`h-full rounded-full transition-all duration-700 ${color}`}
-          style={{ width: `${pct}%` }}
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${width}%`, transition: "width 0.8s cubic-bezier(0.22,1,0.36,1)" }}
         />
       </div>
     </div>
@@ -113,12 +111,12 @@ function TokenBar({
 
 function TypingDots() {
   return (
-    <span className="inline-flex items-end gap-0.5">
+    <span className="inline-flex items-center gap-1">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="inline-block size-1.5 animate-bounce rounded-full bg-primary/70"
-          style={{ animationDelay: `${i * 120}ms` }}
+          className="inline-block size-1.5 animate-bounce rounded-full bg-orange-400/60"
+          style={{ animationDelay: `${i * 140}ms`, animationDuration: "0.9s" }}
         />
       ))}
     </span>
@@ -127,14 +125,19 @@ function TypingDots() {
 
 function StatusDot({ ok }: { ok: boolean }) {
   return (
-    <span className="relative flex size-2.5">
-      {ok && (
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-      )}
-      <span
-        className={`relative inline-flex size-2.5 rounded-full ${ok ? "bg-emerald-500" : "bg-rose-500"}`}
-      />
+    <span className="relative flex size-2.5 shrink-0">
+      {ok && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />}
+      <span className={`relative inline-flex size-2.5 rounded-full ${ok ? "bg-emerald-500" : "bg-rose-500"}`} />
     </span>
+  );
+}
+
+function SkeletonLine({ w = "100%", delay = 0 }: { w?: string; delay?: number }) {
+  return (
+    <div
+      className="shimmer h-3 rounded-full"
+      style={{ width: w, animationDelay: `${delay}ms` }}
+    />
   );
 }
 
@@ -143,63 +146,64 @@ function StatusDot({ ok }: { ok: boolean }) {
 export function ClaudePlayground() {
   const apiBaseUrl = useMemo(() => getApiBaseUrl(), []);
 
-  const [question, setQuestion] = useState(STARTER_QUESTION);
-  const [maxTokens, setMaxTokens] = useState(700);
-  const [oneSentence, setOneSentence] = useState(false);
-  const [answer, setAnswer] = useState<AskResponse | null>(null);
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isAsking, setIsAsking] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [question, setQuestion]         = useState(STARTER_QUESTION);
+  const [maxTokens, setMaxTokens]       = useState(700);
+  const [oneSentence, setOneSentence]   = useState(false);
+  const [answer, setAnswer]             = useState<AskResponse | null>(null);
+  const [health, setHealth]             = useState<HealthResponse | null>(null);
+  const [error, setError]               = useState<string | null>(null);
+  const [isAsking, setIsAsking]         = useState(false);
+  const [isChecking, setIsChecking]     = useState(false);
+  const [copied, setCopied]             = useState(false);
   const [responseTime, setResponseTime] = useState<number | null>(null);
+  const [answerKey, setAnswerKey]       = useState(0);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const canSubmit = question.trim().length >= 3 && !isAsking;
 
-  // ── Keyboard shortcut: Cmd/Ctrl+Enter to submit ───────────────────────────
+  // ── ⌘↵ shortcut ──────────────────────────────────────────────────────────
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
+    function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter" && canSubmit) {
         e.preventDefault();
-        void askClaude();
+        void doAsk();
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canSubmit, question, maxTokens, oneSentence]);
 
-  // ── API calls ─────────────────────────────────────────────────────────────
+  // ── API helpers ───────────────────────────────────────────────────────────
 
-  const askClaude = useCallback(
-    async (event?: FormEvent<HTMLFormElement>) => {
-      event?.preventDefault();
-      if (!canSubmit) return;
+  const doAsk = useCallback(async () => {
+    if (!canSubmit) return;
+    setIsAsking(true);
+    setError(null);
+    setCopied(false);
+    const t0 = Date.now();
+    try {
+      const q = oneSentence ? `${question.trim()} Answer in one sentence.` : question.trim();
+      const res = await fetch(`${apiBaseUrl}/api/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q, max_tokens: maxTokens, one_sentence: false }),
+      });
+      if (!res.ok) throw new Error(await readErrorMessage(res));
+      setAnswer((await res.json()) as AskResponse);
+      setAnswerKey((k) => k + 1);
+      setResponseTime(Date.now() - t0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Claude could not answer right now.");
+    } finally {
+      setIsAsking(false);
+    }
+  }, [apiBaseUrl, canSubmit, maxTokens, oneSentence, question]);
 
-      setIsAsking(true);
-      setError(null);
-      setCopied(false);
-      const t0 = Date.now();
-
-      try {
-        const q = oneSentence ? `${question.trim()} Answer in one sentence.` : question.trim();
-        const response = await fetch(`${apiBaseUrl}/api/ask`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: q, max_tokens: maxTokens, one_sentence: false }),
-        });
-        if (!response.ok) throw new Error(await readErrorMessage(response));
-        setAnswer((await response.json()) as AskResponse);
-        setResponseTime(Date.now() - t0);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Claude could not answer right now.");
-      } finally {
-        setIsAsking(false);
-      }
-    },
-    [apiBaseUrl, canSubmit, maxTokens, oneSentence, question],
-  );
+  async function askClaude(e?: FormEvent<HTMLFormElement>) {
+    e?.preventDefault();
+    await doAsk();
+  }
 
   async function runDemo() {
     setIsAsking(true);
@@ -207,11 +211,12 @@ export function ClaudePlayground() {
     setCopied(false);
     const t0 = Date.now();
     try {
-      const response = await fetch(`${apiBaseUrl}/api/ask/demo`);
-      if (!response.ok) throw new Error(await readErrorMessage(response));
-      const data = (await response.json()) as AskResponse;
+      const res = await fetch(`${apiBaseUrl}/api/ask/demo`);
+      if (!res.ok) throw new Error(await readErrorMessage(res));
+      const data = (await res.json()) as AskResponse;
       setAnswer(data);
       setQuestion(data.question);
+      setAnswerKey((k) => k + 1);
       setResponseTime(Date.now() - t0);
     } catch (err) {
       setError(err instanceof Error ? err.message : "The demo request failed.");
@@ -224,9 +229,9 @@ export function ClaudePlayground() {
     setIsChecking(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/api/health`);
-      if (!response.ok) throw new Error(await readErrorMessage(response));
-      setHealth((await response.json()) as HealthResponse);
+      const res = await fetch(`${apiBaseUrl}/api/health`);
+      if (!res.ok) throw new Error(await readErrorMessage(res));
+      setHealth((await res.json()) as HealthResponse);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Health check failed.");
     } finally {
@@ -255,140 +260,124 @@ export function ClaudePlayground() {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background">
-      {/* ── Ambient gradient blobs ── */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 overflow-hidden"
-      >
-        {/* Top-left teal glow */}
-        <div className="absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full bg-teal-500/8 blur-[120px]" />
-        {/* Bottom-right orange glow */}
-        <div className="absolute -bottom-60 -right-40 h-[700px] w-[700px] rounded-full bg-orange-500/7 blur-[140px]" />
-        {/* Centre subtle blue */}
-        <div className="absolute left-1/2 top-1/3 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-blue-600/5 blur-[100px]" />
+
+      {/* ── Animated ambient blobs ──────────────────────────────────────────── */}
+      <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="blob-1 absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-teal-500/7 blur-[130px]" />
+        <div className="blob-2 absolute -bottom-64 -right-48 h-[800px] w-[800px] rounded-full bg-orange-500/8 blur-[150px]" />
+        <div className="blob-3 absolute left-1/2 top-1/3 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-violet-600/5 blur-[110px]" />
       </div>
 
-      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6 lg:px-10">
 
-        {/* ── Header ───────────────────────────────────────────────────────── */}
-        <header className="flex flex-col gap-6 rounded-2xl border border-white/8 bg-white/[0.03] p-6 shadow-xl backdrop-blur-sm sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Image
-                src="/brand/icon.svg"
-                alt="Claude Certification logo"
-                width={48}
-                height={48}
-                priority
-                className="rounded-xl shadow-lg shadow-teal-950/30"
-              />
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  Claude Certification
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  AI API playground
-                </p>
-              </div>
-            </div>
-
+        {/* ── HEADER ──────────────────────────────────────────────────────────── */}
+        <header className="animate-slide-up-fade delay-0 flex flex-col gap-7 rounded-2xl border border-white/8 bg-white/[0.025] p-8 shadow-2xl backdrop-blur-md sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-5">
             {/* Badges */}
             <div className="flex flex-wrap items-center gap-2">
-              <Badge className="gap-1.5 border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/15">
+              <Badge className="gap-1.5 border-orange-500/30 bg-orange-500/10 px-3 py-1 text-orange-300 hover:bg-orange-500/15">
                 <Sparkles className="size-3" />
                 Claude Certification
               </Badge>
-              <Badge variant="outline" className="border-white/10 text-muted-foreground">
+              <Badge variant="outline" className="border-white/10 px-3 py-1 text-muted-foreground">
                 FastAPI + Next.js
               </Badge>
-              <Badge variant="outline" className="border-white/10 text-muted-foreground">
+              <Badge variant="outline" className="border-white/10 px-3 py-1 text-muted-foreground">
                 Anthropic SDK
               </Badge>
             </div>
 
-            {/* Headline with gradient */}
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+            {/* Gradient headline */}
+            <div className="space-y-3">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
                 <span className="bg-gradient-to-r from-orange-300 via-amber-200 to-yellow-100 bg-clip-text text-transparent">
                   Ask Claude
                 </span>{" "}
-                <span className="text-foreground/90">from a production playground.</span>
+                <span className="text-foreground/90">from a</span>
+                <br className="hidden sm:block" />
+                <span className="text-foreground/90"> production playground.</span>
               </h1>
-              <p className="max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
+              <p className="max-w-lg text-base leading-7 text-muted-foreground">
                 Test the backend contract, tune response length, and verify the deployed API —
                 all from one focused interface.
               </p>
             </div>
 
-            {/* Example prompts */}
-            <div className="flex flex-wrap gap-2">
+            {/* Quick-prompt chips */}
+            <div className="flex flex-wrap gap-2 pt-1">
               {EXAMPLE_PROMPTS.slice(0, 2).map((p) => (
                 <button
                   key={p}
                   type="button"
                   onClick={() => { setQuestion(p); textareaRef.current?.focus(); }}
-                  className="flex items-center gap-1 rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-muted-foreground transition hover:border-white/15 hover:text-foreground"
+                  className="group flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.04] px-4 py-1.5 text-xs text-muted-foreground transition-all duration-200 hover:border-orange-500/25 hover:bg-orange-500/8 hover:text-orange-200"
                 >
-                  <ChevronRight className="size-3 shrink-0 text-orange-400/70" />
-                  {p.slice(0, 36)}…
+                  <ChevronRight className="size-3 shrink-0 text-orange-400/50 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  {p.length > 40 ? p.slice(0, 40) + "…" : p}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Health check */}
-          <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+          {/* Health */}
+          <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={checkHealth}
               disabled={isChecking}
-              className="border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
+              className="border-white/10 bg-white/[0.05] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.1]"
             >
-              {isChecking ? <LoaderCircle className="animate-spin" /> : <Activity className="size-4" />}
+              {isChecking
+                ? <LoaderCircle className="size-3.5 animate-spin" />
+                : <Activity className="size-3.5" />
+              }
               Check API
             </Button>
+
             {health && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="animate-scale-in flex items-center gap-2 rounded-lg border border-white/8 bg-white/[0.03] px-3 py-2 text-xs text-muted-foreground">
                 <StatusDot ok={health.status === "ok"} />
                 <span>{health.environment}</span>
-                <span className="text-white/20">·</span>
+                <span className="text-white/15">·</span>
                 <span className="font-mono">{formatModel(health.model)}</span>
               </div>
             )}
-            <p className="max-w-[200px] break-all text-xs text-white/20">
-              {apiBaseUrl}
-            </p>
+
+            <p className="max-w-[180px] break-all text-xs text-white/15">{apiBaseUrl}</p>
           </div>
         </header>
 
-        {/* ── Error banner ─────────────────────────────────────────────────── */}
+        {/* ── ERROR ───────────────────────────────────────────────────────────── */}
         {error && (
-          <Alert variant="destructive" className="border-rose-500/30 bg-rose-500/10">
+          <Alert variant="destructive" className="animate-slide-up-fade border-rose-500/25 bg-rose-500/8">
             <AlertCircle className="size-4" />
             <AlertTitle>Request failed</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        {/* ── Main grid ────────────────────────────────────────────────────── */}
-        <section className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        {/* ── MAIN GRID ───────────────────────────────────────────────────────── */}
+        <section className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
 
-          {/* ── Prompt card ─────────────────────────────────────────────── */}
-          <Card className="rounded-2xl border-white/8 bg-white/[0.03] shadow-xl backdrop-blur-sm">
-            <CardHeader className="border-b border-white/6 pb-4">
-              <CardTitle className="text-base font-semibold">Prompt</CardTitle>
-              <CardDescription className="text-xs">
+          {/* ── PROMPT CARD ─────────────────────────────────────────────────── */}
+          <Card className="animate-slide-up-fade delay-150 card-hover rounded-2xl border-white/8 bg-white/[0.025] shadow-2xl backdrop-blur-md">
+            <CardHeader className="border-b border-white/6 px-7 pb-5 pt-7">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">
+                Prompt
+              </CardTitle>
+              <CardDescription className="mt-1 text-sm text-muted-foreground">
                 Send a question to the FastAPI Claude endpoint.
               </CardDescription>
             </CardHeader>
 
             <form onSubmit={askClaude}>
-              <CardContent className="space-y-5 pt-5">
+              <CardContent className="space-y-6 px-7 pt-7">
+
                 {/* Textarea */}
-                <div className="space-y-2">
-                  <Label htmlFor="question" className="text-xs font-medium text-muted-foreground">
+                <div className="input-focus space-y-2 rounded-xl">
+                  <Label htmlFor="question" className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
                     Question
                   </Label>
                   <Textarea
@@ -397,39 +386,39 @@ export function ClaudePlayground() {
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     placeholder="Ask Claude something useful…"
-                    className="min-h-44 resize-y border-white/8 bg-white/[0.04] text-sm leading-7 placeholder:text-white/20 focus-visible:border-orange-500/40 focus-visible:ring-orange-500/20"
+                    className="min-h-52 resize-y border-white/8 bg-white/[0.04] text-sm leading-7 placeholder:text-white/15 transition-all duration-200 focus-visible:border-orange-500/40 focus-visible:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-orange-500/15"
                     maxLength={4000}
                   />
-                  <div className="flex justify-between gap-3 text-xs text-muted-foreground/60">
+                  <div className="flex justify-between text-xs text-muted-foreground/40">
                     <span>Min 3 chars</span>
-                    <span className={question.length > 3600 ? "text-orange-400" : ""}>
-                      {question.length} / 4 000
+                    <span className={`font-mono transition-colors duration-200 ${question.length > 3600 ? "text-orange-400" : ""}`}>
+                      {question.length.toLocaleString()} / 4 000
                     </span>
                   </div>
                 </div>
 
-                {/* More example prompts */}
-                <div className="space-y-1.5">
-                  <p className="text-[11px] uppercase tracking-wider text-white/20">Try an example</p>
-                  <div className="flex flex-col gap-1">
-                    {EXAMPLE_PROMPTS.map((p) => (
+                {/* Example prompts */}
+                <div className="space-y-2">
+                  <p className="text-[10px] uppercase tracking-widest text-white/20">Try an example</p>
+                  <div className="flex flex-col overflow-hidden rounded-xl border border-white/6 bg-white/[0.02] divide-y divide-white/5">
+                    {EXAMPLE_PROMPTS.map((p, i) => (
                       <button
                         key={p}
                         type="button"
                         onClick={() => { setQuestion(p); textareaRef.current?.focus(); }}
-                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs text-muted-foreground/70 transition hover:bg-white/[0.04] hover:text-foreground"
+                        className={`group flex items-center gap-3 px-4 py-3 text-left text-xs text-muted-foreground/60 transition-all duration-150 hover:bg-white/[0.04] hover:text-foreground/80 ${i === 0 ? "rounded-t-xl" : ""} ${i === EXAMPLE_PROMPTS.length - 1 ? "rounded-b-xl" : ""}`}
                       >
-                        <ChevronRight className="size-3 shrink-0 text-orange-400/50" />
-                        {p}
+                        <ChevronRight className="size-3 shrink-0 text-orange-400/40 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-orange-400/70" />
+                        <span>{p}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Controls */}
+                {/* Controls row */}
                 <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="max-tokens" className="text-xs font-medium text-muted-foreground">
+                  <div className="space-y-2">
+                    <Label htmlFor="max-tokens" className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
                       Max tokens
                     </Label>
                     <Input
@@ -440,154 +429,168 @@ export function ClaudePlayground() {
                       step={50}
                       value={maxTokens}
                       onChange={(e) => setMaxTokens(Number(e.target.value))}
-                      className="border-white/8 bg-white/[0.04] font-mono text-sm focus-visible:border-orange-500/40 focus-visible:ring-orange-500/20"
+                      className="border-white/8 bg-white/[0.04] font-mono text-sm transition-all duration-200 focus-visible:border-orange-500/40 focus-visible:ring-2 focus-visible:ring-orange-500/15"
                     />
                   </div>
-                  <div className="flex h-9 items-center justify-between gap-3 rounded-lg border border-white/8 bg-white/[0.04] px-3">
+                  <div className="flex h-10 items-center justify-between gap-3 rounded-lg border border-white/8 bg-white/[0.04] px-4">
                     <Label htmlFor="one-sentence" className="whitespace-nowrap text-xs text-muted-foreground">
                       One sentence
                     </Label>
-                    <Switch
-                      id="one-sentence"
-                      checked={oneSentence}
-                      onCheckedChange={setOneSentence}
-                    />
+                    <Switch id="one-sentence" checked={oneSentence} onCheckedChange={setOneSentence} />
                   </div>
                 </div>
               </CardContent>
 
-              <CardFooter className="flex flex-col gap-2 border-t border-white/6 pt-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex w-full gap-2 sm:w-auto">
+              <CardFooter className="flex flex-col gap-3 border-t border-white/6 px-7 pb-7 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex w-full gap-2.5 sm:w-auto">
                   <Button
                     type="submit"
                     disabled={!canSubmit}
-                    className="flex-1 gap-2 bg-orange-500 text-white shadow-lg shadow-orange-500/20 hover:bg-orange-400 sm:flex-none"
+                    className="group flex-1 gap-2 bg-orange-500 text-white shadow-lg shadow-orange-600/25 transition-all duration-200 hover:scale-[1.02] hover:bg-orange-400 hover:shadow-orange-500/40 disabled:opacity-50 sm:flex-none"
                   >
-                    {isAsking ? <LoaderCircle className="animate-spin" /> : <Send className="size-4" />}
+                    {isAsking
+                      ? <LoaderCircle className="size-4 animate-spin" />
+                      : <Send className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    }
                     Ask Claude
                   </Button>
+
                   <Button
                     type="button"
                     variant="outline"
                     onClick={runDemo}
                     disabled={isAsking}
-                    className="flex-1 border-white/10 bg-white/[0.04] hover:bg-white/[0.08] sm:flex-none"
+                    className="flex-1 gap-2 border-white/10 bg-white/[0.04] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] sm:flex-none"
                   >
                     <Zap className="size-4" />
                     Demo
                   </Button>
+
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     onClick={reset}
                     title="Reset"
-                    className="hover:bg-white/[0.06]"
+                    className="shrink-0 transition-all hover:bg-white/[0.06]"
+                    style={{ transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), background 0.2s" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "rotate(180deg)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "rotate(0deg)"; }}
                   >
                     <RotateCcw className="size-4" />
                   </Button>
                 </div>
-                {/* Keyboard hint */}
-                <p className="hidden text-xs text-white/20 sm:block">
-                  <kbd className="rounded border border-white/10 px-1 font-mono text-[10px]">⌘</kbd>
-                  {" + "}
-                  <kbd className="rounded border border-white/10 px-1 font-mono text-[10px]">↵</kbd>
-                  {" to submit"}
+
+                <p className="hidden text-xs text-white/15 sm:flex sm:items-center sm:gap-1">
+                  <kbd className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]">⌘</kbd>
+                  +
+                  <kbd className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]">↵</kbd>
+                  to submit
                 </p>
               </CardFooter>
             </form>
           </Card>
 
-          {/* ── Right column ─────────────────────────────────────────────── */}
+          {/* ── RIGHT COLUMN ────────────────────────────────────────────────── */}
           <div className="flex flex-col gap-6">
 
-            {/* Response card */}
-            <Card className="flex min-h-[28rem] flex-col rounded-2xl border-white/8 bg-white/[0.03] shadow-xl backdrop-blur-sm">
-              <CardHeader className="border-b border-white/6 pb-4">
+            {/* RESPONSE CARD */}
+            <Card className="animate-slide-up-fade delay-225 card-hover flex min-h-[30rem] flex-col rounded-2xl border-white/8 bg-white/[0.025] shadow-2xl backdrop-blur-md">
+              <CardHeader className="border-b border-white/6 px-7 pb-5 pt-7">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-semibold">Response</CardTitle>
-                    <CardDescription className="text-xs">Claude output appears here.</CardDescription>
+                    <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      Response
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
+                      Claude output appears here.
+                    </CardDescription>
                   </div>
                   {answer && responseTime && (
-                    <Badge variant="outline" className="border-white/10 font-mono text-[10px] text-muted-foreground">
+                    <Badge variant="outline" className="animate-scale-in border-white/10 font-mono text-[11px] text-muted-foreground/60">
                       {(responseTime / 1000).toFixed(1)}s
                     </Badge>
                   )}
                 </div>
               </CardHeader>
 
-              <CardContent className="flex flex-1 flex-col gap-4 pt-5">
+              <CardContent className="flex flex-1 flex-col gap-5 px-7 pt-6">
                 {isAsking ? (
-                  /* Loading state */
-                  <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-white/10 bg-white/[0.02] p-8 text-center">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>Claude is thinking</span>
+                  /* Loading shimmer */
+                  <div className="flex flex-1 flex-col gap-4 rounded-xl border border-dashed border-white/8 bg-white/[0.015] p-7">
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground/60">
                       <TypingDots />
+                      <span>Claude is thinking…</span>
                     </div>
-                    <p className="text-xs text-white/20">Waiting for response…</p>
+                    <div className="flex flex-1 flex-col gap-3 pt-2">
+                      <SkeletonLine w="90%" delay={0} />
+                      <SkeletonLine w="75%" delay={100} />
+                      <SkeletonLine w="85%" delay={200} />
+                      <SkeletonLine w="60%" delay={300} />
+                      <SkeletonLine w="80%" delay={400} />
+                      <SkeletonLine w="45%" delay={500} />
+                    </div>
                   </div>
                 ) : answer ? (
-                  <>
-                    {/* Model / token badges */}
+                  /* Answer — re-animates on each new answer via key */
+                  <div key={answerKey} className="animate-answer-reveal flex flex-1 flex-col gap-5">
                     <div className="flex flex-wrap items-center gap-2">
-                      <Badge className="border-orange-500/30 bg-orange-500/10 font-mono text-[10px] text-orange-300">
+                      <Badge className="border-orange-500/25 bg-orange-500/10 font-mono text-[11px] text-orange-300">
                         {formatModel(answer.model)}
                       </Badge>
                     </div>
 
-                    {/* Answer text */}
-                    <div className="flex-1 rounded-xl border border-white/8 bg-black/20 p-4">
-                      <p className="whitespace-pre-wrap font-[var(--font-geist-sans)] text-sm leading-7 text-foreground/90">
+                    <div className="flex-1 rounded-xl border border-white/8 bg-black/25 p-6">
+                      <p className="whitespace-pre-wrap text-sm leading-8 text-foreground/90">
                         {answer.answer}
                       </p>
                     </div>
 
-                    {/* Token usage bars */}
-                    <div className="space-y-2 rounded-xl border border-white/6 bg-white/[0.02] p-4">
-                      <p className="mb-3 text-[10px] uppercase tracking-wider text-white/25">
-                        Token usage
-                      </p>
+                    <div className="space-y-4 rounded-xl border border-white/6 bg-white/[0.02] p-5">
+                      <p className="text-[10px] uppercase tracking-widest text-white/20">Token usage</p>
                       <TokenBar
-                        label="Input"
+                        label="Input tokens"
                         value={answer.input_tokens}
-                        max={maxTokens * 4}
-                        color="bg-blue-400"
+                        max={Math.max(answer.input_tokens * 2, maxTokens * 3)}
+                        color="bg-gradient-to-r from-blue-500 to-blue-400"
+                        delay={0}
                       />
                       <TokenBar
-                        label="Output"
+                        label="Output tokens"
                         value={answer.output_tokens}
                         max={maxTokens}
-                        color="bg-orange-400"
+                        color="bg-gradient-to-r from-orange-500 to-amber-400"
+                        delay={150}
                       />
                     </div>
-                  </>
+                  </div>
                 ) : (
                   /* Empty state */
-                  <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-white/8 bg-white/[0.01] p-8 text-center">
-                    <div className="flex size-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
-                      <Sparkles className="size-6 text-orange-400/60" />
+                  <div className="flex flex-1 flex-col items-center justify-center gap-5 rounded-xl border border-dashed border-white/8 bg-white/[0.01] p-10 text-center">
+                    <div className="relative flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
+                      <span className="absolute inset-0 animate-ping rounded-2xl border border-orange-500/20" style={{ animationDuration: "2.5s" }} />
+                      <Sparkles className="size-7 text-orange-400/50" />
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-foreground/70">No answer yet</p>
-                      <p className="max-w-xs text-xs leading-5 text-muted-foreground/60">
-                        Write a question on the left and hit{" "}
-                        <span className="text-orange-400/80">Ask Claude</span>, or run the{" "}
-                        <span className="text-orange-400/80">Demo</span> to verify the API is wired up.
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground/60">No answer yet</p>
+                      <p className="max-w-[240px] text-xs leading-6 text-muted-foreground/50">
+                        Write a question and hit{" "}
+                        <span className="text-orange-400/80">Ask Claude</span>, or run{" "}
+                        <span className="text-orange-400/80">Demo</span> to verify the API is wired.
                       </p>
                     </div>
                   </div>
                 )}
               </CardContent>
 
-              <CardFooter className="border-t border-white/6 pt-4">
+              <CardFooter className="border-t border-white/6 px-7 pb-6 pt-5">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={copyAnswer}
                   disabled={!answer?.answer}
-                  className="border-white/10 bg-white/[0.03] hover:bg-white/[0.07]"
+                  className="gap-2 border-white/10 bg-white/[0.03] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.07]"
                 >
                   {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
                   {copied ? "Copied!" : "Copy answer"}
@@ -595,59 +598,47 @@ export function ClaudePlayground() {
               </CardFooter>
             </Card>
 
-            {/* API Status card */}
-            <Card className="rounded-2xl border-white/8 bg-white/[0.03] shadow-xl backdrop-blur-sm">
-              <CardHeader className="border-b border-white/6 pb-4">
+            {/* API STATUS CARD */}
+            <Card className="animate-slide-up-fade delay-300 card-hover rounded-2xl border-white/8 bg-white/[0.025] shadow-2xl backdrop-blur-md">
+              <CardHeader className="border-b border-white/6 px-7 pb-5 pt-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-base font-semibold">API Status</CardTitle>
-                    <CardDescription className="text-xs">
+                    <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">
+                      API Status
+                    </CardTitle>
+                    <CardDescription className="mt-1 text-sm text-muted-foreground">
                       Backend environment info.
                     </CardDescription>
                   </div>
                   {health && <StatusDot ok={health.status === "ok"} />}
                 </div>
               </CardHeader>
-              <CardContent className="pt-5">
+
+              <CardContent className="px-7 pb-7 pt-5">
                 {health ? (
                   <dl className="grid gap-3 text-sm sm:grid-cols-2">
-                    {[
-                      { label: "Environment", value: health.environment },
-                      {
-                        label: "API key",
-                        value: health.anthropic_api_key_configured ? "Configured ✓" : "Missing ✗",
-                        ok: health.anthropic_api_key_configured,
-                      },
-                      { label: "Model", value: formatModel(health.model), mono: true, span: true },
-                    ].map(({ label, value, ok, mono, span }) => (
-                      <div
-                        key={label}
-                        className={`rounded-xl border border-white/6 bg-white/[0.02] p-3 ${span ? "sm:col-span-2" : ""}`}
-                      >
-                        <dt className="mb-0.5 text-xs text-muted-foreground/60">{label}</dt>
-                        <dd
-                          className={`font-medium ${
-                            ok === false
-                              ? "text-rose-400"
-                              : ok === true
-                              ? "text-emerald-400"
-                              : mono
-                              ? "font-mono text-orange-300"
-                              : ""
-                          }`}
-                        >
-                          {value}
-                        </dd>
-                      </div>
-                    ))}
+                    <div className="animate-scale-in rounded-xl border border-white/6 bg-white/[0.02] p-4">
+                      <dt className="mb-1 text-xs text-muted-foreground/50">Environment</dt>
+                      <dd className="font-medium">{health.environment}</dd>
+                    </div>
+                    <div className="animate-scale-in rounded-xl border border-white/6 bg-white/[0.02] p-4" style={{ animationDelay: "60ms" }}>
+                      <dt className="mb-1 text-xs text-muted-foreground/50">API key</dt>
+                      <dd className={`font-medium ${health.anthropic_api_key_configured ? "text-emerald-400" : "text-rose-400"}`}>
+                        {health.anthropic_api_key_configured ? "Configured ✓" : "Missing ✗"}
+                      </dd>
+                    </div>
+                    <div className="animate-scale-in rounded-xl border border-white/6 bg-white/[0.02] p-4 sm:col-span-2" style={{ animationDelay: "120ms" }}>
+                      <dt className="mb-1 text-xs text-muted-foreground/50">Model</dt>
+                      <dd className="font-mono font-medium text-orange-300">{formatModel(health.model)}</dd>
+                    </div>
                   </dl>
                 ) : (
-                  <div className="flex flex-col items-start gap-3">
-                    <div className="flex items-center gap-2 rounded-xl border border-white/6 bg-white/[0.02] p-4 text-xs text-muted-foreground/60">
-                      <KeyRound className="size-4 text-orange-400/40" />
-                      Click <strong className="text-foreground/50">Check API</strong> in the header to verify
-                      environment and model info.
-                    </div>
+                  <div className="flex items-start gap-3 rounded-xl border border-white/6 bg-white/[0.02] p-5 text-xs text-muted-foreground/50">
+                    <KeyRound className="mt-0.5 size-4 shrink-0 text-orange-400/30" />
+                    <span>
+                      Click <strong className="text-foreground/40">Check API</strong> in the header to
+                      verify environment and model configuration.
+                    </span>
                   </div>
                 )}
               </CardContent>
@@ -655,30 +646,30 @@ export function ClaudePlayground() {
           </div>
         </section>
 
-        {/* ── Footer ──────────────────────────────────────────────────────── */}
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-5 text-xs text-white/20">
-          <div className="flex items-center gap-2">
+        {/* ── FOOTER ──────────────────────────────────────────────────────────── */}
+        <footer className="animate-slide-up-fade delay-375 flex flex-wrap items-center justify-between gap-3 border-t border-white/6 pt-6 text-xs">
+          <div className="flex items-center gap-2 text-white/25">
             <span className="font-mono">claude-certification</span>
-            <span>·</span>
+            <span className="text-white/15">·</span>
             <span>FastAPI + Next.js + Anthropic SDK</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <a
               href="https://docs.anthropic.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="transition hover:text-white/50"
+              className="text-white/25 transition-colors duration-200 hover:text-white/60"
             >
               Anthropic docs
             </a>
-            <span>·</span>
+            <span className="text-white/10">·</span>
             <a
               href={`${apiBaseUrl}/docs`}
               target="_blank"
               rel="noopener noreferrer"
-              className="transition hover:text-white/50"
+              className="text-white/25 transition-colors duration-200 hover:text-white/60"
             >
-              API docs
+              API docs ↗
             </a>
           </div>
         </footer>

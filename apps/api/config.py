@@ -8,6 +8,7 @@ calling `os.getenv` directly in your routes or services.
 
 import logging
 import os
+from typing import Optional
 
 from dotenv import load_dotenv
 
@@ -33,7 +34,7 @@ ALLOWED_ORIGINS: list[str] = [o.strip() for o in _raw_origins.split(",") if o.st
 # ── Anthropic ─────────────────────────────────────────────────────────────────
 # The SDK reads ANTHROPIC_API_KEY from the environment automatically, but
 # we expose the key presence here so the health endpoint can report on it.
-ANTHROPIC_API_KEY: str | None = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")
 
 # claude-sonnet-4-0 offers the best balance of speed and intelligence for
 # most certification/demo use-cases. Override with ANTHROPIC_MODEL if needed.

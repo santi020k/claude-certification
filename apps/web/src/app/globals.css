@@ -3,25 +3,25 @@
 /* ── Dark theme ────────────────────────────────────────────────────────────── */
 :root,
 .dark {
-  --background: 222 47% 5%;
-  --foreground: 213 31% 91%;
-  --card: 222 44% 7%;
-  --card-foreground: 213 31% 91%;
-  --popover: 222 44% 7%;
-  --popover-foreground: 213 31% 91%;
-  --primary: 24 95% 58%;
-  --primary-foreground: 222 47% 5%;
-  --secondary: 222 30% 13%;
-  --secondary-foreground: 210 40% 80%;
-  --muted: 222 30% 11%;
-  --muted-foreground: 218 11% 50%;
-  --accent: 222 30% 13%;
-  --accent-foreground: 210 40% 80%;
+  --background: 30 18% 8%;
+  --foreground: 38 31% 91%;
+  --card: 28 18% 10%;
+  --card-foreground: 38 31% 91%;
+  --popover: 28 18% 10%;
+  --popover-foreground: 38 31% 91%;
+  --primary: 15 55% 52%;
+  --primary-foreground: 36 45% 94%;
+  --secondary: 28 18% 15%;
+  --secondary-foreground: 35 28% 82%;
+  --muted: 28 18% 14%;
+  --muted-foreground: 32 14% 58%;
+  --accent: 28 18% 15%;
+  --accent-foreground: 35 28% 82%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
-  --border: 222 30% 14%;
-  --input: 222 30% 11%;
-  --ring: 24 95% 58%;
+  --border: 28 16% 18%;
+  --input: 28 18% 14%;
+  --ring: 15 55% 52%;
   --radius: 0.75rem;
 }
 
@@ -36,7 +36,7 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: hsl(222 30% 18%) transparent;
+  scrollbar-color: hsl(28 16% 22%) transparent;
 }
 
 /* ── Keyframes ─────────────────────────────────────────────────────────────── */
@@ -121,9 +121,9 @@ body {
 .shimmer {
   background: linear-gradient(
     90deg,
-    hsl(222 44% 9%) 0px,
-    hsl(222 44% 14%) 40px,
-    hsl(222 44% 9%) 80px
+    hsl(28 18% 12%) 0px,
+    hsl(28 18% 18%) 40px,
+    hsl(28 18% 12%) 80px
   );
   background-size: 600px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
@@ -141,7 +141,7 @@ body {
               0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
-/* Orange focus ring for inputs */
+/* Clay focus ring for inputs */
 .input-focus:focus-within {
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 0 0 3px rgba(204, 120, 92, 0.18);
 }
