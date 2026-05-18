@@ -1,6 +1,8 @@
-import type { FormEvent, RefObject } from 'react'
+import type { RefObject, SyntheticEvent } from 'react'
 
 import { ChevronRight, LoaderCircle, RotateCcw, Send, Zap } from 'lucide-react'
+
+import { CLIENT_RATE_LIMIT, EXAMPLE_PROMPTS } from '../constants'
 
 import { Badge } from '@repo/ui/components/ui/badge'
 import { Button } from '@repo/ui/components/ui/button'
@@ -17,8 +19,6 @@ import { Label } from '@repo/ui/components/ui/label'
 import { Switch } from '@repo/ui/components/ui/switch'
 import { Textarea } from '@repo/ui/components/ui/textarea'
 
-import { CLIENT_RATE_LIMIT, EXAMPLE_PROMPTS } from '../constants'
-
 interface PromptCardProps {
   canSubmit: boolean
   cooldownSeconds: number
@@ -30,7 +30,7 @@ interface PromptCardProps {
   remaining: number
   retryAfter: number | null
   textareaRef: RefObject<HTMLTextAreaElement | null>
-  onAsk: (event?: FormEvent<HTMLFormElement>) => Promise<void>
+  onAsk: (event?: SyntheticEvent<HTMLFormElement>) => Promise<void>
   onDemo: () => Promise<void>
   onQuestionChange: (question: string) => void
   onReset: () => void
@@ -59,8 +59,8 @@ export function PromptCard({
   return (
     <Card className="
       animate-slide-up-fade card-hover overflow-hidden rounded-2xl
-      border-white/8 bg-[#211d19]/80 shadow-2xl shadow-black/30
-      backdrop-blur-md delay-150
+      border-white/8 bg-[#211d19]/80 shadow-2xl shadow-black/30 backdrop-blur-md
+      delay-150
     "
     >
       <CardHeader className="
@@ -70,24 +70,21 @@ export function PromptCard({
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle className="
-              text-muted-foreground/70 text-sm font-semibold
-              tracking-wider uppercase
+              text-sm font-semibold tracking-wider text-muted-foreground/70
+              uppercase
             "
             >
               Prompt
             </CardTitle>
-            <CardDescription className="
-              text-muted-foreground mt-1 text-sm
-            "
-            >
+            <CardDescription className="mt-1 text-sm text-muted-foreground">
               Shape the request Claude will answer.
             </CardDescription>
           </div>
           <Badge
             variant="outline"
             className="
-              border-orange-300/15 bg-orange-200/8 text-[10px]
-              tracking-wider text-orange-100/70 uppercase
+              border-orange-300/15 bg-orange-200/8 text-[10px] tracking-wider
+              text-orange-100/70 uppercase
             "
           >
             Live
@@ -102,8 +99,8 @@ export function PromptCard({
               <Label
                 htmlFor="question"
                 className="
-                  text-muted-foreground/60 text-xs font-medium
-                  tracking-wider uppercase
+                  text-xs font-medium tracking-wider text-muted-foreground/60
+                  uppercase
                 "
               >
                 Question
@@ -113,7 +110,7 @@ export function PromptCard({
                 transition-colors duration-200
                 ${question.length > 3600 ?
       'border-orange-300/25 bg-orange-200/10 text-orange-100' :
-      'text-muted-foreground/50 border-white/8 bg-white/2.5'
+      'border-white/8 bg-white/2.5 text-muted-foreground/50'
     }
               `}
               >
@@ -144,8 +141,8 @@ export function PromptCard({
                 maxLength={4000}
               />
               <div className="
-                text-muted-foreground/45 flex items-center justify-between
-                border-t border-white/6 bg-black/10 px-4 py-2 text-xs
+                flex items-center justify-between border-t border-white/6
+                bg-black/10 px-4 py-2 text-xs text-muted-foreground/45
               "
               >
                 <span>{canSubmit ? 'Ready to ask' : 'Min 3 chars'}</span>
@@ -156,10 +153,7 @@ export function PromptCard({
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="
-                text-[10px] tracking-widest text-white/20 uppercase
-              "
-              >
+              <p className="text-[10px] tracking-widest text-white/20 uppercase">
                 Try an example
               </p>
               <span className="text-[10px] text-white/15">
@@ -175,23 +169,22 @@ export function PromptCard({
                   type="button"
                   onClick={() => {
                     onQuestionChange(prompt)
+
                     textareaRef.current?.focus()
                   }}
                   className="
-                    group text-muted-foreground/65
-                    hover:text-foreground/85
-                    flex items-center gap-3 rounded-xl border
-                    border-white/6 bg-white/2.5 px-4 py-3 text-left
-                    text-xs transition-all duration-150
+                    group flex items-center gap-3 rounded-xl border
+                    border-white/6 bg-white/2.5 px-4 py-3 text-left text-xs
+                    text-muted-foreground/65 transition-all duration-150
                     hover:border-orange-300/20 hover:bg-orange-200/8
+                    hover:text-foreground/85
                   "
                 >
                   <span className="
                     flex size-5 shrink-0 items-center justify-center
                     rounded-full bg-orange-200/8 text-orange-200/60
                     transition-colors
-                    group-hover:bg-orange-200/15
-                    group-hover:text-orange-100
+                    group-hover:bg-orange-200/15 group-hover:text-orange-100
                   "
                   >
                     <ChevronRight className="
@@ -206,16 +199,13 @@ export function PromptCard({
             </div>
           </div>
 
-          <div className="
-            rounded-xl border border-white/6 bg-white/2.5 p-4
-          "
-          >
+          <div className="rounded-xl border border-white/6 bg-white/2.5 p-4">
             <div className="mb-3 flex items-center justify-between">
               <Label
                 htmlFor="max-tokens"
                 className="
-                  text-muted-foreground/60 text-xs font-medium
-                  tracking-wider uppercase
+                  text-xs font-medium tracking-wider text-muted-foreground/60
+                  uppercase
                 "
               >
                 Response settings
@@ -245,15 +235,13 @@ export function PromptCard({
                 "
               />
               <div className="
-                flex h-10 items-center justify-between gap-3 rounded-lg
-                border border-white/8 bg-black/10 px-4
+                flex h-10 items-center justify-between gap-3 rounded-lg border
+                border-white/8 bg-black/10 px-4
               "
               >
                 <Label
                   htmlFor="one-sentence"
-                  className="
-                    text-muted-foreground text-xs whitespace-nowrap
-                  "
+                  className="text-xs whitespace-nowrap text-muted-foreground"
                 >
                   One sentence
                 </Label>
@@ -334,8 +322,7 @@ export function PromptCard({
             </div>
 
             <div className="
-              flex items-center justify-between gap-3 text-xs
-              text-white/18
+              flex items-center justify-between gap-3 text-xs text-white/18
             "
             >
               {retryAfter !== null ?
@@ -358,8 +345,7 @@ export function PromptCard({
                 isLimited ?
                   (
                     <span className="
-                      flex items-center gap-1.5 font-mono
-                      text-amber-400/80
+                      flex items-center gap-1.5 font-mono text-amber-400/80
                     "
                     >
                       <span className="
@@ -374,10 +360,7 @@ export function PromptCard({
                     </span>
                   ) :
                   (
-                    <span className="
-                      flex items-center gap-1.5 text-white/20
-                    "
-                    >
+                    <span className="flex items-center gap-1.5 text-white/20">
                       <span className="font-mono tabular-nums">
                         {remaining}
                         /
@@ -392,16 +375,16 @@ export function PromptCard({
               "
               >
                 <kbd className="
-                  rounded-sm border border-white/10 px-1.5 py-0.5
-                  font-mono text-[10px]
+                  rounded-sm border border-white/10 px-1.5 py-0.5 font-mono
+                  text-[10px]
                 "
                 >
                   ⌘
                 </kbd>
                 +
                 <kbd className="
-                  rounded-sm border border-white/10 px-1.5 py-0.5
-                  font-mono text-[10px]
+                  rounded-sm border border-white/10 px-1.5 py-0.5 font-mono
+                  text-[10px]
                 "
                 >
                   ↵

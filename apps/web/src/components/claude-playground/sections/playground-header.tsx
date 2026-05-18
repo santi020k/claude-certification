@@ -2,13 +2,13 @@ import Image from 'next/image'
 
 import { Activity, ChevronRight, LoaderCircle } from 'lucide-react'
 
-import { Badge } from '@repo/ui/components/ui/badge'
-import { Button } from '@repo/ui/components/ui/button'
-
 import { EXAMPLE_PROMPTS } from '../constants'
 import { formatModel } from '../format'
-import type { HealthResponse } from '../types'
 import { StatusDot } from '../primitives/status-dot'
+import type { HealthResponse } from '../types'
+
+import { Badge } from '@repo/ui/components/ui/badge'
+import { Button } from '@repo/ui/components/ui/button'
 
 interface PlaygroundHeaderProps {
   apiBaseUrl: string
@@ -39,9 +39,8 @@ export function PlaygroundHeader({
             target="_blank"
             rel="noopener noreferrer"
             className="
-              group flex items-center gap-2.5 rounded-xl border
-              border-white/8 bg-white/4 px-3 py-1.5 transition-all
-              duration-200
+              group flex items-center gap-2.5 rounded-xl border border-white/8
+              bg-white/4 px-3 py-1.5 transition-all duration-200
               hover:border-white/16 hover:bg-white/[0.07]
             "
           >
@@ -53,9 +52,8 @@ export function PlaygroundHeader({
               className="rounded-sm opacity-90"
             />
             <span className="
-              text-foreground/70
+              text-xs font-medium text-foreground/70
               group-hover:text-foreground/90
-              text-xs font-medium
             "
             >
               Claude Certification
@@ -63,13 +61,13 @@ export function PlaygroundHeader({
           </a>
           <Badge
             variant="outline"
-            className="text-muted-foreground border-white/10 px-3 py-1"
+            className="border-white/10 px-3 py-1 text-muted-foreground"
           >
             FastAPI + Next.js
           </Badge>
           <Badge
             variant="outline"
-            className="text-muted-foreground border-white/10 px-3 py-1"
+            className="border-white/10 px-3 py-1 text-muted-foreground"
           >
             Anthropic SDK
           </Badge>
@@ -98,7 +96,7 @@ export function PlaygroundHeader({
             />
             <span className="text-foreground/90"> production playground.</span>
           </h1>
-          <p className="text-muted-foreground max-w-lg text-base/7">
+          <p className="max-w-lg text-base/7 text-muted-foreground">
             Test the backend contract, tune response length, and verify the deployed API —
             all from one focused interface.
           </p>
@@ -113,9 +111,9 @@ export function PlaygroundHeader({
                 onSelectPrompt(prompt)
               }}
               className="
-                group text-muted-foreground flex items-center gap-1.5
-                rounded-full border border-white/8 bg-white/4 px-4 py-1.5
-                text-xs transition-all duration-200
+                group flex items-center gap-1.5 rounded-full border
+                border-white/8 bg-white/4 px-4 py-1.5 text-xs
+                text-muted-foreground transition-all duration-200
                 hover:border-orange-500/25 hover:bg-orange-500/8
                 hover:text-orange-200
               "
@@ -157,8 +155,8 @@ export function PlaygroundHeader({
         {health ?
           (
             <div className="
-              animate-scale-in text-muted-foreground flex items-center gap-2
-              rounded-lg border border-white/8 bg-white/3 px-3 py-2 text-xs
+              animate-scale-in flex items-center gap-2 rounded-lg border
+              border-white/8 bg-white/3 px-3 py-2 text-xs text-muted-foreground
             "
             >
               <StatusDot ok={health.status === 'ok'} />

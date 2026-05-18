@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 import Image from 'next/image'
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import remarkGfm from 'remark-gfm'
 
+import type { AskRequest, AskResponse, HealthResponse } from '@repo/shared'
 import { Alert, AlertDescription, AlertTitle } from '@repo/ui/components/ui/alert'
 import { Badge } from '@repo/ui/components/ui/badge'
 import { Button } from '@repo/ui/components/ui/button'
@@ -35,7 +36,6 @@ import { Input } from '@repo/ui/components/ui/input'
 import { Label } from '@repo/ui/components/ui/label'
 import { Switch } from '@repo/ui/components/ui/switch'
 import { Textarea } from '@repo/ui/components/ui/textarea'
-import type { AskRequest, AskResponse, HealthResponse } from '@repo/shared'
 
 // ── Rate-limit constants ───────────────────────────────────────────────────────
 // Mirror the backend limits so the client can self-throttle before even hitting
@@ -184,7 +184,7 @@ function TokenBar({
 
   return (
     <div className="space-y-1.5">
-      <div className="text-muted-foreground flex justify-between text-xs">
+      <div className="flex justify-between text-xs text-muted-foreground">
         <span>{label}</span>
         <span className="font-mono tabular-nums">{value.toLocaleString()}</span>
       </div>
@@ -256,7 +256,7 @@ function MarkdownAnswer({ content }: { content: string }) {
       components={{
         h1: ({ children }) => (
           <h1 className="
-            text-foreground mt-2 text-2xl/tight font-semibold
+            mt-2 text-2xl/tight font-semibold text-foreground
             first:mt-0
           "
           >
@@ -265,8 +265,8 @@ function MarkdownAnswer({ content }: { content: string }) {
         ),
         h2: ({ children }) => (
           <h2 className="
-            text-foreground mt-7 border-b border-white/8 pb-2 text-xl/tight
-            font-semibold
+            mt-7 border-b border-white/8 pb-2 text-xl/tight font-semibold
+            text-foreground
             first:mt-0
           "
           >
@@ -284,7 +284,7 @@ function MarkdownAnswer({ content }: { content: string }) {
         ),
         h4: ({ children }) => (
           <h4 className="
-            text-muted-foreground mt-5 text-sm font-semibold tracking-wide
+            mt-5 text-sm font-semibold tracking-wide text-muted-foreground
             uppercase
             first:mt-0
           "
@@ -294,7 +294,7 @@ function MarkdownAnswer({ content }: { content: string }) {
         ),
         p: ({ children }) => (
           <p className="
-            text-foreground/85 my-3 leading-7
+            my-3 leading-7 text-foreground/85
             first:mt-0
             last:mb-0
           "
@@ -304,7 +304,7 @@ function MarkdownAnswer({ content }: { content: string }) {
         ),
         ul: ({ children }) => (
           <ul className="
-            text-foreground/85 my-3 space-y-2 pl-5
+            my-3 space-y-2 pl-5 text-foreground/85
             marker:text-orange-300/70
           "
           >
@@ -313,7 +313,7 @@ function MarkdownAnswer({ content }: { content: string }) {
         ),
         ol: ({ children }) => (
           <ol className="
-            text-foreground/85 my-3 list-decimal space-y-2 pl-5
+            my-3 list-decimal space-y-2 pl-5 text-foreground/85
             marker:text-orange-300/70
           "
           >
@@ -323,7 +323,7 @@ function MarkdownAnswer({ content }: { content: string }) {
         li: ({ children }) => <li className="pl-1 leading-7">{children}</li>,
         blockquote: ({ children }) => (
           <blockquote className="
-            text-muted-foreground my-4 border-l-2 border-orange-300/40 pl-4
+            my-4 border-l-2 border-orange-300/40 pl-4 text-muted-foreground
           "
           >
             {children}
@@ -362,8 +362,8 @@ function MarkdownAnswer({ content }: { content: string }) {
         ),
         th: ({ children }) => (
           <th className="
-            text-foreground border-b border-white/8 bg-white/4 px-3 py-2
-            font-semibold
+            border-b border-white/8 bg-white/4 px-3 py-2 font-semibold
+            text-foreground
           "
           >
             {children}
@@ -371,7 +371,7 @@ function MarkdownAnswer({ content }: { content: string }) {
         ),
         td: ({ children }) => (
           <td className="
-            text-foreground/80 border-b border-white/6 px-3 py-2
+            border-b border-white/6 px-3 py-2 text-foreground/80
             last:border-b-0
           "
           >
@@ -422,11 +422,7 @@ export function ClaudePlayground() {
 
   // Tick down the server-side Retry-After countdown
   useEffect(() => {
-    if (retryAfter === null || retryAfter <= 0) {
-      setRetryAfter(null)
-
-      return
-    }
+    if (retryAfter === null || retryAfter <= 0) return
 
     const id = setTimeout(() => {
       setRetryAfter(s => (s !== null && s > 1 ? s - 1 : null))
@@ -441,35 +437,10 @@ export function ClaudePlayground() {
   const trimmed     = question.trim()
   const canSubmit   = trimmed.length >= 3 && trimmed.length <= 4_000 && !isAsking && !isLimited && retryAfter === null
 
-  // ── ⌘↵ shortcut ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canSubmit) {
-        e.preventDefault()
-
-        void doAsk()
-      }
-    }
-
-    window.addEventListener('keydown', onKey)
-
-    return () => {
-      window.removeEventListener('keydown', onKey)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canSubmit, question, maxTokens, oneSentence])
-
   // ── API helpers ───────────────────────────────────────────────────────────
 
   const doAsk = useCallback(async () => {
     if (!canSubmit) return
-
-    // Client-side guard (belt + suspenders with the hook)
-    if (isLimited) {
-      setError(`Too many requests — wait ${cooldownSeconds}s before trying again.`)
-
-      return
-    }
 
     recordRequest()
 
@@ -515,9 +486,26 @@ export function ClaudePlayground() {
     } finally {
       setIsAsking(false)
     }
-  }, [apiBaseUrl, canSubmit, cooldownSeconds, isLimited, maxTokens, oneSentence, recordRequest, trimmed])
+  }, [apiBaseUrl, canSubmit, maxTokens, oneSentence, recordRequest, trimmed])
 
-  async function askClaude(e?: FormEvent<HTMLFormElement>) {
+  // ── ⌘↵ shortcut ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && canSubmit) {
+        e.preventDefault()
+
+        void doAsk()
+      }
+    }
+
+    window.addEventListener('keydown', onKey)
+
+    return () => {
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [canSubmit, doAsk])
+
+  async function askClaude(e?: SyntheticEvent<HTMLFormElement>) {
     e?.preventDefault()
 
     await doAsk()
@@ -625,7 +613,7 @@ export function ClaudePlayground() {
 
   return (
     <div className="
-      bg-background relative flex min-h-screen flex-col overflow-hidden
+      relative flex min-h-screen flex-col overflow-hidden bg-background
     "
     >
 
@@ -689,9 +677,8 @@ export function ClaudePlayground() {
                   className="rounded-sm opacity-90"
                 />
                 <span className="
-                  text-foreground/70
+                  text-xs font-medium text-foreground/70
                   group-hover:text-foreground/90
-                  text-xs font-medium
                 "
                 >
                   Claude Certification
@@ -699,13 +686,13 @@ export function ClaudePlayground() {
               </a>
               <Badge
                 variant="outline"
-                className="text-muted-foreground border-white/10 px-3 py-1"
+                className="border-white/10 px-3 py-1 text-muted-foreground"
               >
                 FastAPI + Next.js
               </Badge>
               <Badge
                 variant="outline"
-                className="text-muted-foreground border-white/10 px-3 py-1"
+                className="border-white/10 px-3 py-1 text-muted-foreground"
               >
                 Anthropic SDK
               </Badge>
@@ -735,7 +722,7 @@ export function ClaudePlayground() {
                 />
                 <span className="text-foreground/90"> production playground.</span>
               </h1>
-              <p className="text-muted-foreground max-w-lg text-base/7">
+              <p className="max-w-lg text-base/7 text-muted-foreground">
                 Test the backend contract, tune response length, and verify the deployed API —
                 all from one focused interface.
               </p>
@@ -753,9 +740,9 @@ export function ClaudePlayground() {
                     textareaRef.current?.focus()
                   }}
                   className="
-                    group text-muted-foreground flex items-center gap-1.5
-                    rounded-full border border-white/8 bg-white/4 px-4 py-1.5
-                    text-xs transition-all duration-200
+                    group flex items-center gap-1.5 rounded-full border
+                    border-white/8 bg-white/4 px-4 py-1.5 text-xs
+                    text-muted-foreground transition-all duration-200
                     hover:border-orange-500/25 hover:bg-orange-500/8
                     hover:text-orange-200
                   "
@@ -798,8 +785,9 @@ export function ClaudePlayground() {
             {health ?
               (
                 <div className="
-                  animate-scale-in text-muted-foreground flex items-center gap-2
-                  rounded-lg border border-white/8 bg-white/3 px-3 py-2 text-xs
+                  animate-scale-in flex items-center gap-2 rounded-lg border
+                  border-white/8 bg-white/3 px-3 py-2 text-xs
+                  text-muted-foreground
                 "
                 >
                   <StatusDot ok={health.status === 'ok'} />
@@ -849,14 +837,14 @@ export function ClaudePlayground() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <CardTitle className="
-                    text-muted-foreground/70 text-sm font-semibold
-                    tracking-wider uppercase
+                    text-sm font-semibold tracking-wider
+                    text-muted-foreground/70 uppercase
                   "
                   >
                     Prompt
                   </CardTitle>
                   <CardDescription className="
-                    text-muted-foreground mt-1 text-sm
+                    mt-1 text-sm text-muted-foreground
                   "
                   >
                     Shape the request Claude will answer.
@@ -883,8 +871,8 @@ export function ClaudePlayground() {
                     <Label
                       htmlFor="question"
                       className="
-                        text-muted-foreground/60 text-xs font-medium
-                        tracking-wider uppercase
+                        text-xs font-medium tracking-wider
+                        text-muted-foreground/60 uppercase
                       "
                     >
                       Question
@@ -894,7 +882,7 @@ export function ClaudePlayground() {
                       transition-colors duration-200
                       ${question.length > 3600 ?
       'border-orange-300/25 bg-orange-200/10 text-orange-100' :
-      'text-muted-foreground/50 border-white/8 bg-white/2.5'
+      'border-white/8 bg-white/2.5 text-muted-foreground/50'
     }
                     `}
                     >
@@ -925,8 +913,8 @@ export function ClaudePlayground() {
                       maxLength={4000}
                     />
                     <div className="
-                      text-muted-foreground/45 flex items-center justify-between
-                      border-t border-white/6 bg-black/10 px-4 py-2 text-xs
+                      flex items-center justify-between border-t border-white/6
+                      bg-black/10 px-4 py-2 text-xs text-muted-foreground/45
                     "
                     >
                       <span>{canSubmit ? 'Ready to ask' : 'Min 3 chars'}</span>
@@ -961,12 +949,12 @@ export function ClaudePlayground() {
                           textareaRef.current?.focus()
                         }}
                         className="
-                          group text-muted-foreground/65
-                          hover:text-foreground/85
-                          flex items-center gap-3 rounded-xl border
+                          group flex items-center gap-3 rounded-xl border
                           border-white/6 bg-white/2.5 px-4 py-3 text-left
-                          text-xs transition-all duration-150
+                          text-xs text-muted-foreground/65 transition-all
+                          duration-150
                           hover:border-orange-300/20 hover:bg-orange-200/8
+                          hover:text-foreground/85
                         "
                       >
                         <span className="
@@ -998,8 +986,8 @@ export function ClaudePlayground() {
                     <Label
                       htmlFor="max-tokens"
                       className="
-                        text-muted-foreground/60 text-xs font-medium
-                        tracking-wider uppercase
+                        text-xs font-medium tracking-wider
+                        text-muted-foreground/60 uppercase
                       "
                     >
                       Response settings
@@ -1036,7 +1024,7 @@ export function ClaudePlayground() {
                       <Label
                         htmlFor="one-sentence"
                         className="
-                          text-muted-foreground text-xs whitespace-nowrap
+                          text-xs whitespace-nowrap text-muted-foreground
                         "
                       >
                         One sentence
@@ -1210,14 +1198,14 @@ export function ClaudePlayground() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <CardTitle className="
-                      text-muted-foreground/70 text-sm font-semibold
-                      tracking-wider uppercase
+                      text-sm font-semibold tracking-wider
+                      text-muted-foreground/70 uppercase
                     "
                     >
                       Response
                     </CardTitle>
                     <CardDescription className="
-                      text-muted-foreground mt-1 text-sm
+                      mt-1 text-sm text-muted-foreground
                     "
                     >
                       Claude output appears here.
@@ -1229,8 +1217,8 @@ export function ClaudePlayground() {
                         <Badge
                           variant="outline"
                           className="
-                            animate-scale-in text-muted-foreground/60
-                            border-white/10 font-mono text-[11px]
+                            animate-scale-in border-white/10 font-mono
+                            text-[11px] text-muted-foreground/60
                           "
                         >
                           {(responseTime / 1000).toFixed(1)}
@@ -1271,7 +1259,7 @@ export function ClaudePlayground() {
                   "
                   >
                     <div className="
-                      text-muted-foreground/60 flex items-center gap-3 text-sm
+                      flex items-center gap-3 text-sm text-muted-foreground/60
                     "
                     >
                       <TypingDots />
@@ -1362,9 +1350,9 @@ export function ClaudePlayground() {
                       <Sparkles className="size-7 text-orange-400/50" />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-foreground/60 text-sm font-medium">No answer yet</p>
+                      <p className="text-sm font-medium text-foreground/60">No answer yet</p>
                       <p className="
-                        text-muted-foreground/50 max-w-[240px] text-xs/6
+                        max-w-[240px] text-xs/6 text-muted-foreground/50
                       "
                       >
                         Write a question and hit
@@ -1413,14 +1401,14 @@ export function ClaudePlayground() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="
-                      text-muted-foreground/70 text-sm font-semibold
-                      tracking-wider uppercase
+                      text-sm font-semibold tracking-wider
+                      text-muted-foreground/70 uppercase
                     "
                     >
                       API Status
                     </CardTitle>
                     <CardDescription className="
-                      text-muted-foreground mt-1 text-sm
+                      mt-1 text-sm text-muted-foreground
                     "
                     >
                       Backend environment info.
@@ -1443,7 +1431,7 @@ export function ClaudePlayground() {
                         bg-white/2 p-4
                       "
                       >
-                        <dt className="text-muted-foreground/50 mb-1 text-xs">Environment</dt>
+                        <dt className="mb-1 text-xs text-muted-foreground/50">Environment</dt>
                         <dd className="font-medium">{health.environment}</dd>
                       </div>
                       <div
@@ -1453,7 +1441,7 @@ export function ClaudePlayground() {
                         "
                         style={{ animationDelay: '60ms' }}
                       >
-                        <dt className="text-muted-foreground/50 mb-1 text-xs">API key</dt>
+                        <dt className="mb-1 text-xs text-muted-foreground/50">API key</dt>
                         <dd className={`
                           font-medium
                           ${health.anthropic_api_key_configured ?
@@ -1472,15 +1460,15 @@ export function ClaudePlayground() {
                         "
                         style={{ animationDelay: '120ms' }}
                       >
-                        <dt className="text-muted-foreground/50 mb-1 text-xs">Model</dt>
+                        <dt className="mb-1 text-xs text-muted-foreground/50">Model</dt>
                         <dd className="font-mono font-medium text-orange-300">{formatModel(health.model)}</dd>
                       </div>
                     </dl>
                   ) :
                   (
                     <div className="
-                      text-muted-foreground/50 flex items-start gap-3 rounded-xl
-                      border border-white/6 bg-white/2 p-5 text-xs
+                      flex items-start gap-3 rounded-xl border border-white/6
+                      bg-white/2 p-5 text-xs text-muted-foreground/50
                     "
                     >
                       <KeyRound className="

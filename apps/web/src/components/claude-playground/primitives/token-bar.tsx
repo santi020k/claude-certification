@@ -26,7 +26,7 @@ export function TokenBar({ label, value, max, color, delay = 0 }: TokenBarProps)
 
   return (
     <div className="space-y-1.5">
-      <div className="text-muted-foreground flex justify-between text-xs">
+      <div className="flex justify-between text-xs text-muted-foreground">
         <span>{label}</span>
         <span className="font-mono tabular-nums">{value.toLocaleString()}</span>
       </div>

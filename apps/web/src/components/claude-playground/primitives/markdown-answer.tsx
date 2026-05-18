@@ -1,4 +1,5 @@
 import ReactMarkdown from 'react-markdown'
+
 import remarkGfm from 'remark-gfm'
 
 export function MarkdownAnswer({ content }: { content: string }) {
@@ -8,7 +9,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
       components={{
         h1: ({ children }) => (
           <h1 className="
-            text-foreground mt-2 text-2xl/tight font-semibold
+            mt-2 text-2xl/tight font-semibold text-foreground
             first:mt-0
           "
           >
@@ -17,8 +18,8 @@ export function MarkdownAnswer({ content }: { content: string }) {
         ),
         h2: ({ children }) => (
           <h2 className="
-            text-foreground mt-7 border-b border-white/8 pb-2 text-xl/tight
-            font-semibold
+            mt-7 border-b border-white/8 pb-2 text-xl/tight font-semibold
+            text-foreground
             first:mt-0
           "
           >
@@ -36,7 +37,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
         ),
         h4: ({ children }) => (
           <h4 className="
-            text-muted-foreground mt-5 text-sm font-semibold tracking-wide
+            mt-5 text-sm font-semibold tracking-wide text-muted-foreground
             uppercase
             first:mt-0
           "
@@ -46,7 +47,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
         ),
         p: ({ children }) => (
           <p className="
-            text-foreground/85 my-3 leading-7
+            my-3 leading-7 text-foreground/85
             first:mt-0
             last:mb-0
           "
@@ -56,7 +57,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
         ),
         ul: ({ children }) => (
           <ul className="
-            text-foreground/85 my-3 space-y-2 pl-5
+            my-3 space-y-2 pl-5 text-foreground/85
             marker:text-orange-300/70
           "
           >
@@ -65,7 +66,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
         ),
         ol: ({ children }) => (
           <ol className="
-            text-foreground/85 my-3 list-decimal space-y-2 pl-5
+            my-3 list-decimal space-y-2 pl-5 text-foreground/85
             marker:text-orange-300/70
           "
           >
@@ -75,7 +76,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
         li: ({ children }) => <li className="pl-1 leading-7">{children}</li>,
         blockquote: ({ children }) => (
           <blockquote className="
-            text-muted-foreground my-4 border-l-2 border-orange-300/40 pl-4
+            my-4 border-l-2 border-orange-300/40 pl-4 text-muted-foreground
           "
           >
             {children}
@@ -114,8 +115,8 @@ export function MarkdownAnswer({ content }: { content: string }) {
         ),
         th: ({ children }) => (
           <th className="
-            text-foreground border-b border-white/8 bg-white/4 px-3 py-2
-            font-semibold
+            border-b border-white/8 bg-white/4 px-3 py-2 font-semibold
+            text-foreground
           "
           >
             {children}
@@ -123,7 +124,7 @@ export function MarkdownAnswer({ content }: { content: string }) {
         ),
         td: ({ children }) => (
           <td className="
-            text-foreground/80 border-b border-white/6 px-3 py-2
+            border-b border-white/6 px-3 py-2 text-foreground/80
             last:border-b-0
           "
           >
