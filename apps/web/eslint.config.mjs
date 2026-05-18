@@ -6,6 +6,6 @@ export default eslintConfig({
   typescript: true,
   frameworks: {
     react,
-    next,
-  },
+    next
+  }
 })
