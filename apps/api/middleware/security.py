@@ -7,7 +7,6 @@ Adds two protections:
    Injects defensive response headers on every reply:
    - X-Content-Type-Options: nosniff       — no MIME-sniffing
    - X-Frame-Options: DENY                 — no iframing
-   - X-XSS-Protection: 1; mode=block       — legacy XSS filter (belt-and-suspenders)
    - Referrer-Policy                        — minimal referrer leakage
    - Permissions-Policy                     — disable unused browser features
 
@@ -18,7 +17,6 @@ Adds two protections:
 """
 
 import logging
-from collections.abc import Awaitable, Callable
 
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import JSONResponse

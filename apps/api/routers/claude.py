@@ -24,7 +24,7 @@ When a limit is exceeded the client receives HTTP 429 with:
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 
 from config import ASK_RATE_LIMIT, DEMO_RATE_LIMIT
 from middleware.rate_limit import limiter
@@ -38,7 +38,7 @@ router = APIRouter(prefix="/api", tags=["claude"])
 
 @router.post("/ask", response_model=AskResponse)
 @limiter.limit(ASK_RATE_LIMIT)
-def ask_question(request: Request, body: AskRequest) -> AskResponse:
+def ask_question(request: Request, response: Response, body: AskRequest) -> AskResponse:
     """
     Send any question to Claude and receive a structured JSON answer.
 
@@ -89,7 +89,7 @@ def ask_question(request: Request, body: AskRequest) -> AskResponse:
 
 @router.get("/ask/demo", response_model=AskResponse)
 @limiter.limit(DEMO_RATE_LIMIT)
-def ask_demo(request: Request) -> AskResponse:
+def ask_demo(request: Request, response: Response) -> AskResponse:
     """
     Runs the classic quickstart demo question:
     *"What is quantum computing? Answer in one sentence."*

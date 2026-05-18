@@ -6,9 +6,10 @@ used across the rest of the application.  Import from here instead of
 calling `os.getenv` directly in your routes or services.
 """
 
-import os
+from __future__ import annotations
+
 import logging
-from typing import Optional
+import os
 
 from dotenv import load_dotenv
 
@@ -24,6 +25,7 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger("claude-certification.api")
+
 
 def _csv_env(name: str, default: str) -> list[str]:
     """Parse comma-separated env values while trimming empty entries."""
@@ -79,7 +81,7 @@ if IS_PRODUCTION and "*" in ALLOWED_ORIGINS:
 # ── Anthropic ─────────────────────────────────────────────────────────────────
 # The SDK reads ANTHROPIC_API_KEY from the environment automatically, but
 # we expose the key presence here so the health endpoint can report on it.
-ANTHROPIC_API_KEY: Optional[str] = os.getenv("ANTHROPIC_API_KEY")
+ANTHROPIC_API_KEY: str | None = os.getenv("ANTHROPIC_API_KEY")
 ANTHROPIC_API_KEY_CONFIGURED: bool = bool(
     ANTHROPIC_API_KEY and ANTHROPIC_API_KEY != "your-api-key-here"
 )
