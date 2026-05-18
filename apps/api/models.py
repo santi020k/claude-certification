@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from typing import Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -117,6 +118,62 @@ class AskResponse(BaseModel):
     output_tokens: int = Field(description="Completion tokens consumed (for billing reference).")
 
 
+class ChatMessage(BaseModel):
+    """One message in a Claude chat conversation."""
+
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=4_000)
+
+
+class ChatRequest(BaseModel):
+    """Body expected by POST /api/chat."""
+
+    message: str = Field(
+        ...,
+        min_length=1,
+        max_length=4_000,
+        description="The next user message in the conversation.",
+        examples=["Can you explain that with a small Python example?"],
+    )
+    conversation_id: str | None = Field(
+        default=None,
+        min_length=8,
+        max_length=80,
+        description="Existing conversation id. Omit it to start a new chat.",
+    )
+    max_tokens: int = Field(
+        default=1_000,
+        ge=50,
+        le=4_000,
+        description="Upper limit on Claude's next response length (tokens).",
+    )
+    one_sentence: bool = Field(
+        default=False,
+        description="When True, instructs Claude to answer in one sentence.",
+    )
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def sanitise_message(cls, v: object) -> str:
+        if not isinstance(v, str):
+            raise ValueError("message must be a string")
+        cleaned = _sanitise_question(v)
+        if len(cleaned) < 1:
+            raise ValueError("message is empty after sanitisation")
+        return cleaned
+
+
+class ChatResponse(BaseModel):
+    """Response returned by POST /api/chat."""
+
+    conversation_id: str
+    answer: str
+    messages: list[ChatMessage]
+    model: str
+    input_tokens: int
+    output_tokens: int
+
+
 class HealthResponse(BaseModel):
     """Response returned by GET /api/health."""
 
@@ -125,4 +182,3 @@ class HealthResponse(BaseModel):
     anthropic_api_key_configured: bool
     model: str
     allowed_origins: list[str]
-

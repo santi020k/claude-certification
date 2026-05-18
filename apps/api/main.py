@@ -8,6 +8,7 @@ This file is intentionally thin.  All heavy logic lives in dedicated modules:
   services/claude.py          — Anthropic SDK wrapper (ask_claude)
   routers/health.py           — GET /  and  GET /api/health
   routers/claude.py           — POST /api/ask  and  GET /api/ask/demo
+  routers/chat.py             — POST /api/chat
   middleware/rate_limit.py    — slowapi Limiter (per-IP rate limiting)
   middleware/security.py      — security headers + body-size guard
 
@@ -38,11 +39,13 @@ from config import (
     API_HOST,
     API_PORT,
     ASK_RATE_LIMIT,
+    CHAT_RATE_LIMIT,
     DEMO_RATE_LIMIT,
     logger,
 )
 from middleware.rate_limit import limiter
 from middleware.security import SecurityHeadersMiddleware
+from routers import chat as chat_router
 from routers import claude as claude_router
 from routers import health as health_router
 
@@ -56,6 +59,7 @@ app = FastAPI(
         "Interactive docs → **/docs** (Swagger UI) or **/redoc** (ReDoc).\n\n"
         "**Rate limits** (per remote IP):\n"
         f"- `POST /api/ask` — {ASK_RATE_LIMIT}\n"
+        f"- `POST /api/chat` — {CHAT_RATE_LIMIT}\n"
         f"- `GET /api/ask/demo` — {DEMO_RATE_LIMIT}\n"
     ),
     version="0.2.0",
@@ -91,6 +95,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 app.include_router(health_router.router)
 app.include_router(claude_router.router)
+app.include_router(chat_router.router)
 
 # ---------------------------------------------------------------------------
 # Dev entry-point

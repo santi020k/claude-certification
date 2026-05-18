@@ -1,4 +1,4 @@
-import type { AskResponse, HealthResponse } from './types'
+import type { AskResponse, ChatResponse, HealthResponse } from './types'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -17,6 +17,21 @@ const isHealthResponse = (value: unknown): value is HealthResponse =>
   typeof value.environment === 'string' &&
   typeof value.anthropic_api_key_configured === 'boolean' &&
   typeof value.model === 'string'
+
+const isChatMessage = (value: unknown) =>
+  isRecord(value) &&
+  (value.role === 'user' || value.role === 'assistant') &&
+  typeof value.content === 'string'
+
+const isChatResponse = (value: unknown): value is ChatResponse =>
+  isRecord(value) &&
+  typeof value.conversation_id === 'string' &&
+  typeof value.answer === 'string' &&
+  Array.isArray(value.messages) &&
+  value.messages.every(isChatMessage) &&
+  typeof value.model === 'string' &&
+  typeof value.input_tokens === 'number' &&
+  typeof value.output_tokens === 'number'
 
 export function getApiBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -53,6 +68,16 @@ export async function readAskResponse(response: Response): Promise<AskResponse> 
 
   if (!isAskResponse(payload)) {
     throw new Error('The API returned an invalid answer payload.')
+  }
+
+  return payload
+}
+
+export async function readChatResponse(response: Response): Promise<ChatResponse> {
+  const payload: unknown = await response.json()
+
+  if (!isChatResponse(payload)) {
+    throw new Error('The API returned an invalid chat payload.')
   }
 
   return payload

@@ -92,6 +92,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Chat
+         * @description Continue a Claude conversation.
+         *
+         *     Omit `conversation_id` to start a new conversation. Send the returned id
+         *     with later messages to keep the same context.
+         */
+        post: operations["chat_api_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -173,6 +196,66 @@ export interface components {
              * @description The original question that was sent to Claude.
              */
             question: string;
+        };
+        /**
+         * ChatMessage
+         * @description One message in a Claude chat conversation.
+         */
+        ChatMessage: {
+            /** Content */
+            content: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+        };
+        /**
+         * ChatRequest
+         * @description Body expected by POST /api/chat.
+         */
+        ChatRequest: {
+            /**
+             * Conversation Id
+             * @description Existing conversation id. Omit it to start a new chat.
+             */
+            conversation_id?: string | null;
+            /**
+             * Max Tokens
+             * @description Upper limit on Claude's next response length (tokens).
+             * @default 1000
+             */
+            max_tokens?: number;
+            /**
+             * Message
+             * @description The next user message in the conversation.
+             * @example Can you explain that with a small Python example?
+             */
+            message: string;
+            /**
+             * One Sentence
+             * @description When True, instructs Claude to answer in one sentence.
+             * @default false
+             */
+            one_sentence?: boolean;
+        };
+        /**
+         * ChatResponse
+         * @description Response returned by POST /api/chat.
+         */
+        ChatResponse: {
+            /** Answer */
+            answer: string;
+            /** Conversation Id */
+            conversation_id: string;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Messages */
+            messages: components["schemas"]["ChatMessage"][];
+            /** Model */
+            model: string;
+            /** Output Tokens */
+            output_tokens: number;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -288,6 +371,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AskResponse"];
+                };
+            };
+        };
+    };
+    chat_api_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

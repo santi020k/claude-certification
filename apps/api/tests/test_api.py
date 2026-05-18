@@ -2,11 +2,13 @@ from fastapi.testclient import TestClient
 
 from main import app
 from services.claude import (
+    ClaudeChatResponseDict,
     ClaudeResponseDict,
     ClaudeServiceError,
     ClaudeTimeoutError,
     extract_text,
 )
+from services.conversations import conversation_store
 
 client = TestClient(app)
 
@@ -205,6 +207,64 @@ def test_ask_unexpected_error(monkeypatch) -> None:
     )
     assert response.status_code == 500
     assert response.json()["detail"] == "Unexpected server error. Please try again."
+
+
+def test_chat_starts_and_continues_conversation(monkeypatch) -> None:
+    conversation_store.clear_all()
+    captured_lengths: list[int] = []
+
+    def fake_chat_with_claude(messages, max_tokens: int) -> ClaudeChatResponseDict:
+        captured_lengths.append(len(messages))
+        return {
+            "answer": f"Reply {len(messages)}",
+            "model": "test-model",
+            "input_tokens": 10,
+            "output_tokens": 4,
+        }
+
+    monkeypatch.setattr("routers.chat.chat_with_claude", fake_chat_with_claude)
+
+    first = client.post(
+        "/api/chat",
+        json={"message": "Explain stateful chats.", "max_tokens": 100},
+    )
+
+    assert first.status_code == 200
+    first_payload = first.json()
+    assert first_payload["conversation_id"]
+    assert first_payload["answer"] == "Reply 1"
+    assert [message["role"] for message in first_payload["messages"]] == [
+        "user",
+        "assistant",
+    ]
+
+    second = client.post(
+        "/api/chat",
+        json={
+            "conversation_id": first_payload["conversation_id"],
+            "message": "Show a follow-up.",
+            "max_tokens": 100,
+        },
+    )
+
+    assert second.status_code == 200
+    assert second.json()["answer"] == "Reply 3"
+    assert captured_lengths == [1, 3]
+
+
+def test_chat_maps_claude_errors(monkeypatch) -> None:
+    def fake_chat_with_claude(messages, max_tokens: int) -> ClaudeChatResponseDict:
+        raise ClaudeTimeoutError("timeout")
+
+    monkeypatch.setattr("routers.chat.chat_with_claude", fake_chat_with_claude)
+
+    response = client.post(
+        "/api/chat",
+        json={"message": "Explain slow responses.", "max_tokens": 100},
+    )
+
+    assert response.status_code == 504
+    assert response.json()["detail"] == "Claude took too long to respond. Please try again."
 
 
 def test_extract_text_raises_when_no_text() -> None:

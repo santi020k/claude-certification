@@ -19,7 +19,7 @@ Usage
 import logging
 from collections.abc import Sequence
 from functools import lru_cache
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from anthropic import (
     Anthropic,
@@ -67,6 +67,18 @@ class ClaudeTimeoutError(ClaudeServiceError):
 
 class ClaudeResponseDict(TypedDict):
     question: str
+    answer: str
+    model: str
+    input_tokens: int
+    output_tokens: int
+
+
+class ClaudeMessage(TypedDict):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class ClaudeChatResponseDict(TypedDict):
     answer: str
     model: str
     input_tokens: int
@@ -127,11 +139,37 @@ def ask_claude(question: str, max_tokens: int = 1000) -> ClaudeResponseDict:
         len(question),
     )
 
+    result = chat_with_claude(
+        [{"role": "user", "content": question}],
+        max_tokens=max_tokens,
+    )
+
+    return {
+        "question": question,
+        "answer": result["answer"],
+        "model": result["model"],
+        "input_tokens": result["input_tokens"],
+        "output_tokens": result["output_tokens"],
+    }
+
+
+def chat_with_claude(
+    messages: Sequence[ClaudeMessage],
+    max_tokens: int = 1000,
+) -> ClaudeChatResponseDict:
+    """Send a conversation history to Claude and return the next answer."""
+    logger.info(
+        "Claude chat request | model=%s max_tokens=%d messages=%d",
+        MODEL,
+        max_tokens,
+        len(messages),
+    )
+
     try:
         response = get_client().messages.create(
             model=MODEL,
             max_tokens=max_tokens,
-            messages=[{"role": "user", "content": question}],
+            messages=list(messages),
         )
     except AuthenticationError as exc:
         raise ClaudeAuthenticationError(str(exc)) from exc
@@ -147,13 +185,12 @@ def ask_claude(question: str, max_tokens: int = 1000) -> ClaudeResponseDict:
     answer_text = extract_text(response.content)
 
     logger.info(
-        "← Claude | %d input tokens, %d output tokens",
+        "← Claude chat | %d input tokens, %d output tokens",
         response.usage.input_tokens,
         response.usage.output_tokens,
     )
 
     return {
-        "question": question,
         "answer": answer_text,
         "model": MODEL,
         "input_tokens": response.usage.input_tokens,
