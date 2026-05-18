@@ -17,9 +17,9 @@ from services.claude import get_client, extract_text, ClaudeServiceError
 
 logger = logging.getLogger("claude-certification.api")
 
-# Determine the workspace root (two directories up from apps/api)
+# Determine the workspace root (three directories up from apps/api/services)
 WORKSPACE_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "..")
+    os.path.join(os.path.dirname(__file__), "..", "..", "..")
 )
 
 SYSTEM_PROMPT = """You are an elite web accessibility engineer specializing in WCAG 2.2 Level AA compliance, semantic HTML, and CSS color contrast checks.

@@ -4,7 +4,7 @@ routers/accessibility.py — Endpoints for automated accessibility checks via Cl
 
 import logging
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 
 from config import ASK_RATE_LIMIT
 from middleware.rate_limit import limiter
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/accessibility", tags=["accessibility"])
 @router.post("/analyze", response_model=AccessibilityAnalyzeResponse)
 @limiter.limit(ASK_RATE_LIMIT)
 def analyze_file_accessibility(
-    request: Request, body: AccessibilityAnalyzeRequest
+    request: Request, response: Response, body: AccessibilityAnalyzeRequest
 ) -> AccessibilityAnalyzeResponse:
     """
     Analyze a workspace file or code snippet for accessibility violations using Claude.

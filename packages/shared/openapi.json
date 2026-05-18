@@ -1,6 +1,132 @@
 {
   "components": {
     "schemas": {
+      "AccessibilityAnalyzeRequest": {
+        "description": "Body expected by POST /api/accessibility/analyze.",
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Optional source code. If empty, the backend will attempt to read the file from the workspace.",
+            "title": "Code"
+          },
+          "file_path": {
+            "description": "Path relative to the workspace root or filename.",
+            "title": "File Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "file_path"
+        ],
+        "title": "AccessibilityAnalyzeRequest",
+        "type": "object"
+      },
+      "AccessibilityAnalyzeResponse": {
+        "description": "Response returned by POST /api/accessibility/analyze.",
+        "properties": {
+          "file_path": {
+            "description": "The path of the analyzed file.",
+            "title": "File Path",
+            "type": "string"
+          },
+          "input_tokens": {
+            "description": "Prompt tokens consumed.",
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "model": {
+            "description": "The Claude model used for analysis.",
+            "title": "Model",
+            "type": "string"
+          },
+          "output_tokens": {
+            "description": "Completion tokens consumed.",
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "summary": {
+            "description": "A markdown summary of the audit and findings.",
+            "title": "Summary",
+            "type": "string"
+          },
+          "violations": {
+            "description": "List of detected accessibility violations.",
+            "items": {
+              "$ref": "#/components/schemas/AccessibilityViolation"
+            },
+            "title": "Violations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "file_path",
+          "violations",
+          "summary",
+          "model",
+          "input_tokens",
+          "output_tokens"
+        ],
+        "title": "AccessibilityAnalyzeResponse",
+        "type": "object"
+      },
+      "AccessibilityViolation": {
+        "description": "Represents a specific accessibility issue detected in the code.",
+        "properties": {
+          "description": {
+            "description": "Explanation of the accessibility issue.",
+            "title": "Description",
+            "type": "string"
+          },
+          "element": {
+            "description": "The code snippet or element causing the violation.",
+            "title": "Element",
+            "type": "string"
+          },
+          "line": {
+            "description": "Line number where the violation is found, or 0 if general.",
+            "title": "Line",
+            "type": "integer"
+          },
+          "recommendation": {
+            "description": "Actionable suggestion to resolve the issue.",
+            "title": "Recommendation",
+            "type": "string"
+          },
+          "severity": {
+            "description": "Severity (critical, serious, moderate, minor)",
+            "title": "Severity",
+            "type": "string"
+          },
+          "type": {
+            "description": "Type of violation (e.g., contrast, semantic, keyboard, etc.)",
+            "title": "Type",
+            "type": "string"
+          },
+          "wcag_guideline": {
+            "description": "WCAG 2.2 guideline reference (e.g., 1.4.3 Contrast)",
+            "title": "Wcag Guideline",
+            "type": "string"
+          }
+        },
+        "required": [
+          "line",
+          "element",
+          "type",
+          "severity",
+          "wcag_guideline",
+          "description",
+          "recommendation"
+        ],
+        "title": "AccessibilityViolation",
+        "type": "object"
+      },
       "AskRequest": {
         "description": "Body expected by POST /api/ask.",
         "properties": {
@@ -196,6 +322,48 @@
         "summary": "Root",
         "tags": [
           "health"
+        ]
+      }
+    },
+    "/api/accessibility/analyze": {
+      "post": {
+        "description": "Analyze a workspace file or code snippet for accessibility violations using Claude.\n\n**Rate limit:** 10 requests per minute per IP.\n\n**Example request body**\n```json\n{\n  \"file_path\": \"apps/web/src/app/globals.css\"\n}\n```",
+        "operationId": "analyze_file_accessibility_api_accessibility_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccessibilityAnalyzeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessibilityAnalyzeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Analyze File Accessibility",
+        "tags": [
+          "accessibility"
         ]
       }
     },
