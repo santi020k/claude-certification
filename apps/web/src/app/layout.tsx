@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
+import { ApiStatusProvider } from '@/components/api-status/context'
+
 import './globals.css'
 
 const geistSans = Geist({
@@ -101,7 +103,9 @@ export default function RootLayout({
         dark h-full antialiased
       `}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <ApiStatusProvider>{children}</ApiStatusProvider>
+      </body>
     </html>
   )
 }

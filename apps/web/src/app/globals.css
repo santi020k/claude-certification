@@ -89,6 +89,18 @@ body {
   50%       { opacity: 0.9; }
 }
 
+/* Chat message slide-in from bottom */
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Hero text word-by-word reveal */
+@keyframes hero-word {
+  from { opacity: 0; transform: translateY(14px); filter: blur(4px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
 /* ── Animation utility classes ─────────────────────────────────────────────── */
 
 .animate-slide-up-fade {
@@ -102,6 +114,12 @@ body {
 }
 .animate-answer-reveal {
   animation: answer-reveal 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-message-in {
+  animation: message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-hero-word {
+  animation: hero-word 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Stagger delays for entrance animations */
