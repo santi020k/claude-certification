@@ -20,6 +20,11 @@ export interface ChatResponse {
   output_tokens: number
 }
 
+export type ChatStreamEvent =
+  | { type: 'text', text: string } |
+  (ChatResponse & { type: 'final' }) |
+  { type: 'error', detail: string, status_code?: number }
+
 export interface HealthResponse {
   status: string
   environment: string

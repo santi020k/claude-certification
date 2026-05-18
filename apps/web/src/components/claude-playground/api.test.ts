@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getApiBaseUrl, parseRetryAfter, readChatResponse, readErrorMessage } from './api'
+import { getApiBaseUrl, parseRetryAfter, readChatResponse, readChatStream, readErrorMessage } from './api'
 
 describe('getApiBaseUrl', () => {
   beforeEach(() => {
@@ -129,5 +129,35 @@ describe('readChatResponse', () => {
     }))
 
     await expect(readChatResponse(response)).rejects.toThrow('invalid chat payload')
+  })
+})
+
+describe('readChatStream', () => {
+  it('should parse streamed chat events', async () => {
+    const response = new Response([
+      JSON.stringify({ type: 'text', text: 'Hel' }),
+      JSON.stringify({ type: 'text', text: 'lo' }),
+      JSON.stringify({
+        type: 'final',
+        conversation_id: 'conversation-1',
+        answer: 'Hello',
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' }
+        ],
+        model: 'test-model',
+        input_tokens: 4,
+        output_tokens: 2
+      })
+    ].join('\n'))
+
+    const events = []
+    for await (const event of readChatStream(response)) {
+      events.push(event)
+    }
+
+    expect(events).toHaveLength(3)
+    expect(events[0]).toMatchObject({ type: 'text', text: 'Hel' })
+    expect(events[2]).toMatchObject({ type: 'final', answer: 'Hello' })
   })
 })

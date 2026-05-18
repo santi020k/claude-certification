@@ -16,8 +16,10 @@ Usage
     #            "input_tokens": N, "output_tokens": N}
 """
 
+from __future__ import annotations
+
 import logging
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from functools import lru_cache
 from typing import Literal, TypedDict
 
@@ -80,6 +82,14 @@ class ClaudeMessage(TypedDict):
 
 class ClaudeChatResponseDict(TypedDict):
     answer: str
+    model: str
+    input_tokens: int
+    output_tokens: int
+
+
+class ClaudeChatStreamChunk(TypedDict):
+    type: Literal["text", "final"]
+    text: str
     model: str
     input_tokens: int
     output_tokens: int
@@ -220,4 +230,68 @@ def chat_with_claude(
         "model": MODEL,
         "input_tokens": response.usage.input_tokens,
         "output_tokens": response.usage.output_tokens,
+    }
+
+
+def stream_chat_with_claude(
+    messages: Sequence[ClaudeMessage],
+    max_tokens: int = 1000,
+    system_prompt: str | None = None,
+    temperature: float = 0.7,
+) -> Iterator[ClaudeChatStreamChunk]:
+    """Stream Claude's next chat answer as text chunks, then final usage."""
+    logger.info(
+        "Claude chat stream | model=%s max_tokens=%d messages=%d temperature=%.2f specialist_prompt=%s",
+        MODEL,
+        max_tokens,
+        len(messages),
+        temperature,
+        "yes" if system_prompt else "no",
+    )
+
+    stream_kwargs: dict = {
+        "model": MODEL,
+        "max_tokens": max_tokens,
+        "messages": list(messages),
+        "temperature": temperature,
+    }
+    if system_prompt:
+        stream_kwargs["system"] = system_prompt
+
+    try:
+        with get_client().messages.stream(**stream_kwargs) as stream:
+            for text in stream.text_stream:
+                if text:
+                    yield {
+                        "type": "text",
+                        "text": text,
+                        "model": MODEL,
+                        "input_tokens": 0,
+                        "output_tokens": 0,
+                    }
+
+            final_message = stream.get_final_message()
+    except AuthenticationError as exc:
+        raise ClaudeAuthenticationError(str(exc)) from exc
+    except RateLimitError as exc:
+        raise ClaudeRateLimitError(str(exc)) from exc
+    except APITimeoutError as exc:
+        raise ClaudeTimeoutError(str(exc)) from exc
+    except APIConnectionError as exc:
+        raise ClaudeServiceError("Claude connection failed") from exc
+    except APIError as exc:
+        raise ClaudeServiceError(str(exc)) from exc
+
+    logger.info(
+        "← Claude chat stream | %d input tokens, %d output tokens",
+        final_message.usage.input_tokens,
+        final_message.usage.output_tokens,
+    )
+
+    yield {
+        "type": "final",
+        "text": extract_text(final_message.content),
+        "model": MODEL,
+        "input_tokens": final_message.usage.input_tokens,
+        "output_tokens": final_message.usage.output_tokens,
     }

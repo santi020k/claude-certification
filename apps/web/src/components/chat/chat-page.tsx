@@ -9,6 +9,7 @@ import {
   getApiBaseUrl,
   parseRetryAfter,
   readChatResponse,
+  readChatStream,
   readErrorMessage,
   readSpecialistsResponse
 } from '@/components/claude-playground/api'
@@ -97,6 +98,7 @@ interface ChatSession {
   maxTokens: number
   messages: ChatMessage[]
   specialistId: string
+  streamEnabled: boolean
   temperature: number
 }
 
@@ -111,6 +113,7 @@ function getDefaultChatSession(
     maxTokens: 1000,
     messages: buildStarterMessages(specialistName),
     specialistId,
+    streamEnabled: false,
     temperature
   }
 }
@@ -133,6 +136,7 @@ function readChatSession(): ChatSession {
         parsed.messages :
         buildStarterMessages('General Assistant'),
       specialistId: typeof parsed.specialistId === 'string' ? parsed.specialistId : DEFAULT_SPECIALIST_ID,
+      streamEnabled: typeof parsed.streamEnabled === 'boolean' ? parsed.streamEnabled : false,
       temperature: typeof parsed.temperature === 'number' ? parsed.temperature : DEFAULT_TEMPERATURE
     }
   } catch {
@@ -166,6 +170,7 @@ export function ChatPage() {
   const [error,          setError]          = useState<string | null>(null)
   const [isSending,      setIsSending]      = useState(false)
   const [isSessionReady, setIsSessionReady] = useState(false)
+  const [streamEnabled,  setStreamEnabled]  = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const bottomRef   = useRef<HTMLDivElement>(null)
   const trimmed = draft.trim()
@@ -192,6 +197,8 @@ export function ChatPage() {
       setLastResponse(session.lastResponse)
 
       setSpecialistId(session.specialistId)
+
+      setStreamEnabled(session.streamEnabled)
 
       setTemperature(session.temperature)
 
@@ -235,10 +242,19 @@ export function ChatPage() {
       }
 
       window.sessionStorage.setItem(chatSessionKey, JSON.stringify({
-        conversationId, lastResponse, maxTokens, messages, specialistId, temperature
+        conversationId, lastResponse, maxTokens, messages, specialistId, streamEnabled, temperature
       }))
     } catch { /* session storage may be unavailable */ }
-  }, [conversationId, isSessionReady, lastResponse, maxTokens, messages, specialistId, temperature])
+  }, [
+    conversationId,
+    isSessionReady,
+    lastResponse,
+    maxTokens,
+    messages,
+    specialistId,
+    streamEnabled,
+    temperature
+  ])
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -258,6 +274,12 @@ export function ChatPage() {
     setIsSending(true)
 
     try {
+      if (streamEnabled) {
+        await sendStreamingMessage(optimisticMessage)
+
+        return
+      }
+
       const res = await fetch(`${apiBaseUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -293,6 +315,68 @@ export function ChatPage() {
       setIsSending(false)
 
       textareaRef.current?.focus()
+    }
+  }
+
+  async function sendStreamingMessage(optimisticMessage: ChatMessage) {
+    const assistantMessage: ChatMessage = { role: 'assistant', content: '' }
+
+    setMessages(current => [...current, assistantMessage])
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/api/chat/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          message: optimisticMessage.content,
+          max_tokens: maxTokens,
+          specialist: specialistId,
+          temperature
+        })
+      })
+
+      if (res.status === 429) {
+        const secs = parseRetryAfter(res)
+
+        throw new Error(`Rate limit reached. Please wait ${secs}s before trying again.`)
+      }
+
+      if (!res.ok) throw new Error(await readErrorMessage(res))
+
+      let finalResponse: ChatResponse | null = null
+
+      for await (const streamEvent of readChatStream(res)) {
+        if (streamEvent.type === 'text') {
+          setMessages(current => current.map(message => (
+            message === assistantMessage ?
+              { ...message, content: `${message.content}${streamEvent.text}` } :
+              message
+          )))
+
+          continue
+        }
+
+        if (streamEvent.type === 'error') {
+          throw new Error(streamEvent.detail)
+        }
+
+        finalResponse = streamEvent
+
+        setConversationId(streamEvent.conversation_id)
+
+        setMessages(streamEvent.messages)
+
+        setLastResponse(streamEvent)
+      }
+
+      if (!finalResponse) {
+        throw new Error('Claude ended the stream before sending a final response.')
+      }
+    } catch (err) {
+      setMessages(current => current.filter(message => message !== assistantMessage))
+
+      throw err
     }
   }
 
@@ -594,9 +678,9 @@ export function ChatPage() {
           {/* Message log */}
           <div
             className="
-              flex-1 space-y-5 overflow-y-auto
+              flex-1 scrollbar-gutter-stable space-y-5 overflow-y-auto
               mask-[linear-gradient(to_bottom,transparent,black_18px,black_calc(100%-18px),transparent)]
-              px-4 py-5 [scrollbar-gutter:stable]
+              px-4 py-5
             "
             role="log"
             aria-live="polite"
@@ -675,7 +759,7 @@ export function ChatPage() {
               </div>
             ))}
 
-            {isSending ?
+            {isSending && !streamEnabled ?
               (
                 <div
                   className="
@@ -822,6 +906,25 @@ export function ChatPage() {
                     {MAX_DRAFT_LENGTH}
                   </span>
                 </div>
+
+                <label className="
+                  flex cursor-pointer items-center gap-2 rounded-md border
+                  border-white/10 bg-black/15 px-2.5 py-1.5 text-xs
+                  text-muted-foreground transition-colors
+                  hover:border-orange-200/25 hover:text-foreground
+                "
+                >
+                  <input
+                    type="checkbox"
+                    checked={streamEnabled}
+                    disabled={isSending}
+                    className="size-3.5 accent-orange-400"
+                    onChange={event => {
+                      setStreamEnabled(event.target.checked)
+                    }}
+                  />
+                  Stream message
+                </label>
               </div>
 
               <div className="flex items-center gap-3">

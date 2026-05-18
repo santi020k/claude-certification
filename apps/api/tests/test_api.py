@@ -252,6 +252,49 @@ def test_chat_starts_and_continues_conversation(monkeypatch) -> None:
     assert captured_lengths == [1, 3]
 
 
+def test_chat_stream_saves_final_conversation(monkeypatch) -> None:
+    conversation_store.clear_all()
+
+    def fake_stream_chat_with_claude(messages, max_tokens: int, **kwargs):
+        yield {
+            "type": "text",
+            "text": "Hello",
+            "model": "test-model",
+            "input_tokens": 0,
+            "output_tokens": 0,
+        }
+        yield {
+            "type": "text",
+            "text": " there.",
+            "model": "test-model",
+            "input_tokens": 0,
+            "output_tokens": 0,
+        }
+        yield {
+            "type": "final",
+            "text": "Hello there.",
+            "model": "test-model",
+            "input_tokens": 9,
+            "output_tokens": 3,
+        }
+
+    monkeypatch.setattr("routers.chat.stream_chat_with_claude", fake_stream_chat_with_claude)
+
+    with client.stream(
+        "POST",
+        "/api/chat/stream",
+        json={"message": "Say hello.", "max_tokens": 100},
+    ) as response:
+        assert response.status_code == 200
+        lines = [line for line in response.iter_lines() if line]
+
+    assert '"type": "text"' in lines[0]
+    assert '"Hello"' in lines[0]
+    assert '"type": "final"' in lines[-1]
+    assert '"answer": "Hello there."' in lines[-1]
+    assert '"input_tokens": 9' in lines[-1]
+
+
 def test_chat_maps_claude_errors(monkeypatch) -> None:
     def fake_chat_with_claude(messages, max_tokens: int) -> ClaudeChatResponseDict:
         raise ClaudeTimeoutError("timeout")

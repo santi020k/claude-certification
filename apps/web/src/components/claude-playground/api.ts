@@ -1,4 +1,11 @@
-import type { AskResponse, ChatResponse, HealthResponse, Specialist, SpecialistsResponse } from './types'
+import type {
+  AskResponse,
+  ChatResponse,
+  ChatStreamEvent,
+  HealthResponse,
+  Specialist,
+  SpecialistsResponse
+} from './types'
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 
@@ -38,6 +45,16 @@ const isSpecialistsResponse = (value: unknown): value is SpecialistsResponse => 
   Array.isArray(value.specialists) &&
   value.specialists.every(isSpecialist) &&
   typeof value.default === 'string'
+
+const isChatStreamEvent = (value: unknown): value is ChatStreamEvent => {
+  if (!isRecord(value) || typeof value.type !== 'string') return false
+
+  if (value.type === 'text') return typeof value.text === 'string'
+
+  if (value.type === 'error') return typeof value.detail === 'string'
+
+  return value.type === 'final' && isChatResponse(value)
+}
 
 export function getApiBaseUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000'
@@ -87,6 +104,60 @@ export async function readChatResponse(response: Response): Promise<ChatResponse
   }
 
   return payload
+}
+
+export async function* readChatStream(response: Response): AsyncGenerator<ChatStreamEvent> {
+  if (!response.body) {
+    throw new Error('The API returned an empty stream.')
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read()
+
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+
+      const lines = buffer.split('\n')
+
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+
+        if (!trimmed) continue
+
+        const event: unknown = JSON.parse(trimmed)
+
+        if (!isChatStreamEvent(event)) {
+          throw new Error('The API returned an invalid chat stream payload.')
+        }
+
+        yield event
+      }
+    }
+
+    buffer += decoder.decode()
+
+    const trimmed = buffer.trim()
+
+    if (trimmed) {
+      const event: unknown = JSON.parse(trimmed)
+
+      if (!isChatStreamEvent(event)) {
+        throw new Error('The API returned an invalid chat stream payload.')
+      }
+
+      yield event
+    }
+  } finally {
+    reader.releaseLock()
+  }
 }
 
 export async function readHealthResponse(response: Response): Promise<HealthResponse> {
