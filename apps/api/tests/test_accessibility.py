@@ -1,9 +1,9 @@
 import os
-import json
+
 from fastapi.testclient import TestClient
 
-from main import app
 from config import ANTHROPIC_API_KEY_CONFIGURED
+from main import app
 from services.accessibility import WORKSPACE_ROOT
 
 client = TestClient(app)

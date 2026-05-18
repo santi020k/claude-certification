@@ -13,7 +13,7 @@ import os
 from typing import Any
 
 from config import MODEL
-from services.claude import get_client, extract_text, ClaudeServiceError
+from services.claude import ClaudeServiceError, extract_text, get_client
 
 logger = logging.getLogger("claude-certification.api")
 
@@ -80,7 +80,7 @@ def analyze_accessibility(file_path: str, code: str | None = None) -> dict[str, 
             raise ClaudeServiceError(f"File not found: {file_path}")
 
         try:
-            with open(safe_path, "r", encoding="utf-8") as f:
+            with open(safe_path, encoding="utf-8") as f:
                 code = f.read()
         except Exception as exc:
             raise ClaudeServiceError(f"Failed to read file: {str(exc)}")

@@ -31,8 +31,6 @@ from __future__ import annotations
 import re
 import unicodedata
 
-from typing import List, Optional
-
 from pydantic import BaseModel, Field, field_validator
 
 # ── Patterns ───────────────────────────────────────────────────────────────────
@@ -149,7 +147,7 @@ class AccessibilityAnalyzeRequest(BaseModel):
         ...,
         description="Path relative to the workspace root or filename."
     )
-    code: Optional[str] = Field(
+    code: str | None = Field(
         default=None,
         description="Optional source code. If empty, the backend will attempt to read the file from the workspace."
     )
@@ -159,7 +157,7 @@ class AccessibilityAnalyzeResponse(BaseModel):
     """Response returned by POST /api/accessibility/analyze."""
 
     file_path: str = Field(description="The path of the analyzed file.")
-    violations: List[AccessibilityViolation] = Field(description="List of detected accessibility violations.")
+    violations: list[AccessibilityViolation] = Field(description="List of detected accessibility violations.")
     summary: str = Field(description="A markdown summary of the audit and findings.")
     model: str = Field(description="The Claude model used for analysis.")
     input_tokens: int = Field(description="Prompt tokens consumed.")

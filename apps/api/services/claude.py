@@ -83,7 +83,7 @@ def extract_text(content_blocks: list[Any]) -> str:
     return "\n\n".join(parts)
 
 
-def ask_claude(question: str, max_tokens: int = 1000) -> dict[str, object]:
+def ask_claude(question: str, max_tokens: int = 1000) -> dict[str, Any]:
     """
     Send *question* to Claude and return a structured dict.
 

@@ -6,80 +6,75 @@ Generated automatically via the Claude Accessibility Checker test suite.
 
 ### Accessibility Audit Summary
 
-The page structure is minimal and uses semantic HTML with a proper `<main>` element. However, there is one moderate accessibility concern: the absence of a skip-to-content link. While the current code doesn't show any navigation elements, it's a best practice to include skip links for consistency and future-proofing. The main accessibility evaluation will depend on the implementation within the `<ClaudePlayground />` component, which is not visible in this code snippet.
+**Issues Found:** 2 moderate violations
 
-### Detected Violations (1)
+The main page structure is minimal but lacks essential accessibility features. The primary concerns are:
+
+1. **Missing Skip Navigation:** No skip-to-content link for keyboard users
+2. **Unknown Component Structure:** The ClaudePlayground component's accessibility cannot be assessed without its implementation
+
+While the basic semantic structure using `<main>` is correct, the page would benefit from a skip navigation link and verification that the child component follows proper accessibility practices including heading hierarchy and semantic markup.
+
+### Detected Violations (2)
 
 | Line | Element / Code | Type | Severity | WCAG Guideline | Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 5 | `<main className="flex flex-1 flex-col">` | **semantic** | moderate | 2.4.1 Bypass Blocks (AA) | Add a skip-to-content link as the first focusable element on the page, typically positioned before or within the main element. (The page lacks a skip-to-content link, which is essential for keyboard users to bypass navigation and jump directly to the main content.) |
+| 5 | `<main className="flex flex-1 flex-col">` | **semantic** | moderate | 2.4.1 Bypass Blocks (AA) | Add a skip-to-content link at the beginning of the page that allows keyboard users to jump to the main content area. (The page lacks a skip-to-content link, which is essential for keyboard users to bypass navigation and jump directly to the main content.) |
+| 6 | `<ClaudePlayground />` | **semantic** | moderate | 1.3.1 Info and Relationships (AA) | Ensure the ClaudePlayground component includes proper heading hierarchy (h1, h2, etc.) and semantic HTML structure for screen readers. (Cannot determine if the ClaudePlayground component has proper heading hierarchy and semantic structure without inspecting its implementation.) |
 
 
 ## File: `apps/web/src/components/claude-playground.tsx`
 
 ### Accessibility Audit Summary
 
-**Overall Assessment: Good**
+**Overall Assessment:** The code demonstrates good accessibility practices with proper semantic HTML structure and ARIA attributes, but has a few areas for improvement.
 
-This Claude Playground component demonstrates good accessibility practices overall, with most interactive elements properly delegated to child components. The main accessibility concerns identified are:
-
-**Medium Priority Issues:**
-- Missing skip-to-content link for keyboard navigation
-- Error alerts lack proper ARIA live region attributes for screen reader announcements
-
-**Low Priority Issues:**
-- Global keyboard shortcut implementation could be improved with better scoping and user documentation
+**Key Findings:**
+- **Missing skip-to-content link** - Users relying on keyboard navigation would benefit from a way to bypass any header content
+- **Potential contrast issue** - The error alert uses low opacity colors that may not meet WCAG AA contrast requirements
+- **Error announcement** - While the alert has proper role attributes, dynamic error messages could benefit from more explicit live region announcements
+- **Global keyboard handler** - The Ctrl/Cmd+Enter shortcut is implemented globally which could potentially interfere with other page functionality
 
 **Positive Aspects:**
-- Proper semantic HTML structure with main landmark
-- Good separation of concerns with accessibility likely handled in child components
-- Proper form handling and error state management
-- Use of semantic Alert component for error messages
+- Proper use of semantic HTML elements (main, section)
+- Correct ARIA roles on alert components
+- Good component structure with separation of concerns
+- Proper form handling patterns
 
-**Recommendations:**
-1. Add a skip-to-content link at the page top
-2. Ensure Alert components have proper ARIA live regions
-3. Document keyboard shortcuts for users
-4. Verify child components (PromptCard, ResponseCard, etc.) follow accessibility best practices
+**Priority:** The contrast issue should be addressed first, followed by adding a skip-to-content link for better keyboard navigation.
 
-### Detected Violations (3)
+### Detected Violations (4)
 
 | Line | Element / Code | Type | Severity | WCAG Guideline | Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 165 | `<main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6 lg:px-10">` | **semantic_structure** | medium | 2.4.1 Bypass Blocks (AA) | Add a skip-to-content link at the beginning of the page that becomes visible when focused, pointing to the main content area. (The page lacks a skip-to-content link, making it difficult for keyboard and screen reader users to bypass navigation and jump directly to the main content.) |
-| 174 | `<Alert variant="destructive" className="animate-slide-up-fade border-rose-500/25 bg-rose-500/8">` | **aria_live_region** | medium | 4.1.3 Status Messages (AA) | Add role="alert" or aria-live="assertive" to the Alert component to ensure error messages are announced to assistive technologies when they appear. (The error alert appears dynamically but lacks proper ARIA live region attributes to announce changes to screen readers.) |
-| 82 | `window.addEventListener('keydown', onKey)` | **keyboard_accessibility** | low | 2.1.1 Keyboard (AA) | Consider moving this keyboard shortcut to the form element scope and provide visible indication of the keyboard shortcut to users, such as in a help tooltip or form instructions. (Global keyboard event listener for Cmd/Ctrl+Enter shortcut may interfere with other keyboard interactions and lacks proper documentation for users.) |
+| 164 | `<main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6 lg:px-10">` | **semantic** | moderate | 2.4.1 Bypass Blocks (AA) | Add a skip-to-content link at the beginning of the page that allows keyboard users to jump directly to the main content. (The main content area lacks a skip-to-content link, making it difficult for keyboard users to bypass navigation.) |
+| 175 | `<Alert variant="destructive" role="alert" className="animate-slide-up-fade border-rose-500/25 bg-rose-500/8">` | **contrast** | moderate | 1.4.3 Contrast (Minimum) (AA) | Increase the background opacity or use a more opaque color class to ensure the error alert meets WCAG AA contrast requirements. (The error alert uses rose-500/8 background (8% opacity) which may not provide sufficient contrast against the background color.) |
+| 175 | `<Alert variant="destructive" role="alert">` | **accessibility** | low | 4.1.3 Status Messages (AA) | Consider adding aria-live="assertive" or using a live region to ensure error messages are announced immediately to assistive technologies. (The error alert appears dynamically but may not be announced properly to screen readers when it appears.) |
+| 85 | `window.addEventListener('keydown', onKey)` | **keyboard** | low | 2.1.1 Keyboard (AA) | Consider limiting the keyboard shortcut scope to specific form elements or add proper event delegation to avoid conflicts. (Global keyboard event listener for Ctrl/Cmd+Enter may interfere with other keyboard functionality on the page.) |
 
 
 ## File: `apps/web/src/app/globals.css`
 
 ### Accessibility Audit Summary
 
-**Overall Assessment:** The CSS file demonstrates good accessibility practices with proper focus management and motion preferences handling.
+This CSS file demonstrates several **positive accessibility practices**:
 
-**Strengths:**
-- ✅ Excellent keyboard focus indicators with `:focus-visible` styling
-- ✅ Respects user motion preferences with `prefers-reduced-motion` media query
-- ✅ Clear focus ring implementation for WCAG 2.2 compliance
-- ✅ Proper outline styling with sufficient contrast
+✅ **Excellent focus management** with `:focus-visible` styles that provide clear 2px solid outlines
+✅ **Motion sensitivity** with proper `prefers-reduced-motion` media query handling
+✅ **Semantic color system** using CSS custom properties for consistent theming
 
-**Areas for Improvement:**
-- ⚠️ **Contrast Concerns:** Some color variables (muted-foreground, muted background, borders) may create insufficient contrast ratios
-- ⚠️ **Color Testing Needed:** Verify actual contrast ratios in implementation context
+**Areas of concern** involve potential contrast ratio issues:
 
-**Recommendations:**
-1. Test color combinations in actual usage to ensure WCAG AA compliance
-2. Consider lightening muted-foreground and border colors for better accessibility
-3. Maintain the excellent focus and motion handling practices
+⚠️ **Contrast warnings** for `muted-foreground`, `secondary-foreground`, and `accent-foreground` colors that may fall below WCAG AA requirements when paired with their respective dark backgrounds
 
-**Risk Level:** Low to Medium - mainly preventive contrast adjustments needed.
+The color values should be tested with actual contrast ratio calculators to ensure compliance. The current HSL values suggest some combinations may be borderline for meeting the 4.5:1 minimum ratio required for AA compliance.
 
 ### Detected Violations (3)
 
 | Line | Element / Code | Type | Severity | WCAG Guideline | Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 13 | `--muted-foreground: 32 14% 77%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Verify contrast ratios when this color is used for text. Consider increasing lightness to at least 80-85% or using a higher contrast alternative for critical text content. (The muted-foreground color (HSL 32 14% 77%) may not provide sufficient contrast when used on dark backgrounds. This light gray color could fall below the 4.5:1 contrast ratio required for WCAG AA compliance.) |
-| 12 | `--muted: 28 18% 14%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Ensure sufficient contrast between muted elements and their background. Consider increasing the lightness difference to at least 10-15% for clear visual separation. (The muted background color (HSL 28 18% 14%) is very close to the main background color (HSL 30 18% 8%), potentially creating insufficient visual distinction for UI elements.) |
-| 18 | `--border: 28 16% 18%;` | **contrast** | warning | 1.4.11 Non-text Contrast (AA) | Increase border color lightness to at least 25-30% to ensure clear visual boundaries for interactive elements and UI components. (The border color (HSL 28 16% 18%) may not provide sufficient contrast against the background (HSL 30 18% 8%) for UI components, potentially failing the 3:1 non-text contrast requirement.) |
+| 14 | `--muted-foreground: 32 14% 77%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Test the actual contrast ratio of muted-foreground against its intended backgrounds and increase lightness to at least 85% if needed to ensure WCAG AA compliance. (The muted-foreground color (HSL 32 14% 77%) may provide insufficient contrast when used on dark backgrounds. This equates to approximately #c4beb8 on #1a1511 background, which could fall below the 4.5:1 ratio required for AA compliance.) |
+| 16 | `--secondary-foreground: 35 28% 88%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Verify the contrast ratio between secondary-foreground and secondary background colors. Consider increasing the lightness of secondary-foreground to 90% or higher if the ratio falls below 4.5:1. (The secondary-foreground color (HSL 35 28% 88%) against the secondary background (HSL 28 18% 15%) may not provide sufficient contrast. This combination needs verification to ensure it meets the 4.5:1 ratio.) |
+| 18 | `--accent-foreground: 35 28% 88%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Verify the contrast ratio between accent-foreground and accent background colors. Consider increasing the lightness of accent-foreground to 90% or higher if the ratio falls below 4.5:1. (The accent-foreground color (HSL 35 28% 88%) against the accent background (HSL 28 18% 15%) may not provide sufficient contrast. This combination needs verification to ensure it meets the 4.5:1 ratio.) |
 
 

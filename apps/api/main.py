@@ -43,9 +43,9 @@ from config import (
 )
 from middleware.rate_limit import limiter
 from middleware.security import SecurityHeadersMiddleware
+from routers import accessibility as accessibility_router
 from routers import claude as claude_router
 from routers import health as health_router
-from routers import accessibility as accessibility_router
 
 # ---------------------------------------------------------------------------
 # App
@@ -66,7 +66,7 @@ app = FastAPI(
 # Rate limiting
 # ---------------------------------------------------------------------------
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 app.add_middleware(SlowAPIMiddleware)
 
 # ---------------------------------------------------------------------------

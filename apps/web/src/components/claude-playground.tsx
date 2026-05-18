@@ -6,7 +6,13 @@ import { AlertCircle } from 'lucide-react'
 
 import { Alert, AlertDescription, AlertTitle } from '@repo/ui/components/ui/alert'
 
-import { getApiBaseUrl, parseRetryAfter, readErrorMessage } from './claude-playground/api'
+import {
+  getApiBaseUrl,
+  parseRetryAfter,
+  readAskResponse,
+  readErrorMessage,
+  readHealthResponse
+} from './claude-playground/api'
 import { CLIENT_RATE_LIMIT, CLIENT_WINDOW_MS, STARTER_QUESTION } from './claude-playground/constants'
 import { useClientRateLimit } from './claude-playground/hooks/use-client-rate-limit'
 import { AmbientBackground } from './claude-playground/sections/ambient-background'
@@ -87,7 +93,7 @@ export function ClaudePlayground() {
 
       if (!res.ok) throw new Error(await readErrorMessage(res))
 
-      setAnswer((await res.json()) as AskResponse)
+      setAnswer(await readAskResponse(res))
       setAnswerKey(key => key + 1)
       setResponseTime(Date.now() - t0)
     } catch (err) {
@@ -148,7 +154,7 @@ export function ClaudePlayground() {
 
       if (!res.ok) throw new Error(await readErrorMessage(res))
 
-      const data = (await res.json()) as AskResponse
+      const data = await readAskResponse(res)
 
       setAnswer(data)
       setQuestion(data.question)
@@ -170,7 +176,7 @@ export function ClaudePlayground() {
 
       if (!res.ok) throw new Error(await readErrorMessage(res))
 
-      setHealth((await res.json()) as HealthResponse)
+      setHealth(await readHealthResponse(res))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Health check failed.')
     } finally {
@@ -231,6 +237,7 @@ export function ClaudePlayground() {
           (
             <Alert
               variant="destructive"
+              role="alert"
               className="animate-slide-up-fade border-rose-500/25 bg-rose-500/8"
             >
               <AlertCircle className="size-4" />
