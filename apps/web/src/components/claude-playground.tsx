@@ -1,6 +1,6 @@
 'use client'
 
-import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type SyntheticEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { AlertCircle } from 'lucide-react'
 
@@ -123,7 +123,7 @@ export function ClaudePlayground() {
     }
   }, [canSubmit, doAsk])
 
-  async function askClaude(event?: FormEvent<HTMLFormElement>) {
+  async function askClaude(event?: SyntheticEvent<HTMLFormElement>) {
     event?.preventDefault()
 
     await doAsk()

@@ -14,12 +14,12 @@ export function ExamplePromptList({ textareaRef, onQuestionChange }: ExampleProm
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="
-          text-[10px] tracking-widest text-white/20 uppercase
+          text-[10px] tracking-widest text-muted-foreground/60 font-medium uppercase
         "
         >
           Try an example
         </p>
-        <span className="text-[10px] text-white/15">
+        <span className="text-[10px] text-muted-foreground/50">
           {EXAMPLE_PROMPTS.length}
           {' '}
           presets

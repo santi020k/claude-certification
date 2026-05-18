@@ -2,73 +2,55 @@
 
 Generated automatically via the Claude Accessibility Checker test suite.
 
-## File: `apps/web/src/components/claude-playground.tsx`
+## File: `apps/web/src/app/page.tsx`
 
 ### Accessibility Audit Summary
 
-**Critical Issues Found: 12 contrast violations**
+The page component is minimal and delegates all functionality to the ClaudePlayground component. While no critical accessibility violations are present in this specific code, there are structural concerns:
 
-The component has multiple severe contrast violations with text using very low opacity values (10-20%) on dark backgrounds. These fail WCAG AA 4.5:1 contrast requirements by a wide margin:
+- **Missing skip-to-content link**: Important for keyboard navigation
+- **Lack of semantic structure**: No main landmark or other semantic HTML elements
+- **Title verification needed**: Cannot confirm proper page titling from this component alone
 
-- Multiple instances of `text-white/15`, `text-white/10`, and `text-white/20` classes
-- Placeholder text with insufficient contrast
-- Decorative separator dots that are barely visible
-- Status and helper text with poor readability
+The actual accessibility compliance will largely depend on the implementation within the ClaudePlayground component. This audit identifies foundational structural improvements that should be implemented at the page level.
 
-**Minor Issue: 1 semantic violation**
-- Bare `aria-hidden` attribute should be `aria-hidden="true"`
-
-**Positive Accessibility Features:**
-- Proper semantic HTML structure with headings, form labels, and button elements
-- Form labels correctly associated with inputs
-- Keyboard shortcuts implemented (⌘+Enter)
-- Focus management with textarea ref
-- Appropriate ARIA attributes in most cases
-- Skip-to-content isn't needed for this single-page component
-
-**Recommendations:**
-1. **Priority 1:** Replace all low-opacity text classes with at least 50% opacity or higher
-2. Fix the bare `aria-hidden` attribute
-3. Test final contrast ratios to ensure 4.5:1 minimum is met
-
-### Detected Violations (13)
+### Detected Violations (3)
 
 | Line | Element / Code | Type | Severity | WCAG Guideline | Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 459 | `<span className="text-white/15">·</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/15 (15% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 471 | `<p className="max-w-[180px] text-xs break-all text-white/15">{apiBaseUrl}</p>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/15 (15% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 570 | `placeholder="Ask Claude something useful…" className="min-h-48 resize-y border-0 bg-transparent p-4 text-sm/7 placeholder:text-white/15"` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use placeholder:text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Placeholder text with white/15 (15% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 787 | `<span className="text-white/15">·</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/15 (15% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 595 | `<span className="text-[10px] text-white/20 uppercase">Try an example</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/20 (20% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 599 | `<span className="text-[10px] text-white/15">{EXAMPLE_PROMPTS.length} presets</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/15 (15% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 659 | `<span className="text-[10px] text-white/20">Claude output</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/20 (20% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 738 | `<div className="flex items-center justify-between gap-3 text-xs text-white/18">` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/18 (18% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 800 | `<span className="text-white/20">req/min remaining</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/20 (20% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 1005 | `<p className="text-[10px] tracking-widest text-white/20 uppercase">Token usage</p>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/20 (20% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 1156 | `<span className="text-white/10">·</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/10 (10% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 1206 | `<span className="text-white/10">·</span>` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Use text-white/50 or higher opacity to meet WCAG AA contrast requirements. (Text with white/10 (10% opacity) on a dark background yields a contrast ratio far below 4.5:1.) |
-| 358 | `<div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">` | **semantic** | minor | 4.1.1 Parsing (A) | Change aria-hidden to aria-hidden="true" for proper HTML validation. (The aria-hidden attribute should have a boolean value (true or false), not be used as a bare attribute.) |
+| 4 | `<ClaudePlayground />` | **semantic** | moderate | 2.4.1 Bypass Blocks (AA) | Add a skip-to-content link at the beginning of the page that allows users to jump directly to the main content. (The page lacks a skip-to-content link, which is important for keyboard users to bypass repetitive navigation elements.) |
+| 4 | `return <ClaudePlayground />` | **semantic** | moderate | 1.3.1 Info and Relationships (AA) | Wrap the ClaudePlayground component in a <main> element and consider adding other semantic landmarks like <header>, <nav>, or <aside> as appropriate. (The page structure lacks proper semantic landmarks. There's no main element or other semantic HTML structure to define page regions.) |
+| 1 | `Page component` | **semantic** | moderate | 2.4.2 Page Titled (AA) | Ensure the page has a descriptive title either through Next.js metadata API or by including a proper <title> element that describes the page content. (Cannot verify if the page has a proper title since this is a Next.js page component without explicit metadata or title configuration.) |
 
 
 ## File: `apps/web/src/app/globals.css`
 
 ### Accessibility Audit Summary
 
-This CSS file defines a dark theme color system with several potential contrast issues. The main concern is the `--muted-foreground` color which uses 58% lightness and may not provide sufficient contrast against dark backgrounds when used for text. Two other foreground colors (`--secondary-foreground` and `--accent-foreground`) at 82% lightness should be tested to ensure they meet contrast requirements when paired with their respective 15% lightness backgrounds.
+**Critical Issues (1):**
+- Muted foreground color fails contrast requirements against dark backgrounds
 
-The file includes good animation utilities and focus states (like `.input-focus`), but the color definitions need verification against WCAG AA contrast requirements. Consider using contrast checking tools to validate all color combinations used in the actual UI components.
+**Moderate Issues (2):**
+- Secondary foreground may have borderline contrast ratios
+- Focus ring opacity too low for clear visibility
+
+**Positive Aspects:**
+- Uses CSS custom properties for consistent theming
+- Includes focus styles for interactive elements
+- Primary colors appear to have adequate contrast
 
 **Recommendations:**
-- Increase `--muted-foreground` lightness to at least 70%
-- Test and potentially adjust secondary and accent foreground colors
-- Use contrast checking tools to validate all text/background combinations
+1. Increase lightness values for muted text colors
+2. Verify all color combinations meet WCAG AA 4.5:1 ratio
+3. Enhance focus ring visibility with higher opacity or additional styling
+4. Test color combinations with actual contrast checking tools
 
 ### Detected Violations (3)
 
 | Line | Element / Code | Type | Severity | WCAG Guideline | Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 15 | `--muted-foreground: 32 14% 58%;` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Increase the lightness value to at least 70% (--muted-foreground: 32 14% 70%) to ensure sufficient contrast against dark backgrounds. (The muted-foreground color (hsl(32 14% 58%)) appears to have low contrast when used on dark backgrounds. This HSL value represents a mid-tone gray that may not meet the 4.5:1 contrast ratio requirement.) |
-| 17 | `--secondary-foreground: 35 28% 82%;` | **contrast** | moderate | 1.4.3 Contrast (Minimum) (AA) | Test contrast ratios in actual usage and consider increasing lightness to 85-90% if needed to ensure WCAG AA compliance. (The secondary-foreground color may have borderline contrast when used on certain background combinations. With secondary background at 15% lightness, this should be verified.) |
-| 19 | `--accent-foreground: 35 28% 82%;` | **contrast** | moderate | 1.4.3 Contrast (Minimum) (AA) | Test contrast ratios in actual usage and consider increasing lightness to 85-90% if needed to ensure WCAG AA compliance. (Similar to secondary-foreground, the accent-foreground color may have borderline contrast when used on the accent background (15% lightness).) |
+| 13 | `--muted-foreground: 32 14% 58%;` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Increase the lightness value to at least 70% or higher to ensure sufficient contrast against dark backgrounds. Consider using a value like '32 14% 70%' or higher. (The muted-foreground color (HSL 32 14% 58%) appears to be a mid-tone gray that likely fails WCAG AA contrast requirements when used against dark backgrounds like --background (30 18% 8%) or --card (28 18% 10%).) |
+| 11 | `--secondary-foreground: 35 28% 82%;` | **contrast** | moderate | 1.4.3 Contrast (Minimum) (AA) | Test the actual contrast ratio and consider increasing lightness to 85% or higher if needed to ensure WCAG AA compliance. (The secondary-foreground color may have borderline contrast when used with secondary background (28 18% 15%). The contrast ratio should be verified to ensure it meets the 4.5:1 minimum.) |
+| 125 | `.input-focus:focus-within` | **keyboard** | moderate | 2.4.7 Focus Visible (AA) | Increase the opacity to at least 0.3 or 0.4 to ensure the focus indicator is clearly visible. Consider using a higher contrast color or adding a solid border component. (The focus ring uses a low opacity (0.18) which may not provide sufficient visual indication of focus state, especially for users with visual impairments.) |
 
 

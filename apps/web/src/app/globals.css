@@ -14,7 +14,7 @@
   --secondary: 28 18% 15%;
   --secondary-foreground: 35 28% 82%;
   --muted: 28 18% 14%;
-  --muted-foreground: 32 14% 58%;
+  --muted-foreground: 32 14% 71%;
   --accent: 28 18% 15%;
   --accent-foreground: 35 28% 82%;
   --destructive: 0 72% 51%;
@@ -145,3 +145,10 @@ body {
 .input-focus:focus-within {
   box-shadow: 0 0 0 3px rgba(204, 120, 92, 0.18);
 }
+
+/* Ensure keyboard focus indicator is always clearly visible for WCAG 2.2 compliance */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+

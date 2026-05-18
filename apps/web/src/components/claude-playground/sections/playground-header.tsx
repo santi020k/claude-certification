@@ -161,13 +161,13 @@ export function PlaygroundHeader({
             >
               <StatusDot ok={health.status === 'ok'} />
               <span>{health.environment}</span>
-              <span className="text-white/15">·</span>
+              <span className="text-muted-foreground/60">·</span>
               <span className="font-mono">{formatModel(health.model)}</span>
             </div>
           ) :
           null}
 
-        <p className="max-w-[180px] text-xs break-all text-white/15">{apiBaseUrl}</p>
+        <p className="max-w-[180px] text-xs break-all text-muted-foreground/70">{apiBaseUrl}</p>
       </div>
     </header>
   )

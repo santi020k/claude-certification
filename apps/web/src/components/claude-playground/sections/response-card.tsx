@@ -151,7 +151,7 @@ export function ResponseCard({
                 "
                 >
                   <p className="
-                    text-[10px] tracking-widest text-white/20 uppercase
+                    text-[10px] tracking-widest text-muted-foreground/60 font-medium uppercase
                   "
                   >
                     Token usage

@@ -60,7 +60,7 @@ export function PromptQuestionField({
           placeholder="Ask Claude something useful…"
           className="
             min-h-48 resize-y border-0 bg-transparent p-4 text-sm/7
-            placeholder:text-white/15
+            placeholder:text-muted-foreground/40
             focus-visible:ring-0
           "
           maxLength={4000}

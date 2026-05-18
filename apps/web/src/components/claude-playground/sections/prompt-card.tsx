@@ -1,4 +1,4 @@
-import type { FormEvent, RefObject } from 'react'
+import type { RefObject, SyntheticEvent } from 'react'
 
 import { Badge } from '@repo/ui/components/ui/badge'
 import {
@@ -26,7 +26,7 @@ interface PromptCardProps {
   remaining: number
   retryAfter: number | null
   textareaRef: RefObject<HTMLTextAreaElement | null>
-  onAsk: (event?: FormEvent<HTMLFormElement>) => Promise<void>
+  onAsk: (event?: SyntheticEvent<HTMLFormElement>) => Promise<void>
   onDemo: () => Promise<void>
   onQuestionChange: (question: string) => void
   onReset: () => void

@@ -94,7 +94,7 @@ export function PromptActions({
 
       <div className="
         flex items-center justify-between gap-3 text-xs
-        text-white/18
+        text-muted-foreground/50
       "
       >
         <RateLimitStatus
@@ -176,7 +176,7 @@ function RateLimitStatus({
 
   return (
     <span className="
-      flex items-center gap-1.5 text-white/20
+      flex items-center gap-1.5 text-muted-foreground/60
     "
     >
       <span className="font-mono tabular-nums">

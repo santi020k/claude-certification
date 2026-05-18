@@ -30,7 +30,7 @@ export function ResponseSettings({
         >
           Response settings
         </Label>
-        <span className="text-[10px] text-white/20">Claude output</span>
+        <span className="text-[10px] text-muted-foreground/60 font-medium">Claude output</span>
       </div>
       <div className="
         grid gap-3
