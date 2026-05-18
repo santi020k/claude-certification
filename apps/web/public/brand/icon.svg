@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Claude Certification icon</title>
+  <desc id="desc">A dark rounded square with a teal certification ribbon and spark at the center.</desc>
+  <rect width="512" height="512" rx="112" fill="#0D1117"/>
+  <path d="M112 260C112 180.471 176.471 116 256 116C335.529 116 400 180.471 400 260C400 339.529 335.529 404 256 404C176.471 404 112 339.529 112 260Z" fill="#111827"/>
+  <path d="M256 90L284.325 147.383L347.66 156.587L301.83 201.267L312.65 264.347L256 234.56L199.35 264.347L210.17 201.267L164.34 156.587L227.675 147.383L256 90Z" fill="#14B8A6"/>
+  <path d="M256 149L270.178 177.725L301.88 182.332L278.94 204.698L284.356 236.275L256 221.365L227.644 236.275L233.06 204.698L210.12 182.332L241.822 177.725L256 149Z" fill="#ECFEFF"/>
+  <path d="M177 282L228.529 333.529L339 223" stroke="#ECFEFF" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M186 282L230 326L330 226" stroke="#14B8A6" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

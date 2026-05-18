@@ -1,10 +1,147 @@
 @import "@repo/ui/globals.css";
 
-html {
-  min-height: 100%;
+/* ── Dark theme ────────────────────────────────────────────────────────────── */
+:root,
+.dark {
+  --background: 222 47% 5%;
+  --foreground: 213 31% 91%;
+  --card: 222 44% 7%;
+  --card-foreground: 213 31% 91%;
+  --popover: 222 44% 7%;
+  --popover-foreground: 213 31% 91%;
+  --primary: 24 95% 58%;
+  --primary-foreground: 222 47% 5%;
+  --secondary: 222 30% 13%;
+  --secondary-foreground: 210 40% 80%;
+  --muted: 222 30% 11%;
+  --muted-foreground: 218 11% 50%;
+  --accent: 222 30% 13%;
+  --accent-foreground: 210 40% 80%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 222 30% 14%;
+  --input: 222 30% 11%;
+  --ring: 24 95% 58%;
+  --radius: 0.75rem;
 }
+
+html { min-height: 100%; }
 
 body {
   min-height: 100%;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(222 30% 18%) transparent;
+}
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* Slow drifting blobs */
+@keyframes blob-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -30px) scale(1.05); }
+  66%       { transform: translate(-20px, 20px) scale(0.97); }
+}
+@keyframes blob-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(-50px, 30px) scale(1.08); }
+  66%       { transform: translate(30px, -20px) scale(0.95); }
+}
+@keyframes blob-drift-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(20px, 40px) scale(1.04); }
+}
+
+/* Answer text reveal */
+@keyframes answer-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Gradient border shimmer */
+@keyframes border-glow {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.9; }
+}
+
+/* ── Animation utility classes ─────────────────────────────────────────────── */
+
+.animate-slide-up-fade {
+  animation: slide-up-fade 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease both;
+}
+.animate-scale-in {
+  animation: scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.animate-answer-reveal {
+  animation: answer-reveal 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger delays for entrance animations */
+.delay-0   { animation-delay: 0ms; }
+.delay-75  { animation-delay: 75ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-225 { animation-delay: 225ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-375 { animation-delay: 375ms; }
+
+/* Blob animations */
+.blob-1 { animation: blob-drift-1 18s ease-in-out infinite; }
+.blob-2 { animation: blob-drift-2 22s ease-in-out infinite; }
+.blob-3 { animation: blob-drift-3 26s ease-in-out infinite; }
+
+/* Shimmer skeleton */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(222 44% 9%) 0px,
+    hsl(222 44% 14%) 40px,
+    hsl(222 44% 9%) 80px
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Orange focus ring for inputs */
+.input-focus:focus-within {
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
 }

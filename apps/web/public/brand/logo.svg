@@ -1,0 +1,16 @@
+<svg width="920" height="220" viewBox="0 0 920 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Claude Certification Playground logo</title>
+  <desc id="desc">A certification badge icon beside the Claude Certification Playground wordmark.</desc>
+  <rect width="920" height="220" rx="36" fill="#0D1117"/>
+  <g transform="translate(40 36)">
+    <rect width="148" height="148" rx="34" fill="#111827"/>
+    <path d="M74 12L87.9 40.16L119 44.68L96.5 66.62L101.8 97.6L74 82.98L46.2 97.6L51.5 66.62L29 44.68L60.1 40.16L74 12Z" fill="#14B8A6"/>
+    <path d="M74 41L81.14 55.47L97.1 57.79L85.55 69.05L88.28 84.95L74 77.44L59.72 84.95L62.45 69.05L50.9 57.79L66.86 55.47L74 41Z" fill="#ECFEFF"/>
+    <path d="M35 102L62 129L116 75" stroke="#ECFEFF" stroke-width="21" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M39 102L63 126L112 77" stroke="#14B8A6" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="224" y="98" fill="#F9FAFB" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="48" font-weight="760" letter-spacing="0">Claude Certification</text>
+  <text x="226" y="145" fill="#A7F3D0" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="26" font-weight="520" letter-spacing="0">FastAPI + Next.js playground for Claude</text>
+  <path d="M795 70C821.51 70 843 91.49 843 118C843 144.51 821.51 166 795 166C768.49 166 747 144.51 747 118C747 91.49 768.49 70 795 70Z" fill="#14B8A6" fill-opacity="0.14"/>
+  <path d="M795 92L802.551 107.299L819.436 109.753L807.218 121.663L810.102 138.48L795 130.54L779.898 138.48L782.782 121.663L770.564 109.753L787.449 107.299L795 92Z" fill="#14B8A6"/>
+</svg>

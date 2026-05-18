@@ -152,6 +152,13 @@ See **[CLAUDE.md](./CLAUDE.md)** for a full reference including:
 
 ---
 
+## Brand
+
+The logo, icon, favicon, color palette, typography, and voice guidelines are
+documented in **[docs/brand-guide.md](./docs/brand-guide.md)**.
+
+---
+
 ## Quality checks
 
 ```bash
