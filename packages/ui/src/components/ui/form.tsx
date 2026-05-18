@@ -52,7 +52,6 @@ const useFormField = () => {
   const { getFieldState } = useFormContext()
   const formState = useFormState({ name: fieldContext.name })
   const fieldState = getFieldState(fieldContext.name, formState)
-
   const { id } = itemContext
 
   return {

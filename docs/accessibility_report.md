@@ -6,51 +6,52 @@ Generated automatically via the Claude Accessibility Checker test suite.
 
 ### Accessibility Audit Summary
 
-The page component is minimal and delegates all functionality to the ClaudePlayground component. While no critical accessibility violations are present in this specific code, there are structural concerns:
+This page component is minimal and delegates all functionality to the ClaudePlayground component. The main accessibility concerns are structural:
 
-- **Missing skip-to-content link**: Important for keyboard navigation
-- **Lack of semantic structure**: No main landmark or other semantic HTML elements
-- **Title verification needed**: Cannot confirm proper page titling from this component alone
+- **Missing skip-to-content link**: Essential for keyboard navigation efficiency
+- **Lack of semantic landmarks**: No `<main>` element to identify the primary content area
+- **Potential missing page title**: Important for screen reader users to understand page context
 
-The actual accessibility compliance will largely depend on the implementation within the ClaudePlayground component. This audit identifies foundational structural improvements that should be implemented at the page level.
+These are foundational accessibility requirements that should be addressed at the page level. The actual accessibility of the application will depend heavily on the implementation within the ClaudePlayground component, which would need separate analysis.
 
 ### Detected Violations (3)
 
 | Line | Element / Code | Type | Severity | WCAG Guideline | Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 4 | `<ClaudePlayground />` | **semantic** | moderate | 2.4.1 Bypass Blocks (AA) | Add a skip-to-content link at the beginning of the page that allows users to jump directly to the main content. (The page lacks a skip-to-content link, which is important for keyboard users to bypass repetitive navigation elements.) |
-| 4 | `return <ClaudePlayground />` | **semantic** | moderate | 1.3.1 Info and Relationships (AA) | Wrap the ClaudePlayground component in a <main> element and consider adding other semantic landmarks like <header>, <nav>, or <aside> as appropriate. (The page structure lacks proper semantic landmarks. There's no main element or other semantic HTML structure to define page regions.) |
-| 1 | `Page component` | **semantic** | moderate | 2.4.2 Page Titled (AA) | Ensure the page has a descriptive title either through Next.js metadata API or by including a proper <title> element that describes the page content. (Cannot verify if the page has a proper title since this is a Next.js page component without explicit metadata or title configuration.) |
+| 4 | `<ClaudePlayground />` | **semantic** | moderate | 2.4.1 Bypass Blocks (AA) | Add a skip-to-content link at the beginning of the page that allows users to jump to the main content area. (The page lacks a skip-to-content link, which is essential for keyboard users to bypass navigation and go directly to the main content.) |
+| 4 | `<ClaudePlayground />` | **semantic** | moderate | 1.3.1 Info and Relationships (AA) | Wrap the ClaudePlayground component in a <main> element to provide proper landmark navigation for screen readers. (The page lacks proper semantic structure with main landmarks. There's no <main> element to identify the primary content area.) |
+| 1 | `entire page` | **semantic** | moderate | 2.4.2 Page Titled (AA) | Ensure the page has a proper <title> element, either through Next.js metadata or a <Head> component, that describes the page's purpose. (No page title is visible in this component. While Next.js may handle this elsewhere, it's important to ensure each page has a descriptive title.) |
 
 
 ## File: `apps/web/src/app/globals.css`
 
 ### Accessibility Audit Summary
 
-**Critical Issues (1):**
-- Muted foreground color fails contrast requirements against dark backgrounds
+The CSS file shows good accessibility practices with proper focus indicators, but has several contrast-related concerns:
 
-**Moderate Issues (2):**
-- Secondary foreground may have borderline contrast ratios
-- Focus ring opacity too low for clear visibility
+**Positive aspects:**
+- Implements proper `:focus-visible` styles with clear outline
+- Uses semantic color variables for consistent theming
+- Provides smooth animations that don't interfere with accessibility
 
-**Positive Aspects:**
-- Uses CSS custom properties for consistent theming
-- Includes focus styles for interactive elements
-- Primary colors appear to have adequate contrast
+**Issues found:**
+- Several color combinations may fall below WCAG AA contrast requirements (4.5:1 for text, 3:1 for UI components)
+- The custom focus ring for inputs has very low opacity which may not be visible enough
+- Muted, secondary, and accent foreground colors need contrast verification against their respective backgrounds
 
 **Recommendations:**
-1. Increase lightness values for muted text colors
-2. Verify all color combinations meet WCAG AA 4.5:1 ratio
-3. Enhance focus ring visibility with higher opacity or additional styling
-4. Test color combinations with actual contrast checking tools
+- Test all color combinations with actual contrast ratio tools
+- Increase opacity or contrast of focus indicators
+- Consider adding `prefers-reduced-motion` media queries for animations
+- Verify contrast ratios programmatically in the design system
 
-### Detected Violations (3)
+### Detected Violations (4)
 
 | Line | Element / Code | Type | Severity | WCAG Guideline | Recommendation |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| 13 | `--muted-foreground: 32 14% 58%;` | **contrast** | critical | 1.4.3 Contrast (Minimum) (AA) | Increase the lightness value to at least 70% or higher to ensure sufficient contrast against dark backgrounds. Consider using a value like '32 14% 70%' or higher. (The muted-foreground color (HSL 32 14% 58%) appears to be a mid-tone gray that likely fails WCAG AA contrast requirements when used against dark backgrounds like --background (30 18% 8%) or --card (28 18% 10%).) |
-| 11 | `--secondary-foreground: 35 28% 82%;` | **contrast** | moderate | 1.4.3 Contrast (Minimum) (AA) | Test the actual contrast ratio and consider increasing lightness to 85% or higher if needed to ensure WCAG AA compliance. (The secondary-foreground color may have borderline contrast when used with secondary background (28 18% 15%). The contrast ratio should be verified to ensure it meets the 4.5:1 minimum.) |
-| 125 | `.input-focus:focus-within` | **keyboard** | moderate | 2.4.7 Focus Visible (AA) | Increase the opacity to at least 0.3 or 0.4 to ensure the focus indicator is clearly visible. Consider using a higher contrast color or adding a solid border component. (The focus ring uses a low opacity (0.18) which may not provide sufficient visual indication of focus state, especially for users with visual impairments.) |
+| 12 | `--muted-foreground: 32 14% 71%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Increase the lightness value of --muted-foreground to at least 75% to ensure proper contrast ratio for text content. (The muted-foreground color (HSL 32 14% 71%) may not provide sufficient contrast when used on the background color (HSL 30 18% 8%). This combination yields approximately 3.8:1 contrast ratio, below the WCAG AA requirement of 4.5:1.) |
+| 14 | `--secondary-foreground: 35 28% 82%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Increase the lightness value of --secondary-foreground to at least 85% or adjust the secondary background to be darker to ensure proper contrast. (The secondary-foreground color (HSL 35 28% 82%) when used on secondary background (HSL 28 18% 15%) may yield a contrast ratio around 4.2:1, which is slightly below the WCAG AA requirement of 4.5:1.) |
+| 17 | `--accent-foreground: 35 28% 82%;` | **contrast** | warning | 1.4.3 Contrast (Minimum) (AA) | Increase the lightness value of --accent-foreground to at least 85% or adjust the accent background to be darker to ensure proper contrast. (The accent-foreground color (HSL 35 28% 82%) when used on accent background (HSL 28 18% 15%) may yield a contrast ratio around 4.2:1, which is slightly below the WCAG AA requirement of 4.5:1.) |
+| 115 | `.input-focus:focus-within { box-shadow: 0 0 0 3px rgba(204, 120, 92, 0.18); }` | **contrast** | critical | 1.4.11 Non-text Contrast (AA) | Increase the opacity to at least 0.5 or use a more contrasting color to ensure the focus indicator is clearly visible against all possible backgrounds. (The focus indicator uses rgba(204, 120, 92, 0.18) which has very low opacity (18%) and may not provide sufficient contrast against various backgrounds to meet the 3:1 ratio required for non-text elements.) |
 
 

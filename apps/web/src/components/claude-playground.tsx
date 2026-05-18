@@ -45,11 +45,7 @@ export function ClaudePlayground() {
     retryAfter === null
 
   useEffect(() => {
-    if (retryAfter === null || retryAfter <= 0) {
-      setRetryAfter(null)
-
-      return
-    }
+    if (retryAfter === null) return
 
     const id = setTimeout(() => {
       setRetryAfter(seconds => (seconds !== null && seconds > 1 ? seconds - 1 : null))
@@ -62,12 +58,6 @@ export function ClaudePlayground() {
 
   const doAsk = useCallback(async () => {
     if (!canSubmit) return
-
-    if (isLimited) {
-      setError(`Too many requests — wait ${cooldownSeconds}s before trying again.`)
-
-      return
-    }
 
     recordRequest()
     setIsAsking(true)
@@ -105,7 +95,7 @@ export function ClaudePlayground() {
     } finally {
       setIsAsking(false)
     }
-  }, [apiBaseUrl, canSubmit, cooldownSeconds, isLimited, maxTokens, oneSentence, recordRequest, trimmed])
+  }, [apiBaseUrl, canSubmit, maxTokens, oneSentence, recordRequest, trimmed])
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {

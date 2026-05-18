@@ -12,11 +12,11 @@
   --primary: 15 55% 52%;
   --primary-foreground: 36 45% 94%;
   --secondary: 28 18% 15%;
-  --secondary-foreground: 35 28% 82%;
+  --secondary-foreground: 35 28% 88%;
   --muted: 28 18% 14%;
-  --muted-foreground: 32 14% 71%;
+  --muted-foreground: 32 14% 77%;
   --accent: 28 18% 15%;
-  --accent-foreground: 35 28% 82%;
+  --accent-foreground: 35 28% 88%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 210 40% 98%;
   --border: 28 16% 18%;
@@ -143,7 +143,7 @@ body {
 
 /* Clay focus ring for inputs */
 .input-focus:focus-within {
-  box-shadow: 0 0 0 3px rgba(204, 120, 92, 0.18);
+  box-shadow: 0 0 0 3px rgba(204, 120, 92, 0.45);
 }
 
 /* Ensure keyboard focus indicator is always clearly visible for WCAG 2.2 compliance */
@@ -151,4 +151,15 @@ body {
   outline: 2px solid hsl(var(--primary));
   outline-offset: 2px;
 }
+
+/* Respect user prefers-reduced-motion settings */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 
