@@ -9,12 +9,24 @@ Endpoints
 ---------
 POST /api/ask        — Send any question to Claude, receive a JSON answer.
 GET  /api/ask/demo   — Pre-baked demo (quantum computing, one sentence).
+
+Rate limits (per remote IP)
+---------------------------
+POST /api/ask      → 10 requests / minute
+GET  /api/ask/demo →  5 requests / minute
+
+When a limit is exceeded the client receives HTTP 429 with:
+  • Retry-After header       — seconds to wait before retrying
+  • X-RateLimit-Limit        — the configured limit
+  • X-RateLimit-Remaining    — how many calls are left in the window
+  • X-RateLimit-Reset        — UTC epoch when the window resets
 """
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
+from middleware.rate_limit import limiter
 from models import AskRequest, AskResponse
 from services.claude import ask_claude
 
@@ -24,9 +36,12 @@ router = APIRouter(prefix="/api", tags=["claude"])
 
 
 @router.post("/ask", response_model=AskResponse)
-def ask_question(body: AskRequest) -> AskResponse:
+@limiter.limit("10/minute")
+def ask_question(request: Request, body: AskRequest) -> AskResponse:
     """
     Send any question to Claude and receive a structured JSON answer.
+
+    **Rate limit:** 10 requests per minute per IP.
 
     **Example request body**
     ```json
@@ -45,7 +60,12 @@ def ask_question(body: AskRequest) -> AskResponse:
     if body.one_sentence:
         question = f"{question} Answer in one sentence."
 
-    logger.info("POST /api/ask — one_sentence=%s | %.60s…", body.one_sentence, question)
+    logger.info(
+        "POST /api/ask — ip=%s one_sentence=%s | %.60s…",
+        request.client.host if request.client else "unknown",
+        body.one_sentence,
+        question,
+    )
 
     try:
         result = ask_claude(question, max_tokens=body.max_tokens)
@@ -60,10 +80,13 @@ def ask_question(body: AskRequest) -> AskResponse:
 
 
 @router.get("/ask/demo", response_model=AskResponse)
-def ask_demo() -> AskResponse:
+@limiter.limit("5/minute")
+def ask_demo(request: Request) -> AskResponse:
     """
     Runs the classic quickstart demo question:
     *"What is quantum computing? Answer in one sentence."*
+
+    **Rate limit:** 5 requests per minute per IP.
 
     This is a GET endpoint so you can test it directly in a browser or with:
 
@@ -73,7 +96,10 @@ def ask_demo() -> AskResponse:
 
     No request body needed.
     """
-    logger.info("GET /api/ask/demo")
+    logger.info(
+        "GET /api/ask/demo — ip=%s",
+        request.client.host if request.client else "unknown",
+    )
 
     try:
         result = ask_claude(

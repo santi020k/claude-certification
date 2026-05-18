@@ -51,6 +51,13 @@ type HealthResponse = {
   model: string;
 };
 
+// ── Rate-limit constants ───────────────────────────────────────────────────────
+// Mirror the backend limits so the client can self-throttle before even hitting
+// the network. When the backend still returns 429 (e.g. multiple tabs), we handle
+// that separately via the Retry-After header.
+const CLIENT_RATE_LIMIT   = 10;   // max requests
+const CLIENT_WINDOW_MS    = 60_000; // per 60-second sliding window
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STARTER_QUESTION =
@@ -77,6 +84,17 @@ async function readErrorMessage(response: Response): Promise<string> {
   return "The API returned an unexpected response.";
 }
 
+/** Parse the Retry-After header (seconds or HTTP-date) into seconds remaining. */
+function parseRetryAfter(response: Response): number {
+  const raw = response.headers.get("Retry-After");
+  if (!raw) return 60;
+  const secs = parseInt(raw, 10);
+  if (!isNaN(secs)) return Math.max(1, secs);
+  const date = Date.parse(raw);
+  if (!isNaN(date)) return Math.max(1, Math.ceil((date - Date.now()) / 1000));
+  return 60;
+}
+
 function formatModel(model: string): string {
   const normalized = model
     .replace(/^claude-/, "")
@@ -89,6 +107,51 @@ function formatModel(model: string): string {
     .replace(/\b3 7\b/g, "3.7");
 
   return normalized.startsWith("Claude") ? normalized : `Claude ${normalized}`;
+}
+
+// ── Client-side rate-limit hook ───────────────────────────────────────────────
+
+/**
+ * Sliding-window rate limiter that lives entirely in memory (no localStorage).
+ * - Keeps the last N request timestamps in a ref.
+ * - Returns `isLimited` (boolean), `remaining` (count left), and
+ *   `cooldownSeconds` (secs until oldest request expires from the window).
+ * - `recordRequest()` must be called right before each API call.
+ */
+function useClientRateLimit(limit: number, windowMs: number) {
+  const timestamps = useRef<number[]>([]);
+  const [cooldownSeconds, setCooldownSeconds] = useState(0);
+  const [remaining, setRemaining]             = useState(limit);
+
+  // Recompute state whenever the window rolls forward
+  const recompute = useCallback(() => {
+    const now = Date.now();
+    timestamps.current = timestamps.current.filter(t => now - t < windowMs);
+    const used = timestamps.current.length;
+    const left = Math.max(0, limit - used);
+    setRemaining(left);
+    if (left === 0 && timestamps.current.length > 0) {
+      const oldest = timestamps.current[0];
+      const secs   = Math.ceil((oldest + windowMs - now) / 1000);
+      setCooldownSeconds(Math.max(0, secs));
+    } else {
+      setCooldownSeconds(0);
+    }
+  }, [limit, windowMs]);
+
+  // Tick every second while limited
+  useEffect(() => {
+    const id = setInterval(recompute, 1_000);
+    return () => clearInterval(id);
+  }, [recompute]);
+
+  const recordRequest = useCallback(() => {
+    timestamps.current.push(Date.now());
+    recompute();
+  }, [recompute]);
+
+  const isLimited = remaining === 0;
+  return { isLimited, remaining, cooldownSeconds, recordRequest };
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -267,9 +330,21 @@ export function ClaudePlayground() {
   const [copied, setCopied]             = useState(false);
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [answerKey, setAnswerKey]       = useState(0);
+  const [retryAfter, setRetryAfter]     = useState<number | null>(null); // 429 server-side cooldown (seconds)
+
+  const { isLimited, remaining, cooldownSeconds, recordRequest } =
+    useClientRateLimit(CLIENT_RATE_LIMIT, CLIENT_WINDOW_MS);
+
+  // Tick down the server-side Retry-After countdown
+  useEffect(() => {
+    if (retryAfter === null || retryAfter <= 0) { setRetryAfter(null); return; }
+    const id = setTimeout(() => setRetryAfter((s) => (s !== null && s > 1 ? s - 1 : null)), 1_000);
+    return () => clearTimeout(id);
+  }, [retryAfter]);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const canSubmit = question.trim().length >= 3 && !isAsking;
+  const trimmed     = question.trim();
+  const canSubmit   = trimmed.length >= 3 && trimmed.length <= 4_000 && !isAsking && !isLimited && retryAfter === null;
 
   // ── ⌘↵ shortcut ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -281,7 +356,7 @@ export function ClaudePlayground() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canSubmit, question, maxTokens, oneSentence]);
 
   // ── API helpers ───────────────────────────────────────────────────────────
@@ -486,65 +561,89 @@ export function ClaudePlayground() {
         <section className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)]">
 
           {/* ── PROMPT CARD ─────────────────────────────────────────────────── */}
-          <Card className="animate-slide-up-fade delay-150 card-hover rounded-2xl border-white/8 bg-white/[0.025] shadow-2xl backdrop-blur-md">
-            <CardHeader className="border-b border-white/6 px-7 pb-5 pt-7">
-              <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">
-                Prompt
-              </CardTitle>
-              <CardDescription className="mt-1 text-sm text-muted-foreground">
-                Send a question to the FastAPI Claude endpoint.
-              </CardDescription>
+          <Card className="animate-slide-up-fade delay-150 card-hover overflow-hidden rounded-2xl border-white/8 bg-[#211d19]/80 shadow-2xl shadow-black/30 backdrop-blur-md">
+            <CardHeader className="border-b border-white/6 bg-white/[0.025] px-7 pb-5 pt-7">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <CardTitle className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">
+                    Prompt
+                  </CardTitle>
+                  <CardDescription className="mt-1 text-sm text-muted-foreground">
+                    Shape the request Claude will answer.
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="border-orange-300/15 bg-orange-200/8 text-[10px] uppercase tracking-wider text-orange-100/70">
+                  Live
+                </Badge>
+              </div>
             </CardHeader>
 
             <form onSubmit={askClaude}>
-              <CardContent className="space-y-6 px-7 pt-7">
+              <CardContent className="space-y-6 px-7 py-7">
 
                 {/* Textarea */}
-                <div className="input-focus space-y-2 rounded-xl">
-                  <Label htmlFor="question" className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
-                    Question
-                  </Label>
-                  <Textarea
-                    id="question"
-                    ref={textareaRef}
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Ask Claude something useful…"
-                    className="min-h-52 resize-y border-white/8 bg-white/[0.04] text-sm leading-7 placeholder:text-white/15 transition-all duration-200 focus-visible:border-orange-500/40 focus-visible:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-orange-500/15"
-                    maxLength={4000}
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground/40">
-                    <span>Min 3 chars</span>
-                    <span className={`font-mono transition-colors duration-200 ${question.length > 3600 ? "text-orange-400" : ""}`}>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <Label htmlFor="question" className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
+                      Question
+                    </Label>
+                    <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] transition-colors duration-200 ${question.length > 3600
+                        ? "border-orange-300/25 bg-orange-200/10 text-orange-100"
+                        : "border-white/8 bg-white/[0.025] text-muted-foreground/50"
+                      }`}
+                    >
                       {question.length.toLocaleString()} / 4 000
                     </span>
+                  </div>
+                  <div className="input-focus overflow-hidden rounded-xl border border-white/8 bg-[#29241f] transition-all duration-200 focus-within:border-orange-300/30">
+                    <Textarea
+                      id="question"
+                      ref={textareaRef}
+                      value={question}
+                      onChange={(e) => setQuestion(e.target.value)}
+                      placeholder="Ask Claude something useful…"
+                      className="min-h-48 resize-y border-0 bg-transparent p-4 text-sm leading-7 placeholder:text-white/15 focus-visible:ring-0"
+                      maxLength={4000}
+                    />
+                    <div className="flex items-center justify-between border-t border-white/6 bg-black/10 px-4 py-2 text-xs text-muted-foreground/45">
+                      <span>{canSubmit ? "Ready to ask" : "Min 3 chars"}</span>
+                      <span className="font-mono">{oneSentence ? "brief mode" : "full answer"}</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* Example prompts */}
-                <div className="space-y-2">
-                  <p className="text-[10px] uppercase tracking-widest text-white/20">Try an example</p>
-                  <div className="flex flex-col overflow-hidden rounded-xl border border-white/6 bg-white/[0.02] divide-y divide-white/5">
-                    {EXAMPLE_PROMPTS.map((p, i) => (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] uppercase tracking-widest text-white/20">Try an example</p>
+                    <span className="text-[10px] text-white/15">{EXAMPLE_PROMPTS.length} presets</span>
+                  </div>
+                  <div className="grid gap-2">
+                    {EXAMPLE_PROMPTS.map((p) => (
                       <button
                         key={p}
                         type="button"
                         onClick={() => { setQuestion(p); textareaRef.current?.focus(); }}
-                        className={`group flex items-center gap-3 px-4 py-3 text-left text-xs text-muted-foreground/60 transition-all duration-150 hover:bg-white/[0.04] hover:text-foreground/80 ${i === 0 ? "rounded-t-xl" : ""} ${i === EXAMPLE_PROMPTS.length - 1 ? "rounded-b-xl" : ""}`}
+                        className="group flex items-center gap-3 rounded-xl border border-white/6 bg-white/[0.025] px-4 py-3 text-left text-xs text-muted-foreground/65 transition-all duration-150 hover:border-orange-300/20 hover:bg-orange-200/8 hover:text-foreground/85"
                       >
-                        <ChevronRight className="size-3 shrink-0 text-orange-400/40 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-orange-400/70" />
-                        <span>{p}</span>
+                        <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-200/8 text-orange-200/60 transition-colors group-hover:bg-orange-200/15 group-hover:text-orange-100">
+                          <ChevronRight className="size-3 transition-transform duration-200 group-hover:translate-x-0.5" />
+                        </span>
+                        <span className="leading-5">{p}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Controls row */}
-                <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-                  <div className="space-y-2">
+                <div className="rounded-xl border border-white/6 bg-white/[0.025] p-4">
+                  <div className="mb-3 flex items-center justify-between">
                     <Label htmlFor="max-tokens" className="text-xs font-medium uppercase tracking-wider text-muted-foreground/60">
-                      Max tokens
+                      Response settings
                     </Label>
+                    <span className="text-[10px] text-white/20">Claude output</span>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                     <Input
                       id="max-tokens"
                       type="number"
@@ -553,64 +652,68 @@ export function ClaudePlayground() {
                       step={50}
                       value={maxTokens}
                       onChange={(e) => setMaxTokens(Number(e.target.value))}
-                      className="border-white/8 bg-white/[0.04] font-mono text-sm transition-all duration-200 focus-visible:border-orange-500/40 focus-visible:ring-2 focus-visible:ring-orange-500/15"
+                      className="h-10 border-white/8 bg-black/10 font-mono text-sm transition-all duration-200 focus-visible:border-orange-300/40 focus-visible:ring-2 focus-visible:ring-orange-300/15"
                     />
-                  </div>
-                  <div className="flex h-10 items-center justify-between gap-3 rounded-lg border border-white/8 bg-white/[0.04] px-4">
-                    <Label htmlFor="one-sentence" className="whitespace-nowrap text-xs text-muted-foreground">
-                      One sentence
-                    </Label>
-                    <Switch id="one-sentence" checked={oneSentence} onCheckedChange={setOneSentence} />
+                    <div className="flex h-10 items-center justify-between gap-3 rounded-lg border border-white/8 bg-black/10 px-4">
+                      <Label htmlFor="one-sentence" className="whitespace-nowrap text-xs text-muted-foreground">
+                        One sentence
+                      </Label>
+                      <Switch id="one-sentence" checked={oneSentence} onCheckedChange={setOneSentence} />
+                    </div>
                   </div>
                 </div>
               </CardContent>
 
-              <CardFooter className="flex flex-col gap-3 border-t border-white/6 px-7 pb-7 pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex w-full gap-2.5 sm:w-auto">
-                  <Button
-                    type="submit"
-                    disabled={!canSubmit}
-                    className="group flex-1 gap-2 bg-orange-500 text-white shadow-lg shadow-orange-600/25 transition-all duration-200 hover:scale-[1.02] hover:bg-orange-400 hover:shadow-orange-500/40 disabled:opacity-50 sm:flex-none"
-                  >
-                    {isAsking
-                      ? <LoaderCircle className="size-4 animate-spin" />
-                      : <Send className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    }
-                    Ask Claude
-                  </Button>
+              <CardFooter className="border-t border-white/6 bg-black/10 px-7 pb-6 pt-5">
+                <div className="flex w-full flex-col gap-3">
+                  <div className="flex w-full gap-2.5">
+                    <Button
+                      type="submit"
+                      disabled={!canSubmit}
+                      className="group flex-1 gap-2 bg-[#cc785c] text-[#1f1a16] shadow-lg shadow-orange-950/20 transition-all duration-200 hover:scale-[1.01] hover:bg-[#d98b70] disabled:opacity-50 sm:flex-none"
+                    >
+                      {isAsking
+                        ? <LoaderCircle className="size-4 animate-spin" />
+                        : <Send className="size-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                      }
+                      Ask Claude
+                    </Button>
 
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={runDemo}
-                    disabled={isAsking}
-                    className="flex-1 gap-2 border-white/10 bg-white/[0.04] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] sm:flex-none"
-                  >
-                    <Zap className="size-4" />
-                    Demo
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={runDemo}
+                      disabled={isAsking}
+                      className="flex-1 gap-2 border-white/10 bg-white/[0.04] transition-all duration-200 hover:border-white/20 hover:bg-white/[0.08] sm:flex-none"
+                    >
+                      <Zap className="size-4" />
+                      Demo
+                    </Button>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={reset}
-                    title="Reset"
-                    className="shrink-0 transition-all hover:bg-white/[0.06]"
-                    style={{ transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), background 0.2s" }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "rotate(180deg)"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "rotate(0deg)"; }}
-                  >
-                    <RotateCcw className="size-4" />
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={reset}
+                      title="Reset"
+                      className="shrink-0 transition-all hover:bg-white/[0.06]"
+                      style={{ transition: "transform 0.4s cubic-bezier(0.22,1,0.36,1), background 0.2s" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "rotate(180deg)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = "rotate(0deg)"; }}
+                    >
+                      <RotateCcw className="size-4" />
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 text-xs text-white/18">
+                    <span className="truncate">Enter a prompt, then ask Claude.</span>
+                    <span className="hidden shrink-0 items-center gap-1 sm:flex">
+                      <kbd className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]">⌘</kbd>
+                      +
+                      <kbd className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]">↵</kbd>
+                    </span>
+                  </div>
                 </div>
-
-                <p className="hidden text-xs text-white/15 sm:flex sm:items-center sm:gap-1">
-                  <kbd className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]">⌘</kbd>
-                  +
-                  <kbd className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]">↵</kbd>
-                  to submit
-                </p>
               </CardFooter>
             </form>
           </Card>
