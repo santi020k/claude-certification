@@ -129,13 +129,13 @@ export interface components {
              * @description Upper limit on Claude's response length (tokens).
              * @default 1000
              */
-            max_tokens: number;
+            max_tokens?: number;
             /**
              * One Sentence
              * @description When True, instructs Claude to answer in a single sentence.
              * @default false
              */
-            one_sentence: boolean;
+            one_sentence?: boolean;
             /**
              * Question
              * @description The question you want Claude to answer.
