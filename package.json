@@ -10,12 +10,14 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "types:api": "PYTHONPATH=apps/api apps/api/.venv/bin/python scripts/export-openapi.py && openapi-typescript packages/shared/openapi.json -o packages/shared/src/openapi.d.ts",
     "api:lint": "cd apps/api && python -m ruff check .",
     "api:test": "cd apps/api && python -m pytest",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean"
   },
   "devDependencies": {
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.8.3",
     "turbo": "^2.9.14"
   },

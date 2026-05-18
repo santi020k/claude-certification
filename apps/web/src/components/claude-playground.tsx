@@ -17,6 +17,7 @@ import {
   Sparkles,
   Zap,
 } from "lucide-react";
+import type { AskRequest, AskResponse, HealthResponse } from "@repo/shared";
 
 import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components/ui/alert";
 import { Badge } from "@repo/ui/components/ui/badge";
@@ -33,23 +34,6 @@ import { Input } from "@repo/ui/components/ui/input";
 import { Label } from "@repo/ui/components/ui/label";
 import { Switch } from "@repo/ui/components/ui/switch";
 import { Textarea } from "@repo/ui/components/ui/textarea";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
-
-type AskResponse = {
-  question: string;
-  answer: string;
-  model: string;
-  input_tokens: number;
-  output_tokens: number;
-};
-
-type HealthResponse = {
-  status: string;
-  environment: string;
-  anthropic_api_key_configured: boolean;
-  model: string;
-};
 
 // ── Rate-limit constants ───────────────────────────────────────────────────────
 // Mirror the backend limits so the client can self-throttle before even hitting
@@ -376,10 +360,11 @@ export function ClaudePlayground() {
     const t0 = Date.now();
     try {
       const q = oneSentence ? `${trimmed} Answer in one sentence.` : trimmed;
+      const body: AskRequest = { question: q, max_tokens: maxTokens, one_sentence: false };
       const res = await fetch(`${apiBaseUrl}/api/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, max_tokens: maxTokens, one_sentence: false }),
+        body: JSON.stringify(body),
       });
       if (res.status === 429) {
         const secs = parseRetryAfter(res);
