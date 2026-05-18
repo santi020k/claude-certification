@@ -263,9 +263,9 @@ export function ClaudePlayground() {
 
       {/* ── Animated ambient blobs ──────────────────────────────────────────── */}
       <div aria-hidden className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="blob-1 absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-teal-500/7 blur-[130px]" />
-        <div className="blob-2 absolute -bottom-64 -right-48 h-[800px] w-[800px] rounded-full bg-orange-500/8 blur-[150px]" />
-        <div className="blob-3 absolute left-1/2 top-1/3 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-violet-600/5 blur-[110px]" />
+        <div className="blob-1 absolute -left-48 -top-48 h-[700px] w-[700px] rounded-full bg-orange-800/10 blur-[130px]" />
+        <div className="blob-2 absolute -bottom-64 -right-48 h-[800px] w-[800px] rounded-full bg-stone-300/6 blur-[150px]" />
+        <div className="blob-3 absolute left-1/2 top-1/3 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-amber-900/8 blur-[110px]" />
       </div>
 
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-10 sm:px-6 lg:px-10">
@@ -552,14 +552,14 @@ export function ClaudePlayground() {
                         label="Input tokens"
                         value={answer.input_tokens}
                         max={Math.max(answer.input_tokens * 2, maxTokens * 3)}
-                        color="bg-gradient-to-r from-blue-500 to-blue-400"
+                        color="bg-gradient-to-r from-stone-400 to-stone-300"
                         delay={0}
                       />
                       <TokenBar
                         label="Output tokens"
                         value={answer.output_tokens}
                         max={maxTokens}
-                        color="bg-gradient-to-r from-orange-500 to-amber-400"
+                        color="bg-gradient-to-r from-[#cc785c] to-[#d98b70]"
                         delay={150}
                       />
                     </div>

@@ -1,38 +1,28 @@
 <svg width="920" height="220" viewBox="0 0 920 220" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Claude Certification Playground logo</title>
-  <desc id="desc">A certification node icon beside the Claude Certification Playground wordmark.</desc>
-  <rect width="920" height="220" rx="36" fill="url(#bg-grad)"/>
-  <defs>
-    <linearGradient id="bg-grad" x1="0" y1="0" x2="920" y2="220" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="100%" stop-color="#1e1b4b" />
-    </linearGradient>
-    <linearGradient id="icon-grad" x1="32" y1="32" x2="152" y2="152" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#2dd4bf" />
-      <stop offset="100%" stop-color="#3b82f6" />
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
+  <desc id="desc">A minimalist certification emblem beside the Claude Certification Playground wordmark.</desc>
+  <rect width="920" height="220" rx="36" fill="#F2F0ED"/>
 
   <g transform="translate(40 36)">
-    <path d="M74 24 L120 54 L102 108 L46 108 L28 54 Z" fill="none" stroke="url(#icon-grad)" stroke-width="10" stroke-linejoin="round" filter="url(#glow)"/>
-    <path d="M74 24 L102 108 M120 54 L46 108 M28 54 L74 24 M28 54 L102 108 M120 54 L46 108" stroke="url(#icon-grad)" stroke-width="3" stroke-opacity="0.4" filter="url(#glow)"/>
-
-    <circle cx="74" cy="24" r="10" fill="#38bdf8" filter="url(#glow)" />
-    <circle cx="120" cy="54" r="8" fill="#2dd4bf" filter="url(#glow)" />
-    <circle cx="102" cy="108" r="8" fill="#818cf8" filter="url(#glow)" />
-    <circle cx="46" cy="108" r="8" fill="#a78bfa" filter="url(#glow)" />
-    <circle cx="28" cy="54" r="10" fill="#2dd4bf" filter="url(#glow)" />
-    <path d="M48 76 L66 94 L106 46" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>
-    <path d="M48 76 L66 94 L106 46" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Charcoal background for the badge -->
+    <rect width="148" height="148" rx="34" fill="#2A2927"/>
+    
+    <!-- Outer circle in cream -->
+    <circle cx="74" cy="74" r="46" fill="none" stroke="#F2F0ED" stroke-width="10"/>
+    
+    <!-- Copper asterisk -->
+    <g transform="translate(74 62) scale(0.35)">
+      <path d="M 0 -55 L 0 55 M -48 28 L 48 -28 M -48 -28 L 48 28" stroke="#D48060" stroke-width="24" stroke-linecap="butt"/>
+    </g>
+    
+    <!-- Cut out for checkmark (using charcoal to blend with background rect) -->
+    <path d="M46 82 L68 104 L114 54" fill="none" stroke="#2A2927" stroke-width="26" stroke-linecap="square" stroke-linejoin="miter"/>
+    
+    <!-- Cream checkmark -->
+    <path d="M46 82 L68 104 L114 54" fill="none" stroke="#F2F0ED" stroke-width="10" stroke-linecap="square" stroke-linejoin="miter"/>
   </g>
 
-  <text x="210" y="108" fill="#F8FAFC" font-family="Inter, ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="52" font-weight="800" letter-spacing="-0.02em">Claude Certification</text>
-  <text x="214" y="152" fill="#94A3B8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, sans-serif" font-size="24" font-weight="500" letter-spacing="0">FastAPI + Next.js Playground</text>
-  
-  <path d="M820 60 C840 60 860 80 860 110 C860 140 840 160 820 160 C800 160 780 140 780 110 C780 80 800 60 820 60 Z" fill="url(#icon-grad)" fill-opacity="0.1" filter="url(#glow)"/>
-  <path d="M820 85 L828 100 L845 102 L833 114 L836 130 L820 122 L804 130 L807 114 L795 102 L812 100 Z" fill="#2dd4bf" filter="url(#glow)"/>
+  <!-- Typography matching Anthropic's aesthetic: serif or elegant sans. -->
+  <text x="220" y="106" fill="#2A2927" font-family="ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif" font-size="52" font-weight="600" letter-spacing="-0.02em">Claude Certification</text>
+  <text x="224" y="152" fill="#757169" font-family="ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="400" letter-spacing="0">FastAPI + Next.js Playground</text>
 </svg>

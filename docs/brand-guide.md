@@ -3,8 +3,9 @@
 ## Brand Idea
 
 Claude Certification is a practical learning project for building with Claude in
-a production-shaped stack. The brand should feel clear, technical, trustworthy,
-and a little celebratory: a lab bench with a completion badge.
+a production-shaped stack. The brand should feel warm, clear, technical, and
+trustworthy: closer to Claude's calm cream-and-clay product feel than a generic
+neon AI dashboard.
 
 ## Name
 
@@ -58,7 +59,7 @@ Do:
 
 - Keep clear space around the mark equal to at least one quarter of the icon
   width.
-- Use the logo on dark, near-black, or quiet neutral backgrounds.
+- Use the logo on warm charcoal, cream, or quiet neutral backgrounds.
 - Use the standalone icon when the full wordmark would be too small.
 
 Avoid:
@@ -72,24 +73,25 @@ Avoid:
 
 | Token | Hex | Use |
 |-------|-----|-----|
-| Ink | `#0D1117` | Main background, logo base |
-| Panel | `#111827` | Cards, elevated dark surfaces |
-| Teal | `#14B8A6` | Certification mark, success, primary accent |
-| Mist | `#ECFEFF` | High-contrast marks on dark backgrounds |
-| Amber | `#FCD34D` | Warm highlight, hero gradient accent |
-| Orange | `#FB923C` | Secondary accent, badges, attention |
-| Zinc | `#A1A1AA` | Muted body text |
-| White | `#F9FAFB` | Headings and high-emphasis text |
+| Ink | `#191714` | Main dark background, logo base |
+| Cocoa | `#2B241F` | Dark cards, icon fields |
+| Umber | `#3D332A` | Borders, subtle raised surfaces |
+| Clay | `#CC785C` | Primary action, certification mark, active states |
+| Soft Clay | `#D98B70` | Hover states and warm highlights |
+| Bone | `#F7F3EA` | High-contrast text and light surfaces |
+| Sand | `#D8CBB8` | Muted text on dark backgrounds |
+| Taupe | `#8C7B6B` | Low-emphasis labels and dividers |
 
 Recommended gradients:
 
 ```css
-linear-gradient(135deg, #14B8A6 0%, #FCD34D 100%)
-linear-gradient(90deg, #FB923C 0%, #FCD34D 55%, #ECFEFF 100%)
+linear-gradient(135deg, #CC785C 0%, #D8CBB8 100%)
+linear-gradient(90deg, #CC785C 0%, #D98B70 48%, #F7F3EA 100%)
 ```
 
 Use gradients sparingly: hero emphasis, icon details, or active states. The UI
-should remain mostly neutral and readable.
+should remain mostly warm, neutral, and readable. Avoid cyan, blue, purple, and
+neon gradients unless the surface is explicitly experimental.
 
 ## Typography
 

@@ -1,35 +1,19 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">Claude Certification icon</title>
-  <desc id="desc">A glowing neon node structure with a prominent checkmark indicating AI certification.</desc>
-  <rect width="512" height="512" rx="112" fill="url(#bg-grad)"/>
-  <defs>
-    <linearGradient id="bg-grad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="100%" stop-color="#1e1b4b" />
-    </linearGradient>
-    <linearGradient id="icon-grad" x1="120" y1="120" x2="392" y2="392" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#2dd4bf" />
-      <stop offset="100%" stop-color="#3b82f6" />
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-    <filter id="glow-strong" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="15" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
+  <desc id="desc">A minimalist emblem with a copper asterisk and checkmark on a warm cream background.</desc>
+  <rect width="512" height="512" rx="112" fill="#F2F0ED"/>
   
-  <path d="M256 120 L370 200 L320 340 L192 340 L142 200 Z" fill="none" stroke="url(#icon-grad)" stroke-width="24" stroke-linejoin="round" filter="url(#glow)"/>
-  <path d="M256 120 L320 340 M370 200 L192 340 M142 200 L256 120 M142 200 L320 340 M370 200 L192 340" stroke="url(#icon-grad)" stroke-width="6" stroke-opacity="0.4" filter="url(#glow)"/>
+  <!-- The charcoal circle -->
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#2A2927" stroke-width="28"/>
   
-  <circle cx="256" cy="120" r="24" fill="#38bdf8" filter="url(#glow-strong)" />
-  <circle cx="370" cy="200" r="20" fill="#2dd4bf" filter="url(#glow-strong)" />
-  <circle cx="320" cy="340" r="16" fill="#818cf8" filter="url(#glow-strong)" />
-  <circle cx="192" cy="340" r="20" fill="#a78bfa" filter="url(#glow-strong)" />
-  <circle cx="142" cy="200" r="24" fill="#2dd4bf" filter="url(#glow-strong)" />
+  <!-- Copper asterisk (6-pointed like the Anthropic star) -->
+  <g transform="translate(256 215)">
+    <path d="M 0 -55 L 0 55 M -48 28 L 48 -28 M -48 -28 L 48 28" stroke="#D48060" stroke-width="20" stroke-linecap="butt"/>
+  </g>
   
-  <path d="M170 270 L230 320 L360 170" fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow-strong)"/>
-  <path d="M170 270 L230 320 L360 170" fill="none" stroke="#2dd4bf" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Cream outline to cut out the circle beneath the checkmark -->
+  <path d="M170 280 L240 350 L380 200" fill="none" stroke="#F2F0ED" stroke-width="72" stroke-linecap="square" stroke-linejoin="miter"/>
+  
+  <!-- The charcoal checkmark -->
+  <path d="M170 280 L240 350 L380 200" fill="none" stroke="#2A2927" stroke-width="28" stroke-linecap="square" stroke-linejoin="miter"/>
 </svg>
