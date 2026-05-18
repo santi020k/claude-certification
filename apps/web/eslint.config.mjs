@@ -21,12 +21,13 @@ export default [
         entryPoint: 'src/app/globals.css',
         ignore: [
           '^dark$',
-          '^animate-(slide-up-fade|fade-in|scale-in|answer-reveal)$',
+          '^animate-(slide-up-fade|fade-in|scale-in|answer-reveal|hero-word)$',
           '^delay-(0|75|150|225|300|375)$',
           '^blob-[1-3]$',
           '^shimmer$',
           '^card-hover$',
-          '^input-focus$'
+          '^input-focus$',
+          '^prose-streaming$'
         ]
       }]
     }

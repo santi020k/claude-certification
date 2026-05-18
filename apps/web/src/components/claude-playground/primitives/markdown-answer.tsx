@@ -5,9 +5,9 @@ import remarkGfm from 'remark-gfm'
 
 // Beautiful custom hook for dynamic, character-by-character typing emulation during streaming
 function useTypingEffect(rawText: string, isStreaming: boolean) {
-  const [displayedText, setDisplayedText] = useState('')
+  const [displayedText, setDisplayedText] = useState(() => isStreaming ? '' : rawText)
   const rawTextRef = useRef(rawText)
-  const displayedTextRef = useRef('')
+  const displayedTextRef = useRef(isStreaming ? '' : rawText)
 
   useEffect(() => {
     rawTextRef.current = rawText
@@ -15,7 +15,10 @@ function useTypingEffect(rawText: string, isStreaming: boolean) {
 
   useEffect(() => {
     if (!isStreaming) {
-      setDisplayedText(rawText)
+      const target = rawText
+      void Promise.resolve().then(() => {
+        setDisplayedText(target)
+      })
 
       displayedTextRef.current = rawText
 
@@ -75,7 +78,10 @@ function useTypingEffect(rawText: string, isStreaming: boolean) {
   // If we suddenly toggle or stop streaming, make sure we sync instantly
   useEffect(() => {
     if (!isStreaming) {
-      setDisplayedText(rawText)
+      const target = rawText
+      void Promise.resolve().then(() => {
+        setDisplayedText(target)
+      })
 
       displayedTextRef.current = rawText
     }

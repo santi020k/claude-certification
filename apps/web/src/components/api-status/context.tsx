@@ -20,14 +20,14 @@ interface ApiStatusContextValue {
   health: HealthResponse | null
   status: ApiStatusState
   lastChecked: Date | null
-  check: () => void
+  check: () => Promise<void>
 }
 
 const ApiStatusContext = createContext<ApiStatusContextValue>({
   health: null,
   status: 'idle',
   lastChecked: null,
-  check: () => {}
+  check: async () => {}
 })
 
 export function ApiStatusProvider({ children }: { children: React.ReactNode }) {
@@ -61,9 +61,11 @@ export function ApiStatusProvider({ children }: { children: React.ReactNode }) {
 
   // Run immediately on mount, then poll every 30 s
   useEffect(() => {
-    check()
+    void Promise.resolve().then(() => check())
 
-    const id = setInterval(check, 30_000)
+    const id = setInterval(() => {
+      void check()
+    }, 30_000)
 
     return () => {
       clearInterval(id)

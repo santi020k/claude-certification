@@ -1,10 +1,10 @@
-"use client";
+'use client'
 
-import * as ResizablePrimitive from "react-resizable-panels";
+import * as ResizablePrimitive from 'react-resizable-panels'
 
-import { cn } from "@ui/lib/utils";
+import { cn } from '@ui/lib/utils'
 
-import { GripVerticalIcon } from "lucide-react";
+import { GripVerticalIcon } from 'lucide-react'
 
 function ResizablePanelGroup({
   className,
@@ -17,16 +17,15 @@ function ResizablePanelGroup({
         `
           flex size-full
           aria-[orientation=vertical]:flex-col
-        `,
-        className,
+        `, className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function ResizablePanel({ ...props }: ResizablePrimitive.PanelProps) {
-  return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />;
+  return <ResizablePrimitive.Panel data-slot="resizable-panel" {...props} />
 }
 
 function ResizableHandle({
@@ -34,7 +33,7 @@ function ResizableHandle({
   className,
   ...props
 }: ResizablePrimitive.SeparatorProps & {
-  withHandle?: boolean;
+  withHandle?: boolean
 }) {
   return (
     <ResizablePrimitive.Separator
@@ -54,23 +53,24 @@ function ResizableHandle({
           aria-[orientation=horizontal]:after:translate-x-0
           aria-[orientation=horizontal]:after:-translate-y-1/2
           [&[aria-orientation=horizontal]>div]:rotate-90
-        `,
-        className,
+        `, className
       )}
       {...props}
     >
-      {withHandle ? (
-        <div
-          className="
-            z-10 flex h-4 w-3 items-center justify-center rounded-xs border
-            bg-border
-          "
-        >
-          <GripVerticalIcon className="size-2.5" />
-        </div>
-      ) : null}
+      {withHandle ?
+        (
+          <div
+            className="
+              z-10 flex h-4 w-3 items-center justify-center rounded-xs border
+              bg-border
+            "
+          >
+            <GripVerticalIcon className="size-2.5" />
+          </div>
+        ) :
+        null}
     </ResizablePrimitive.Separator>
-  );
+  )
 }
 
-export { ResizableHandle, ResizablePanel, ResizablePanelGroup };
+export { ResizableHandle, ResizablePanel, ResizablePanelGroup }

@@ -50,7 +50,7 @@ interface SpecialistUiConfig {
   prompts: [string, string, string]
 }
 
-const SPECIALIST_UI: Record<string, SpecialistUiConfig> = {
+const SPECIALIST_UI: Record<string, SpecialistUiConfig | undefined> = {
   general: {
     emoji: '🤖',
     prompts: [
@@ -236,7 +236,7 @@ interface AgentChatSession {
   temperature: number
 }
 
-type AgentSessions = Record<string, AgentChatSession>
+type AgentSessions = Record<string, AgentChatSession | undefined>
 
 function readAllSessions(): AgentSessions {
   if (typeof window === 'undefined') return {}
