@@ -20,5 +20,5 @@ export function AmbientBackground() {
         "
       />
     </div>
-  );
+  )
 }

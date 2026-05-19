@@ -1,7 +1,98 @@
+import { useEffect, useRef, useState } from 'react'
 import type { Components } from 'react-markdown'
 import ReactMarkdown from 'react-markdown'
 
 import remarkGfm from 'remark-gfm'
+
+// Beautiful custom hook for dynamic, character-by-character typing emulation during streaming
+const useTypingEffect = (rawText: string, isStreaming: boolean) => {
+  const [displayedText, setDisplayedText] = useState(() => isStreaming ? '' : rawText)
+  const rawTextRef = useRef(rawText)
+  const displayedTextRef = useRef(isStreaming ? '' : rawText)
+
+  useEffect(() => {
+    rawTextRef.current = rawText
+  }, [rawText])
+
+  useEffect(() => {
+    if (!isStreaming) {
+      const target = rawText
+
+      setTimeout(() => {
+        setDisplayedText(target)
+      }, 0)
+
+      displayedTextRef.current = rawText
+
+      return
+    }
+
+    let animationFrameId: number
+    let lastTick = Date.now()
+
+    const tick = () => {
+      const targetText = rawTextRef.current
+      const currentText = displayedTextRef.current
+
+      if (currentText === targetText) {
+        animationFrameId = requestAnimationFrame(tick)
+
+        return
+      }
+
+      const now = Date.now()
+      const delta = now - lastTick
+      const charsBehind = targetText.length - currentText.length
+      // Dynamic typing speed based on how far behind we are:
+      // - Small queue (close to live): smooth typing (12ms/char)
+      // - Medium queue (slightly behind): faster typing (5ms/char)
+      // - Large queue (very behind or stream chunk burst): hyper-catchup (1-2ms/char)
+      let msPerChar = 12
+
+      if (charsBehind > 100) {
+        msPerChar = 1
+      } else if (charsBehind > 30) {
+        msPerChar = 4
+      }
+
+      const charsToAppend = Math.max(1, Math.floor(delta / msPerChar))
+
+      if (charsToAppend > 0) {
+        const nextText = targetText.slice(0, currentText.length + charsToAppend)
+
+        setDisplayedText(nextText)
+
+        displayedTextRef.current = nextText
+
+        lastTick = now
+      }
+
+      animationFrameId = requestAnimationFrame(tick)
+    }
+
+    animationFrameId = requestAnimationFrame(tick)
+
+    return () => {
+      cancelAnimationFrame(animationFrameId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStreaming])
+
+  // If we suddenly toggle or stop streaming, make sure we sync instantly
+  useEffect(() => {
+    if (!isStreaming) {
+      const target = rawText
+
+      setTimeout(() => {
+        setDisplayedText(target)
+      }, 0)
+
+      displayedTextRef.current = rawText
+    }
+  }, [rawText, isStreaming])
+
+  return displayedText
+}
 
 const markdownComponents: Components = {
   h1: ({ children }) => (
@@ -159,13 +250,23 @@ const markdownComponents: Components = {
   hr: () => <hr className="my-6 border-white/8" />
 }
 
-export const MarkdownAnswer = ({ content }: { content: string }) => (
-  <div>
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={markdownComponents}
-    >
-      {content}
-    </ReactMarkdown>
-  </div>
-)
+export const MarkdownAnswer = ({
+  content,
+  isStreaming = false
+}: {
+  content: string
+  isStreaming?: boolean | null
+}) => {
+  const displayedContent = useTypingEffect(content, !!isStreaming)
+
+  return (
+    <div className={isStreaming ? 'prose-streaming' : ''}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={markdownComponents}
+      >
+        {displayedContent}
+      </ReactMarkdown>
+    </div>
+  )
+}

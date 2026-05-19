@@ -1,17 +1,17 @@
-import type { RefObject } from "react";
+import type { RefObject } from 'react'
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight } from 'lucide-react'
 
-import { EXAMPLE_PROMPTS } from "../constants";
+import { EXAMPLE_PROMPTS } from '../constants'
 
 interface ExamplePromptListProps {
-  textareaRef: RefObject<HTMLTextAreaElement | null>;
-  onQuestionChange: (question: string) => void;
+  textareaRef: RefObject<HTMLTextAreaElement | null>
+  onQuestionChange: (question: string) => void
 }
 
 export function ExamplePromptList({
   textareaRef,
-  onQuestionChange,
+  onQuestionChange
 }: ExamplePromptListProps) {
   return (
     <div className="space-y-3">
@@ -25,18 +25,20 @@ export function ExamplePromptList({
           Try an example
         </p>
         <span className="text-[10px] text-muted-foreground/50">
-          {EXAMPLE_PROMPTS.length} presets
+          {EXAMPLE_PROMPTS.length}
+          {' '}
+          presets
         </span>
       </div>
       <div className="grid gap-2">
-        {EXAMPLE_PROMPTS.map((prompt) => (
+        {EXAMPLE_PROMPTS.map(prompt => (
           <button
             key={prompt}
             type="button"
             onClick={() => {
-              onQuestionChange(prompt);
+              onQuestionChange(prompt)
 
-              textareaRef.current?.focus();
+              textareaRef.current?.focus()
             }}
             className="
               group flex items-center gap-3 rounded-xl border border-white/6
@@ -65,5 +67,5 @@ export function ExamplePromptList({
         ))}
       </div>
     </div>
-  );
+  )
 }

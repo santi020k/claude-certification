@@ -1,37 +1,37 @@
-import type { RefObject, SyntheticEvent } from "react";
+import type { RefObject, SyntheticEvent } from 'react'
 
-import { ExamplePromptList } from "./example-prompt-list";
-import { PromptActions } from "./prompt-actions";
-import { PromptQuestionField } from "./prompt-question-field";
-import { ResponseSettings } from "./response-settings";
+import { ExamplePromptList } from './example-prompt-list'
+import { PromptActions } from './prompt-actions'
+import { PromptQuestionField } from './prompt-question-field'
+import { ResponseSettings } from './response-settings'
 
-import { Badge } from "@repo/ui/components/ui/badge";
+import { Badge } from '@repo/ui/components/ui/badge'
 import {
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
-} from "@repo/ui/components/ui/card";
+  CardTitle
+} from '@repo/ui/components/ui/card'
 
 interface PromptCardProps {
-  canSubmit: boolean;
-  cooldownSeconds: number;
-  isAsking: boolean;
-  isLimited: boolean;
-  maxTokens: number;
-  oneSentence: boolean;
-  question: string;
-  remaining: number;
-  retryAfter: number | null;
-  textareaRef: RefObject<HTMLTextAreaElement | null>;
-  onAsk: (event?: SyntheticEvent<HTMLFormElement>) => Promise<void>;
-  onDemo: () => Promise<void>;
-  onQuestionChange: (question: string) => void;
-  onReset: () => void;
-  onMaxTokensChange: (maxTokens: number) => void;
-  onOneSentenceChange: (oneSentence: boolean) => void;
+  canSubmit: boolean
+  cooldownSeconds: number
+  isAsking: boolean
+  isLimited: boolean
+  maxTokens: number
+  oneSentence: boolean
+  question: string
+  remaining: number
+  retryAfter: number | null
+  textareaRef: RefObject<HTMLTextAreaElement | null>
+  onAsk: (event?: SyntheticEvent<HTMLFormElement>) => Promise<void>
+  onDemo: () => Promise<void>
+  onQuestionChange: (question: string) => void
+  onReset: () => void
+  onMaxTokensChange: (maxTokens: number) => void
+  onOneSentenceChange: (oneSentence: boolean) => void
 }
 
 export function PromptCard({
@@ -50,7 +50,7 @@ export function PromptCard({
   onQuestionChange,
   onReset,
   onMaxTokensChange,
-  onOneSentenceChange,
+  onOneSentenceChange
 }: PromptCardProps) {
   return (
     <Card
@@ -59,7 +59,10 @@ export function PromptCard({
         bg-[#211d19]/80 shadow-2xl shadow-black/30 backdrop-blur-md delay-150
       "
     >
-      <CardHeader className="border-b border-white/6 bg-white/2.5 px-7 pt-7 pb-5">
+      <CardHeader className="
+        border-b border-white/6 bg-white/2.5 px-7 pt-7 pb-5
+      "
+      >
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle
@@ -109,7 +112,10 @@ export function PromptCard({
           />
         </CardContent>
 
-        <CardFooter className="border-t border-white/6 bg-black/10 px-7 pt-5 pb-6">
+        <CardFooter className="
+          border-t border-white/6 bg-black/10 px-7 pt-5 pb-6
+        "
+        >
           <PromptActions
             canSubmit={canSubmit}
             cooldownSeconds={cooldownSeconds}
@@ -123,5 +129,5 @@ export function PromptCard({
         </CardFooter>
       </form>
     </Card>
-  );
+  )
 }

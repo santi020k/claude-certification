@@ -1,18 +1,18 @@
-import { LoaderCircle, RotateCcw, Send, Zap } from "lucide-react";
+import { LoaderCircle, RotateCcw, Send, Zap } from 'lucide-react'
 
-import { CLIENT_RATE_LIMIT } from "../constants";
+import { CLIENT_RATE_LIMIT } from '../constants'
 
-import { Button } from "@repo/ui/components/ui/button";
+import { Button } from '@repo/ui/components/ui/button'
 
 interface PromptActionsProps {
-  canSubmit: boolean;
-  cooldownSeconds: number;
-  isAsking: boolean;
-  isLimited: boolean;
-  remaining: number;
-  retryAfter: number | null;
-  onDemo: () => Promise<void>;
-  onReset: () => void;
+  canSubmit: boolean
+  cooldownSeconds: number
+  isAsking: boolean
+  isLimited: boolean
+  remaining: number
+  retryAfter: number | null
+  onDemo: () => Promise<void>
+  onReset: () => void
 }
 
 export function PromptActions({
@@ -23,7 +23,7 @@ export function PromptActions({
   remaining,
   retryAfter,
   onDemo,
-  onReset,
+  onReset
 }: PromptActionsProps) {
   return (
     <div className="flex w-full flex-col gap-3">
@@ -39,16 +39,18 @@ export function PromptActions({
             sm:flex-none
           "
         >
-          {isAsking ? (
-            <LoaderCircle className="size-4 animate-spin" />
-          ) : (
-            <Send
-              className="
+          {isAsking ?
+            (
+              <LoaderCircle className="size-4 animate-spin" />
+            ) :
+            (
+              <Send
+                className="
                   size-4 transition-transform duration-200
                   group-hover:translate-x-0.5
                 "
-            />
-          )}
+              />
+            )}
           Ask Claude
         </Button>
 
@@ -56,7 +58,7 @@ export function PromptActions({
           type="button"
           variant="outline"
           onClick={() => {
-            void onDemo();
+            void onDemo()
           }}
           disabled={isAsking || isLimited || retryAfter !== null}
           className="
@@ -82,13 +84,13 @@ export function PromptActions({
           "
           style={{
             transition:
-              "transform 0.4s cubic-bezier(0.22,1,0.36,1), background 0.2s",
+              'transform 0.4s cubic-bezier(0.22,1,0.36,1), background 0.2s'
           }}
-          onMouseEnter={(event) => {
-            event.currentTarget.style.transform = "rotate(180deg)";
+          onMouseEnter={event => {
+            event.currentTarget.style.transform = 'rotate(180deg)'
           }}
-          onMouseLeave={(event) => {
-            event.currentTarget.style.transform = "rotate(0deg)";
+          onMouseLeave={event => {
+            event.currentTarget.style.transform = 'rotate(0deg)'
           }}
         >
           <RotateCcw className="size-4" />
@@ -133,17 +135,17 @@ export function PromptActions({
         </span>
       </div>
     </div>
-  );
+  )
 }
 
 function RateLimitStatus({
   cooldownSeconds,
   isLimited,
   remaining,
-  retryAfter,
+  retryAfter
 }: Pick<
   PromptActionsProps,
-  "cooldownSeconds" | "isLimited" | "remaining" | "retryAfter"
+  'cooldownSeconds' | 'isLimited' | 'remaining' | 'retryAfter'
 >) {
   if (retryAfter !== null) {
     return (
@@ -153,9 +155,12 @@ function RateLimitStatus({
             inline-block size-1.5 animate-pulse rounded-full bg-rose-400
           "
         />
-        Rate limited — retry in {retryAfter}s
+        Rate limited — retry in
+        {' '}
+        {retryAfter}
+        s
       </span>
-    );
+    )
   }
 
   if (isLimited) {
@@ -166,17 +171,22 @@ function RateLimitStatus({
             inline-block size-1.5 animate-pulse rounded-full bg-amber-400
           "
         />
-        Slow down — retry in {cooldownSeconds}s
+        Slow down — retry in
+        {' '}
+        {cooldownSeconds}
+        s
       </span>
-    );
+    )
   }
 
   return (
     <span className="flex items-center gap-1.5 text-muted-foreground/60">
       <span className="font-mono tabular-nums">
-        {remaining}/{CLIENT_RATE_LIMIT}
+        {remaining}
+        /
+        {CLIENT_RATE_LIMIT}
       </span>
       <span>req/min remaining</span>
     </span>
-  );
+  )
 }

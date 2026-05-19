@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image'
 
 export function PlaygroundFooter({ apiBaseUrl }: { apiBaseUrl: string }) {
   return (
@@ -82,5 +82,5 @@ export function PlaygroundFooter({ apiBaseUrl }: { apiBaseUrl: string }) {
         </a>
       </div>
     </footer>
-  );
+  )
 }

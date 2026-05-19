@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 /**
  * Utility to merge Tailwind class names safely.
@@ -9,5 +9,5 @@ import { twMerge } from "tailwind-merge";
  *   cn("px-4 py-2", isActive && "bg-primary", className)
  */
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }

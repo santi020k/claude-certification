@@ -1,8 +1,8 @@
-import * as React from "react";
+import * as React from 'react'
 
-import { cn } from "@ui/lib/utils";
+import { cn } from '@ui/lib/utils'
 
-import { cva, type VariantProps } from "class-variance-authority";
+import { cva, type VariantProps } from 'class-variance-authority'
 
 const alertVariants = cva(
   `
@@ -10,29 +10,28 @@ const alertVariants = cva(
     border px-4 py-3 text-sm
     has-[>svg]:grid-cols-[--spacing(4)_1fr] has-[>svg]:gap-x-3
     [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current
-  `,
-  {
+  `, {
     variants: {
       variant: {
-        default: "bg-card text-card-foreground",
+        default: 'bg-card text-card-foreground',
         destructive: `
           bg-card text-destructive
           *:data-[slot=alert-description]:text-destructive/90
           [&>svg]:text-current
-        `,
-      },
+        `
+      }
     },
     defaultVariants: {
-      variant: "default",
-    },
-  },
-);
+      variant: 'default'
+    }
+  }
+)
 
 function Alert({
   className,
   variant,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+}: React.ComponentProps<'div'> & VariantProps<typeof alertVariants>) {
   return (
     <div
       data-slot="alert"
@@ -40,26 +39,25 @@ function Alert({
       className={cn(alertVariants({ variant }), className)}
       {...props}
     />
-  );
+  )
 }
 
-function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
+function AlertTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="alert-title"
       className={cn(
-        "col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
-        className,
+        'col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight', className
       )}
       {...props}
     />
-  );
+  )
 }
 
 function AlertDescription({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="alert-description"
@@ -68,12 +66,11 @@ function AlertDescription({
           col-start-2 grid justify-items-start gap-1 text-sm
           text-muted-foreground
           [&_p]:leading-relaxed
-        `,
-        className,
+        `, className
       )}
       {...props}
     />
-  );
+  )
 }
 
-export { Alert, AlertDescription, AlertTitle };
+export { Alert, AlertDescription, AlertTitle }
