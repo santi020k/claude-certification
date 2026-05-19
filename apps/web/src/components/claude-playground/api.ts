@@ -3,6 +3,7 @@ import type {
   ChatResponse,
   ChatStreamEvent,
   HealthResponse,
+  RateLimitInfo,
   Specialist,
   SpecialistsResponse,
   WeatherResponse
@@ -96,6 +97,27 @@ export async function readErrorMessage(response: Response): Promise<string> {
   }
 
   return 'The API returned an unexpected response.'
+}
+
+/**
+ * Extract slowapi rate-limit headers from any response (success or 429).
+ * slowapi sends X-RateLimit-Limit, X-RateLimit-Remaining, and
+ * X-RateLimit-Reset (epoch seconds) when headers_enabled=True.
+ * Returns null if the headers are absent (e.g. during local dev without the
+ * middleware, or when the request never reached the limiter).
+ */
+export function readRateLimitHeaders(response: Response): RateLimitInfo | null {
+  const limit     = parseInt(response.headers.get('X-RateLimit-Limit')     ?? '', 10)
+  const remaining = parseInt(response.headers.get('X-RateLimit-Remaining') ?? '', 10)
+  const resetSecs = parseInt(response.headers.get('X-RateLimit-Reset')     ?? '', 10)
+
+  if (isNaN(limit) || isNaN(remaining) || isNaN(resetSecs)) return null
+
+  return {
+    limit,
+    remaining,
+    resetAt: resetSecs * 1_000 // convert epoch-seconds → epoch-ms
+  }
 }
 
 export function parseRetryAfter(response: Response): number {

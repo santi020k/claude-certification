@@ -1,6 +1,6 @@
 'use client'
 
-import { type SyntheticEvent, useId, useState } from 'react'
+import { type SyntheticEvent, useEffect, useId, useState } from 'react'
 
 import Link from 'next/link'
 
@@ -9,10 +9,11 @@ import {
   getApiBaseUrl,
   parseRetryAfter,
   readErrorMessage,
+  readRateLimitHeaders,
   readWeatherResponse
 } from '@/components/claude-playground/api'
 import { MarkdownAnswer } from '@/components/claude-playground/primitives/markdown-answer'
-import type { WeatherResponse } from '@/components/claude-playground/types'
+import type { RateLimitInfo, WeatherResponse } from '@/components/claude-playground/types'
 
 import {
   ArrowLeft,
@@ -155,6 +156,16 @@ const WEATHER_THEME: Record<
 
 // ─── Animated SVG weather icons ──────────────────────────────────────────────
 
+/**
+ * Round a computed SVG coordinate to 3 decimal places.
+ *
+ * Server-side (Node) and client-side V8 can produce slightly different
+ * trailing digits for the same Math.sin / Math.cos inputs due to JIT
+ * differences.  Snapping to 3 dp gives identical strings on both sides
+ * and eliminates the React hydration mismatch.
+ */
+const snap = (n: number): number => Math.round(n * 1_000) / 1_000
+
 function AnimatedWeatherIcon({
   category,
   size = 64,
@@ -183,10 +194,10 @@ function AnimatedWeatherIcon({
           return (
             <line
               key={i}
-              x1={cx + inner * Math.cos(angle)}
-              y1={cy + inner * Math.sin(angle)}
-              x2={cx + outer * Math.cos(angle)}
-              y2={cy + outer * Math.sin(angle)}
+              x1={snap(cx + inner * Math.cos(angle))}
+              y1={snap(cy + inner * Math.sin(angle))}
+              x2={snap(cx + outer * Math.cos(angle))}
+              y2={snap(cy + outer * Math.sin(angle))}
               stroke="currentColor"
               strokeWidth={size * 0.042}
               strokeLinecap="round"
@@ -214,10 +225,10 @@ function AnimatedWeatherIcon({
             return (
               <line
                 key={i}
-                x1={size * 0.35 + inner * Math.cos(angle)}
-                y1={size * 0.32 + inner * Math.sin(angle)}
-                x2={size * 0.35 + outer * Math.cos(angle)}
-                y2={size * 0.32 + outer * Math.sin(angle)}
+                x1={snap(size * 0.35 + inner * Math.cos(angle))}
+                y1={snap(size * 0.32 + inner * Math.sin(angle))}
+                x2={snap(size * 0.35 + outer * Math.cos(angle))}
+                y2={snap(size * 0.32 + outer * Math.sin(angle))}
                 stroke="#fbbf24"
                 strokeWidth={size * 0.038}
                 strokeLinecap="round"
@@ -507,6 +518,74 @@ function Metric({
   )
 }
 
+// ─── Rate limit badge ────────────────────────────────────────────────────────
+
+/**
+ * Shows quota usage sourced from the X-RateLimit-* response headers that
+ * slowapi injects on every request (headers_enabled=True in rate_limit.py).
+ * Turns amber below 30 % remaining, red at 0, and counts down to reset.
+ */
+function RateLimitBadge({ info }: { info: RateLimitInfo }) {
+  const [now, setNow] = useState(() => Date.now())
+
+  // Tick every second so the countdown stays live without a page reload.
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1_000)
+    return () => clearInterval(id)
+  }, [])
+
+  const secondsLeft = Math.max(0, Math.ceil((info.resetAt - now) / 1_000))
+  const pct         = info.remaining / info.limit            // 0 – 1
+  const depleted    = info.remaining === 0
+
+  const palette = depleted
+    ? {
+        wrap: 'border-red-400/25 bg-red-500/10 text-red-300',
+        bar:  'bg-red-400'
+      }
+    : pct <= 0.3
+    ? {
+        wrap: 'border-amber-400/25 bg-amber-500/8 text-amber-300',
+        bar:  'bg-amber-400'
+      }
+    : {
+        wrap: 'border-white/10 bg-black/10 text-muted-foreground',
+        bar:  'bg-sky-400'
+      }
+
+  return (
+    <div
+      className={`
+        animate-fade-in flex items-center gap-3 rounded-lg border
+        px-3 py-2 text-xs transition-colors duration-500
+        ${palette.wrap}
+      `}
+    >
+      {/* Label */}
+      <span className="shrink-0">
+        {depleted
+          ? `Rate limited — resets in ${secondsLeft}s`
+          : `${info.remaining} / ${info.limit} requests this minute`}
+      </span>
+
+      {/* Countdown when low but not depleted */}
+      {!depleted && pct <= 0.3 && secondsLeft > 0 && (
+        <span className="shrink-0 text-muted-foreground">
+          · resets in {secondsLeft}s
+        </span>
+      )}
+
+      {/* Progress bar — drains left-to-right as requests are consumed */}
+      <div className="ml-auto h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-white/10">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${palette.bar}`}
+          style={{ width: `${Math.max(0, pct * 100)}%` }}
+        />
+      </div>
+    </div>
+  )
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export function WeatherPage() {
@@ -518,6 +597,7 @@ export function WeatherPage() {
   const [result, setResult] = useState<WeatherResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [rateLimit, setRateLimit] = useState<RateLimitInfo | null>(null)
 
   async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -531,6 +611,12 @@ export function WeatherPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ location, question, unit, max_tokens: 500 })
       })
+
+      // Read rate-limit headers from every response — success or error.
+      // slowapi injects X-RateLimit-Limit / Remaining / Reset when
+      // headers_enabled=True (see middleware/rate_limit.py).
+      const rl = readRateLimitHeaders(response)
+      if (rl) setRateLimit(rl)
 
       if (!response.ok) {
         const message = await readErrorMessage(response)
@@ -712,6 +798,9 @@ export function WeatherPage() {
                 ))}
               </div>
 
+              {/* Rate limit indicator — shown after the first request */}
+              {rateLimit ? <RateLimitBadge info={rateLimit} /> : null}
+
               {/* Error */}
               {error ? (
                 <p className="
@@ -726,7 +815,7 @@ export function WeatherPage() {
               <Button
                 type="submit"
                 size="lg"
-                disabled={isLoading}
+                disabled={isLoading || (rateLimit?.remaining === 0)}
                 className="
                   relative overflow-hidden transition-all duration-200
                   active:scale-[0.98]
