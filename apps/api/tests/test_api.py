@@ -119,7 +119,10 @@ def test_ask_maps_claude_service_errors(monkeypatch) -> None:
     )
 
     assert response.status_code == 504
-    assert response.json()["detail"] == "Claude took too long to respond. Please try again."
+    assert (
+        response.json()["detail"]
+        == "Claude took too long to respond. Please try again."
+    )
 
 
 def test_extract_text_combines_text_blocks() -> None:
@@ -151,7 +154,10 @@ def test_ask_demo_endpoint(monkeypatch) -> None:
     response = client.get("/api/ask/demo")
     assert response.status_code == 200
     payload = response.json()
-    assert payload["answer"] == "Quantum computing is computation using quantum-mechanical phenomena like superposition and entanglement."
+    assert (
+        payload["answer"]
+        == "Quantum computing is computation using quantum-mechanical phenomena like superposition and entanglement."
+    )
     assert payload["model"] == "test-model"
 
 
@@ -163,11 +169,15 @@ def test_ask_demo_maps_errors(monkeypatch) -> None:
 
     response = client.get("/api/ask/demo")
     assert response.status_code == 502
-    assert response.json()["detail"] == "Failed to get a response from Claude. Please try again."
+    assert (
+        response.json()["detail"]
+        == "Failed to get a response from Claude. Please try again."
+    )
 
 
 def test_ask_rate_limit_error(monkeypatch) -> None:
     from services.claude import ClaudeRateLimitError
+
     def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         raise ClaudeRateLimitError("rate limit exceeded")
 
@@ -178,11 +188,15 @@ def test_ask_rate_limit_error(monkeypatch) -> None:
         json={"question": "Explain rate limits.", "max_tokens": 100},
     )
     assert response.status_code == 429
-    assert response.json()["detail"] == "Claude is currently rate limited. Please try again shortly."
+    assert (
+        response.json()["detail"]
+        == "Claude is currently rate limited. Please try again shortly."
+    )
 
 
 def test_ask_authentication_error(monkeypatch) -> None:
     from services.claude import ClaudeAuthenticationError
+
     def fake_ask_claude(question: str, max_tokens: int) -> ClaudeResponseDict:
         raise ClaudeAuthenticationError("bad key")
 
@@ -193,7 +207,10 @@ def test_ask_authentication_error(monkeypatch) -> None:
         json={"question": "Explain auth.", "max_tokens": 100},
     )
     assert response.status_code == 503
-    assert response.json()["detail"] == "Claude authentication failed. Check the server API key."
+    assert (
+        response.json()["detail"]
+        == "Claude authentication failed. Check the server API key."
+    )
 
 
 def test_weather_endpoint_uses_claude_tool_flow(monkeypatch) -> None:
@@ -248,7 +265,10 @@ def test_weather_endpoint_uses_claude_tool_flow(monkeypatch) -> None:
     payload = response.json()
     assert payload["tool_name"] == "get_current_weather"
     assert payload["weather"]["condition"] == "Partly cloudy"
-    assert payload["answer"] == "Bring a light jacket and check for showers before leaving."
+    assert (
+        payload["answer"]
+        == "Bring a light jacket and check for showers before leaving."
+    )
 
 
 def test_ask_unexpected_error(monkeypatch) -> None:
@@ -269,7 +289,9 @@ def test_chat_starts_and_continues_conversation(monkeypatch) -> None:
     conversation_store.clear_all()
     captured_lengths: list[int] = []
 
-    def fake_chat_with_claude(messages, max_tokens: int, **kwargs) -> ClaudeChatResponseDict:
+    def fake_chat_with_claude(
+        messages, max_tokens: int, **kwargs
+    ) -> ClaudeChatResponseDict:
         captured_lengths.append(len(messages))
         return {
             "answer": f"Reply {len(messages)}",
@@ -334,7 +356,9 @@ def test_chat_stream_saves_final_conversation(monkeypatch) -> None:
             "output_tokens": 3,
         }
 
-    monkeypatch.setattr("routers.chat.stream_chat_with_claude", fake_stream_chat_with_claude)
+    monkeypatch.setattr(
+        "routers.chat.stream_chat_with_claude", fake_stream_chat_with_claude
+    )
 
     with client.stream(
         "POST",
@@ -352,7 +376,9 @@ def test_chat_stream_saves_final_conversation(monkeypatch) -> None:
 
 
 def test_chat_maps_claude_errors(monkeypatch) -> None:
-    def fake_chat_with_claude(messages, max_tokens: int, **kwargs) -> ClaudeChatResponseDict:
+    def fake_chat_with_claude(
+        messages, max_tokens: int, **kwargs
+    ) -> ClaudeChatResponseDict:
         raise ClaudeTimeoutError("timeout")
 
     monkeypatch.setattr("routers.chat.chat_with_claude", fake_chat_with_claude)
@@ -363,7 +389,10 @@ def test_chat_maps_claude_errors(monkeypatch) -> None:
     )
 
     assert response.status_code == 504
-    assert response.json()["detail"] == "Claude took too long to respond. Please try again."
+    assert (
+        response.json()["detail"]
+        == "Claude took too long to respond. Please try again."
+    )
 
 
 def test_extract_text_raises_when_no_text() -> None:

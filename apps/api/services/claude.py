@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from functools import lru_cache
 from typing import Literal, TypedDict, cast
 
@@ -32,7 +32,12 @@ from anthropic import (
     AuthenticationError,
     RateLimitError,
 )
-from anthropic.types import ContentBlock, TextBlock
+from anthropic.types import (
+    ContentBlock,
+    MessageParam,
+    TextBlock,
+    ToolParam,
+)
 
 from config import ANTHROPIC_API_KEY_CONFIGURED, ANTHROPIC_TIMEOUT_SECONDS, MODEL
 from services.weather import (
@@ -226,12 +231,17 @@ def normalize_location(raw: str) -> str:
             ),
             messages=[{"role": "user", "content": raw}],
         )
-        normalised = response.content[0].text.strip().strip("\"'").strip()
+        first_block = response.content[0]
+        if isinstance(first_block, TextBlock):
+            normalised = first_block.text.strip().strip("\"'").strip()
+        else:
+            normalised = ""
         logger.info("Haiku normalised %r  →  %r", raw, normalised)
         return normalised if normalised else raw
     except Exception:
         logger.warning(
-            "Haiku location normalisation failed for %r — using original", raw,
+            "Haiku location normalisation failed for %r — using original",
+            raw,
             exc_info=True,
         )
         return raw
@@ -247,7 +257,7 @@ def ask_weather_claude(
     tool_name = "get_current_weather"
     user_question = question or f"What is the weather right now in {location}?"
 
-    tools = [
+    tools: list[ToolParam] = [
         {
             "name": tool_name,
             "description": "Get current weather for a city or place name.",
@@ -269,7 +279,7 @@ def ask_weather_claude(
         }
     ]
 
-    messages: list[dict] = [
+    messages: list[MessageParam] = [
         {
             "role": "user",
             "content": (
@@ -320,9 +330,7 @@ def ask_weather_claude(
     requested_location = str(tool_input.get("location") or location)
     tool_unit = tool_input.get("unit")
     requested_unit = (
-        cast(WeatherUnit, tool_unit)
-        if tool_unit in {"celsius", "fahrenheit"}
-        else unit
+        cast(WeatherUnit, tool_unit) if tool_unit in {"celsius", "fahrenheit"} else unit
     )
     try:
         weather = get_current_weather(requested_location, unit=requested_unit)
@@ -336,18 +344,23 @@ def ask_weather_claude(
             raise
         weather = get_current_weather(normalised, unit=requested_unit)
 
-    messages.append({"role": "assistant", "content": first_response.content})
     messages.append(
-        {
-            "role": "user",
-            "content": [
-                {
-                    "type": "tool_result",
-                    "tool_use_id": getattr(tool_use, "id"),
-                    "content": json.dumps(weather),
-                }
-            ],
-        }
+        cast(MessageParam, {"role": "assistant", "content": first_response.content})
+    )
+    messages.append(
+        cast(
+            MessageParam,
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": getattr(tool_use, "id"),
+                        "content": json.dumps(weather),
+                    }
+                ],
+            },
+        )
     )
 
     try:
@@ -420,17 +433,22 @@ def chat_with_claude(
         "yes" if system_prompt else "no",
     )
 
-    create_kwargs: dict = {
-        "model": MODEL,
-        "max_tokens": max_tokens,
-        "messages": list(messages),
-        "temperature": temperature,
-    }
-    if system_prompt:
-        create_kwargs["system"] = system_prompt
-
     try:
-        response = get_client().messages.create(**create_kwargs)
+        if system_prompt:
+            response = get_client().messages.create(
+                model=MODEL,
+                max_tokens=max_tokens,
+                messages=cast(Iterable[MessageParam], list(messages)),
+                temperature=temperature,
+                system=system_prompt,
+            )
+        else:
+            response = get_client().messages.create(
+                model=MODEL,
+                max_tokens=max_tokens,
+                messages=cast(Iterable[MessageParam], list(messages)),
+                temperature=temperature,
+            )
     except AuthenticationError as exc:
         raise ClaudeAuthenticationError(str(exc)) from exc
     except RateLimitError as exc:
@@ -474,17 +492,23 @@ def stream_chat_with_claude(
         "yes" if system_prompt else "no",
     )
 
-    stream_kwargs: dict = {
-        "model": MODEL,
-        "max_tokens": max_tokens,
-        "messages": list(messages),
-        "temperature": temperature,
-    }
-    if system_prompt:
-        stream_kwargs["system"] = system_prompt
-
     try:
-        with get_client().messages.stream(**stream_kwargs) as stream:
+        if system_prompt:
+            stream_context = get_client().messages.stream(
+                model=MODEL,
+                max_tokens=max_tokens,
+                messages=cast(Iterable[MessageParam], list(messages)),
+                temperature=temperature,
+                system=system_prompt,
+            )
+        else:
+            stream_context = get_client().messages.stream(
+                model=MODEL,
+                max_tokens=max_tokens,
+                messages=cast(Iterable[MessageParam], list(messages)),
+                temperature=temperature,
+            )
+        with stream_context as stream:
             for text in stream.text_stream:
                 if text:
                     yield {

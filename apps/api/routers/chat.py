@@ -48,7 +48,9 @@ def _chat_inputs(
     user_msg_dict: ClaudeMessage = {"role": "user", "content": user_message}
     messages = [*history, user_msg_dict]
     specialist = get_specialist(body.specialist)
-    temperature = body.temperature if body.temperature is not None else specialist["temperature"]
+    temperature = (
+        body.temperature if body.temperature is not None else specialist["temperature"]
+    )
 
     return conversation_id, messages, specialist, temperature
 
@@ -148,7 +150,9 @@ def chat(request: Request, response: Response, body: ChatRequest) -> ChatRespons
 
 @router.post("/chat/stream")
 @limiter.limit(CHAT_RATE_LIMIT)
-def chat_stream(request: Request, response: Response, body: ChatRequest) -> StreamingResponse:
+def chat_stream(
+    request: Request, response: Response, body: ChatRequest
+) -> StreamingResponse:
     """
     Continue a Claude conversation and stream the assistant answer as NDJSON.
 
@@ -193,35 +197,44 @@ def chat_stream(request: Request, response: Response, body: ChatRequest) -> Stre
                         new_message,
                     ],
                 )
-                yield json.dumps(
-                    {
-                        "type": "final",
-                        "conversation_id": conversation_id,
-                        "answer": answer,
-                        "messages": saved_messages,
-                        "model": chunk["model"],
-                        "input_tokens": chunk["input_tokens"],
-                        "output_tokens": chunk["output_tokens"],
-                    }
-                ) + "\n"
+                yield (
+                    json.dumps(
+                        {
+                            "type": "final",
+                            "conversation_id": conversation_id,
+                            "answer": answer,
+                            "messages": saved_messages,
+                            "model": chunk["model"],
+                            "input_tokens": chunk["input_tokens"],
+                            "output_tokens": chunk["output_tokens"],
+                        }
+                    )
+                    + "\n"
+                )
         except ClaudeServiceError as exc:
             logger.warning("Claude stream service error: %s", exc, exc_info=True)
-            yield json.dumps(
-                {
-                    "type": "error",
-                    "detail": exc.public_message,
-                    "status_code": exc.status_code,
-                }
-            ) + "\n"
+            yield (
+                json.dumps(
+                    {
+                        "type": "error",
+                        "detail": exc.public_message,
+                        "status_code": exc.status_code,
+                    }
+                )
+                + "\n"
+            )
         except Exception:
             logger.exception("Unexpected error in POST /api/chat/stream")
-            yield json.dumps(
-                {
-                    "type": "error",
-                    "detail": "Unexpected server error. Please try again.",
-                    "status_code": 500,
-                }
-            ) + "\n"
+            yield (
+                json.dumps(
+                    {
+                        "type": "error",
+                        "detail": "Unexpected server error. Please try again.",
+                        "status_code": 500,
+                    }
+                )
+                + "\n"
+            )
 
     return StreamingResponse(
         events(),

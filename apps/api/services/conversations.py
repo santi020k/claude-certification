@@ -22,7 +22,9 @@ class ConversationStore:
         self._items: dict[str, list[ClaudeMessage]] = {}
         self._lock = Lock()
 
-    def get_or_create(self, conversation_id: str | None = None) -> tuple[str, list[ClaudeMessage]]:
+    def get_or_create(
+        self, conversation_id: str | None = None
+    ) -> tuple[str, list[ClaudeMessage]]:
         with self._lock:
             if conversation_id and conversation_id in self._items:
                 return conversation_id, list(self._items[conversation_id])
@@ -31,7 +33,9 @@ class ConversationStore:
             self._items.setdefault(new_id, [])
             return new_id, []
 
-    def save(self, conversation_id: str, messages: list[ClaudeMessage]) -> list[ClaudeMessage]:
+    def save(
+        self, conversation_id: str, messages: list[ClaudeMessage]
+    ) -> list[ClaudeMessage]:
         trimmed = messages[-self._history_limit :]
         with self._lock:
             self._items[conversation_id] = trimmed

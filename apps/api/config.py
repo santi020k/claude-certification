@@ -66,6 +66,7 @@ def _float_env(name: str, default: float) -> float:
 
     return value
 
+
 # ── Runtime ───────────────────────────────────────────────────────────────────
 APP_ENV: str = os.getenv("APP_ENV", "development").strip().lower()
 IS_PRODUCTION: bool = APP_ENV == "production"

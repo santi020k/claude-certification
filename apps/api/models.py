@@ -60,7 +60,8 @@ def _sanitise_question(raw: str) -> str:
 
     # Step 2 — Unicode control/format chars (e.g. zero-width joiners)
     cleaned = "".join(
-        ch for ch in cleaned
+        ch
+        for ch in cleaned
         if unicodedata.category(ch) not in _UNICODE_CONTROL_CATS
         or ch in ("\t", "\n", "\r")
     )
@@ -73,6 +74,7 @@ def _sanitise_question(raw: str) -> str:
 
 
 # ── Request / Response Models ──────────────────────────────────────────────────
+
 
 class AskRequest(BaseModel):
     """Body expected by POST /api/ask."""
@@ -114,8 +116,12 @@ class AskResponse(BaseModel):
     question: str = Field(description="The original question that was sent to Claude.")
     answer: str = Field(description="Claude's answer.")
     model: str = Field(description="The Claude model that generated the answer.")
-    input_tokens: int = Field(description="Prompt tokens consumed (for billing reference).")
-    output_tokens: int = Field(description="Completion tokens consumed (for billing reference).")
+    input_tokens: int = Field(
+        description="Prompt tokens consumed (for billing reference)."
+    )
+    output_tokens: int = Field(
+        description="Completion tokens consumed (for billing reference)."
+    )
 
 
 class WeatherRequest(BaseModel):
@@ -279,8 +285,12 @@ class SpecialistPublic(BaseModel):
 
     id: str = Field(description="Unique identifier for the specialist.")
     name: str = Field(description="Human-readable display name.")
-    description: str = Field(description="Short description of this specialist's style/focus.")
-    temperature: float = Field(description="Recommended sampling temperature for this specialist (0.0–1.0).")
+    description: str = Field(
+        description="Short description of this specialist's style/focus."
+    )
+    temperature: float = Field(
+        description="Recommended sampling temperature for this specialist (0.0–1.0)."
+    )
 
 
 class SpecialistsResponse(BaseModel):

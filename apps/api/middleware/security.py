@@ -54,6 +54,7 @@ def _too_large_response() -> JSONResponse:
 
 # ── Middleware ─────────────────────────────────────────────────────────────────
 
+
 class SecurityHeadersMiddleware:
     """
     Inject security headers and enforce a maximum request body size.

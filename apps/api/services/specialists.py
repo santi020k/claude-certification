@@ -22,6 +22,7 @@ Usage
     # specialist["temperature"] → 0.1
     # specialist["system_prompt"] → the full prompt string
 """
+
 from typing import TypedDict
 
 
@@ -29,7 +30,7 @@ class SpecialistInfo(TypedDict):
     id: str
     name: str
     description: str
-    temperature: float   # 0.0 – 1.0 recommended default for this persona
+    temperature: float  # 0.0 – 1.0 recommended default for this persona
     system_prompt: str
 
 

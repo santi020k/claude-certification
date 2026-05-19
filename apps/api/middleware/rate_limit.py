@@ -20,6 +20,6 @@ from slowapi.util import get_remote_address
 
 limiter = Limiter(
     key_func=get_remote_address,
-    headers_enabled=True,          # X-RateLimit-Limit / Remaining / Reset
-    swallow_errors=False,          # surface config mistakes during development
+    headers_enabled=True,  # X-RateLimit-Limit / Remaining / Reset
+    swallow_errors=False,  # surface config mistakes during development
 )
