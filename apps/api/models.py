@@ -118,6 +118,78 @@ class AskResponse(BaseModel):
     output_tokens: int = Field(description="Completion tokens consumed (for billing reference).")
 
 
+class WeatherRequest(BaseModel):
+    """Body expected by POST /api/weather."""
+
+    location: str = Field(
+        ...,
+        min_length=2,
+        max_length=120,
+        description="City or place to look up with the weather API.",
+        examples=["Bogotá", "New York"],
+    )
+    question: str | None = Field(
+        default=None,
+        min_length=3,
+        max_length=1_000,
+        description="Optional weather-specific question for Claude.",
+        examples=["Should I bring an umbrella this evening?"],
+    )
+    unit: Literal["celsius", "fahrenheit"] = Field(
+        default="celsius",
+        description="Temperature and wind unit preference.",
+    )
+    max_tokens: int = Field(
+        default=500,
+        ge=100,
+        le=1_500,
+        description="Upper limit on Claude's weather response length.",
+    )
+
+    @field_validator("location", "question", mode="before")
+    @classmethod
+    def sanitise_weather_text(cls, v: object) -> str | None:
+        if v is None:
+            return None
+        if not isinstance(v, str):
+            raise ValueError("value must be a string")
+        cleaned = _sanitise_question(v)
+        if len(cleaned) < 2:
+            raise ValueError("value is too short after sanitisation")
+        return cleaned
+
+
+class WeatherObservation(BaseModel):
+    """Current weather data returned by the backend weather tool."""
+
+    location: str
+    country: str
+    latitude: float
+    longitude: float
+    temperature: float
+    apparent_temperature: float
+    temperature_unit: str
+    humidity: int
+    precipitation: float
+    wind_speed: float
+    wind_speed_unit: str
+    condition: str
+    observed_at: str
+
+
+class WeatherResponse(BaseModel):
+    """Response returned by POST /api/weather."""
+
+    location: str
+    question: str
+    answer: str
+    model: str
+    tool_name: str
+    weather: WeatherObservation
+    input_tokens: int
+    output_tokens: int
+
+
 class ChatMessage(BaseModel):
     """One message in a Claude chat conversation."""
 

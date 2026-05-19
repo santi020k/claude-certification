@@ -18,10 +18,11 @@ Usage
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import Iterator, Sequence
 from functools import lru_cache
-from typing import Literal, TypedDict
+from typing import Literal, TypedDict, cast
 
 from anthropic import (
     Anthropic,
@@ -34,6 +35,7 @@ from anthropic import (
 from anthropic.types import ContentBlock, TextBlock
 
 from config import ANTHROPIC_API_KEY_CONFIGURED, ANTHROPIC_TIMEOUT_SECONDS, MODEL
+from services.weather import WeatherDataDict, WeatherUnit, get_current_weather
 
 logger = logging.getLogger("claude-certification.api")
 
@@ -91,6 +93,17 @@ class ClaudeChatStreamChunk(TypedDict):
     type: Literal["text", "final"]
     text: str
     model: str
+    input_tokens: int
+    output_tokens: int
+
+
+class ClaudeWeatherResponseDict(TypedDict):
+    location: str
+    question: str
+    answer: str
+    model: str
+    tool_name: str
+    weather: WeatherDataDict
     input_tokens: int
     output_tokens: int
 
@@ -160,6 +173,147 @@ def ask_claude(question: str, max_tokens: int = 1000) -> ClaudeResponseDict:
         "model": result["model"],
         "input_tokens": result["input_tokens"],
         "output_tokens": result["output_tokens"],
+    }
+
+
+def ask_weather_claude(
+    location: str,
+    question: str | None = None,
+    max_tokens: int = 500,
+    unit: WeatherUnit = "celsius",
+) -> ClaudeWeatherResponseDict:
+    """Ask Claude to answer a weather question by calling a weather tool."""
+    tool_name = "get_current_weather"
+    user_question = question or f"What is the weather right now in {location}?"
+
+    tools = [
+        {
+            "name": tool_name,
+            "description": "Get current weather for a city or place name.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "location": {
+                        "type": "string",
+                        "description": "The city or place to look up.",
+                    },
+                    "unit": {
+                        "type": "string",
+                        "enum": ["celsius", "fahrenheit"],
+                        "description": "Preferred temperature unit.",
+                    },
+                },
+                "required": ["location", "unit"],
+            },
+        }
+    ]
+
+    messages: list[dict] = [
+        {
+            "role": "user",
+            "content": (
+                f"Location: {location}\n"
+                f"Unit preference: {unit}\n"
+                f"Question: {user_question}\n\n"
+                "Use the weather tool, then answer with a concise, practical summary."
+            ),
+        }
+    ]
+
+    try:
+        first_response = get_client().messages.create(
+            model=MODEL,
+            max_tokens=max_tokens,
+            system=(
+                "You are a weather assistant. Always use the weather tool before "
+                "answering, and do not invent current weather data."
+            ),
+            messages=messages,
+            tools=tools,
+            tool_choice={"type": "tool", "name": tool_name},
+        )
+    except AuthenticationError as exc:
+        raise ClaudeAuthenticationError(str(exc)) from exc
+    except RateLimitError as exc:
+        raise ClaudeRateLimitError(str(exc)) from exc
+    except APITimeoutError as exc:
+        raise ClaudeTimeoutError(str(exc)) from exc
+    except APIConnectionError as exc:
+        raise ClaudeServiceError("Claude connection failed") from exc
+    except APIError as exc:
+        raise ClaudeServiceError(str(exc)) from exc
+
+    tool_use = next(
+        (
+            block
+            for block in first_response.content
+            if getattr(block, "type", None) == "tool_use"
+            and getattr(block, "name", None) == tool_name
+        ),
+        None,
+    )
+    if tool_use is None:
+        raise ClaudeServiceError("Claude did not request the weather tool")
+
+    tool_input = getattr(tool_use, "input", {})
+    requested_location = str(tool_input.get("location") or location)
+    tool_unit = tool_input.get("unit")
+    requested_unit = (
+        cast(WeatherUnit, tool_unit)
+        if tool_unit in {"celsius", "fahrenheit"}
+        else unit
+    )
+    weather = get_current_weather(requested_location, unit=requested_unit)
+
+    messages.append({"role": "assistant", "content": first_response.content})
+    messages.append(
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": getattr(tool_use, "id"),
+                    "content": json.dumps(weather),
+                }
+            ],
+        }
+    )
+
+    try:
+        final_response = get_client().messages.create(
+            model=MODEL,
+            max_tokens=max_tokens,
+            system=(
+                "You are a weather assistant. Use the tool result as the source "
+                "of truth and answer naturally. Mention the observed location."
+            ),
+            messages=messages,
+            tools=tools,
+        )
+    except AuthenticationError as exc:
+        raise ClaudeAuthenticationError(str(exc)) from exc
+    except RateLimitError as exc:
+        raise ClaudeRateLimitError(str(exc)) from exc
+    except APITimeoutError as exc:
+        raise ClaudeTimeoutError(str(exc)) from exc
+    except APIConnectionError as exc:
+        raise ClaudeServiceError("Claude connection failed") from exc
+    except APIError as exc:
+        raise ClaudeServiceError(str(exc)) from exc
+
+    return {
+        "location": weather["location"],
+        "question": user_question,
+        "answer": extract_text(final_response.content),
+        "model": MODEL,
+        "tool_name": tool_name,
+        "weather": weather,
+        "input_tokens": (
+            first_response.usage.input_tokens + final_response.usage.input_tokens
+        ),
+        "output_tokens": (
+            first_response.usage.output_tokens + final_response.usage.output_tokens
+        ),
     }
 
 

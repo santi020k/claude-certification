@@ -6,6 +6,7 @@ from services.claude import (
     ClaudeResponseDict,
     ClaudeServiceError,
     ClaudeTimeoutError,
+    ClaudeWeatherResponseDict,
     extract_text,
 )
 from services.conversations import conversation_store
@@ -193,6 +194,61 @@ def test_ask_authentication_error(monkeypatch) -> None:
     )
     assert response.status_code == 503
     assert response.json()["detail"] == "Claude authentication failed. Check the server API key."
+
+
+def test_weather_endpoint_uses_claude_tool_flow(monkeypatch) -> None:
+    def fake_ask_weather_claude(
+        location: str,
+        question: str | None,
+        max_tokens: int,
+        unit: str,
+    ) -> ClaudeWeatherResponseDict:
+        assert location == "Bogotá"
+        assert question == "Should I bring an umbrella?"
+        assert max_tokens == 500
+        assert unit == "celsius"
+        return {
+            "location": "Bogotá",
+            "question": question or "",
+            "answer": "Bring a light jacket and check for showers before leaving.",
+            "model": "test-model",
+            "tool_name": "get_current_weather",
+            "weather": {
+                "location": "Bogotá",
+                "country": "Colombia",
+                "latitude": 4.61,
+                "longitude": -74.08,
+                "temperature": 17.2,
+                "apparent_temperature": 16.4,
+                "temperature_unit": "°C",
+                "humidity": 78,
+                "precipitation": 0.1,
+                "wind_speed": 8.4,
+                "wind_speed_unit": "km/h",
+                "condition": "Partly cloudy",
+                "observed_at": "2026-05-18T12:00",
+            },
+            "input_tokens": 42,
+            "output_tokens": 16,
+        }
+
+    monkeypatch.setattr("routers.weather.ask_weather_claude", fake_ask_weather_claude)
+
+    response = client.post(
+        "/api/weather",
+        json={
+            "location": "Bogotá",
+            "question": "Should I bring an umbrella?",
+            "unit": "celsius",
+            "max_tokens": 500,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["tool_name"] == "get_current_weather"
+    assert payload["weather"]["condition"] == "Partly cloudy"
+    assert payload["answer"] == "Bring a light jacket and check for showers before leaving."
 
 
 def test_ask_unexpected_error(monkeypatch) -> None:

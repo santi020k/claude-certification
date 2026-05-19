@@ -9,6 +9,7 @@ This file is intentionally thin.  All heavy logic lives in dedicated modules:
   routers/health.py           — GET /  and  GET /api/health
   routers/claude.py           — POST /api/ask  and  GET /api/ask/demo
   routers/chat.py             — POST /api/chat
+  routers/weather.py          — POST /api/weather
   middleware/rate_limit.py    — slowapi Limiter (per-IP rate limiting)
   middleware/security.py      — security headers + body-size guard
 
@@ -48,6 +49,7 @@ from middleware.security import SecurityHeadersMiddleware
 from routers import chat as chat_router
 from routers import claude as claude_router
 from routers import health as health_router
+from routers import weather as weather_router
 
 # ---------------------------------------------------------------------------
 # App
@@ -96,6 +98,7 @@ app.add_middleware(
 app.include_router(health_router.router)
 app.include_router(claude_router.router)
 app.include_router(chat_router.router)
+app.include_router(weather_router.router)
 
 # ---------------------------------------------------------------------------
 # Dev entry-point

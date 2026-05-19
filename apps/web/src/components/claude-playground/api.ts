@@ -4,7 +4,8 @@ import type {
   ChatStreamEvent,
   HealthResponse,
   Specialist,
-  SpecialistsResponse
+  SpecialistsResponse,
+  WeatherResponse
 } from './types'
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
@@ -21,6 +22,31 @@ const isHealthResponse = (value: unknown): value is HealthResponse => isRecord(v
   typeof value.environment === 'string' &&
   typeof value.anthropic_api_key_configured === 'boolean' &&
   typeof value.model === 'string'
+
+const isWeatherObservation = (value: unknown) => isRecord(value) &&
+  typeof value.location === 'string' &&
+  typeof value.country === 'string' &&
+  typeof value.latitude === 'number' &&
+  typeof value.longitude === 'number' &&
+  typeof value.temperature === 'number' &&
+  typeof value.apparent_temperature === 'number' &&
+  typeof value.temperature_unit === 'string' &&
+  typeof value.humidity === 'number' &&
+  typeof value.precipitation === 'number' &&
+  typeof value.wind_speed === 'number' &&
+  typeof value.wind_speed_unit === 'string' &&
+  typeof value.condition === 'string' &&
+  typeof value.observed_at === 'string'
+
+const isWeatherResponse = (value: unknown): value is WeatherResponse => isRecord(value) &&
+  typeof value.location === 'string' &&
+  typeof value.question === 'string' &&
+  typeof value.answer === 'string' &&
+  typeof value.model === 'string' &&
+  typeof value.tool_name === 'string' &&
+  isWeatherObservation(value.weather) &&
+  typeof value.input_tokens === 'number' &&
+  typeof value.output_tokens === 'number'
 
 const isChatMessage = (value: unknown) => isRecord(value) &&
   (value.role === 'user' || value.role === 'assistant') &&
@@ -107,6 +133,18 @@ export async function readChatResponse(
 
   if (!isChatResponse(payload)) {
     throw new Error('The API returned an invalid chat payload.')
+  }
+
+  return payload
+}
+
+export async function readWeatherResponse(
+  response: Response
+): Promise<WeatherResponse> {
+  const payload: unknown = await response.json()
+
+  if (!isWeatherResponse(payload)) {
+    throw new Error('The API returned an invalid weather payload.')
   }
 
   return payload

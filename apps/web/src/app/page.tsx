@@ -6,6 +6,7 @@ import { AmbientBackground } from '@/components/claude-playground/sections/ambie
 import {
   ArrowRight,
   Bot,
+  CloudSun,
   FlaskConical,
   MessageSquare,
   Zap
@@ -29,6 +30,14 @@ const features = [
       'Single-turn experiments with token controls, one-sentence mode, and live health checks. The fastest way to iterate on a prompt.',
     icon: FlaskConical,
     badge: 'POST /api/ask'
+  },
+  {
+    href: '/weather',
+    title: 'Weather Tool Use',
+    description:
+      'Ask Claude about current weather while the backend resolves the place and calls a live weather API through a tool function.',
+    icon: CloudSun,
+    badge: 'POST /api/weather'
   }
 ]
 
