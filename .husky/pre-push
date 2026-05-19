@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+
+echo "Running pre-push checks..."
+
+# JS/TS: lint + typecheck + test via Turborepo (uses local cache — fast when unchanged)
+pnpm turbo run lint typecheck test || exit 1
+
+# Python: only run api:check if Python files are in the push range
+python_changed=false
+
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    # New branch — diff against the initial commit
+    range=$(git rev-list --max-parents=0 "$local_sha").."$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  if git diff --name-only "$range" 2>/dev/null | grep -q '^apps/api/.*\.py$'; then
+    python_changed=true
+    break
+  fi
+done
+
+if [ "$python_changed" = "true" ]; then
+  echo "Python files changed — running API checks (lint + typecheck + tests)..."
+  pnpm run api:check || exit 1
+fi
+
+echo "All checks passed!"

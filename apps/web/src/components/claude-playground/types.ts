@@ -6,6 +6,33 @@ export interface AskResponse {
   output_tokens: number
 }
 
+export interface WeatherObservation {
+  location: string
+  country: string
+  latitude: number
+  longitude: number
+  temperature: number
+  apparent_temperature: number
+  temperature_unit: string
+  humidity: number
+  precipitation: number
+  wind_speed: number
+  wind_speed_unit: string
+  condition: string
+  observed_at: string
+}
+
+export interface WeatherResponse {
+  location: string
+  question: string
+  answer: string
+  model: string
+  tool_name: string
+  weather: WeatherObservation
+  input_tokens: number
+  output_tokens: number
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
