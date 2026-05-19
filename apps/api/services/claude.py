@@ -35,7 +35,12 @@ from anthropic import (
 from anthropic.types import ContentBlock, TextBlock
 
 from config import ANTHROPIC_API_KEY_CONFIGURED, ANTHROPIC_TIMEOUT_SECONDS, MODEL
-from services.weather import WeatherDataDict, WeatherUnit, get_current_weather
+from services.weather import (
+    WeatherDataDict,
+    WeatherLocationNotFoundError,
+    WeatherUnit,
+    get_current_weather,
+)
 
 logger = logging.getLogger("claude-certification.api")
 
@@ -176,6 +181,62 @@ def ask_claude(question: str, max_tokens: int = 1000) -> ClaudeResponseDict:
     }
 
 
+# claude-haiku-4-5 is used for lightweight, latency-sensitive tasks like
+# location normalisation that don't need the full power of the main MODEL.
+HAIKU_MODEL = "claude-haiku-4-5-20251001"
+
+
+def normalize_location(raw: str) -> str:
+    """
+    Ask Claude Haiku to normalise a free-form location string that the
+    Open-Meteo geocoding API could not resolve.
+
+    Returns a simplified «city, country» string the geocoder is more
+    likely to understand.  Falls back to *raw* if Haiku itself errors so
+    the caller can surface the original WeatherLocationNotFoundError.
+
+    Examples
+    --------
+    "Sabaneta, Antioquia"  →  "Sabaneta, Colombia"
+    "Brooklyn, New York"   →  "Brooklyn, USA"
+    "Kreuzberg, Berlin"    →  "Berlin, Germany"
+    "Paris 15ème"          →  "Paris, France"
+    """
+    logger.info("Haiku normalising location: %r", raw)
+    try:
+        response = get_client().messages.create(
+            model=HAIKU_MODEL,
+            max_tokens=50,
+            system=(
+                "You are a geocoding assistant. A geocoding API returned no results "
+                "for the location string the user typed. Your job is to rewrite it "
+                "into the simplest form a geocoding API will understand — usually "
+                "«city, country» or just «city».\n\n"
+                "Rules:\n"
+                "• Output ONLY the location string — no explanation, no quotes.\n"
+                "• Strip regional divisions (states, departments, provinces) and "
+                "replace them with the country name when that helps clarity.\n"
+                "• Keep the city name as close to its official spelling as possible.\n\n"
+                "Examples:\n"
+                "  Sabaneta, Antioquia  →  Sabaneta, Colombia\n"
+                "  Brooklyn, New York   →  Brooklyn, USA\n"
+                "  Kreuzberg, Berlin    →  Berlin, Germany\n"
+                "  Paris 15ème         →  Paris, France\n"
+                "  Medellín Bello       →  Bello, Colombia"
+            ),
+            messages=[{"role": "user", "content": raw}],
+        )
+        normalised = response.content[0].text.strip().strip("\"'").strip()
+        logger.info("Haiku normalised %r  →  %r", raw, normalised)
+        return normalised if normalised else raw
+    except Exception:
+        logger.warning(
+            "Haiku location normalisation failed for %r — using original", raw,
+            exc_info=True,
+        )
+        return raw
+
+
 def ask_weather_claude(
     location: str,
     question: str | None = None,
@@ -263,7 +324,17 @@ def ask_weather_claude(
         if tool_unit in {"celsius", "fahrenheit"}
         else unit
     )
-    weather = get_current_weather(requested_location, unit=requested_unit)
+    try:
+        weather = get_current_weather(requested_location, unit=requested_unit)
+    except WeatherLocationNotFoundError:
+        # Geocoding didn't recognise the string (e.g. "Sabaneta, Antioquia").
+        # Ask Haiku to normalise it to a simpler «city, country» form and
+        # retry once.  If normalisation doesn't change the string, or the
+        # retry also fails, the WeatherLocationNotFoundError propagates.
+        normalised = normalize_location(requested_location)
+        if normalised.lower() == requested_location.lower():
+            raise
+        weather = get_current_weather(normalised, unit=requested_unit)
 
     messages.append({"role": "assistant", "content": first_response.content})
     messages.append(
