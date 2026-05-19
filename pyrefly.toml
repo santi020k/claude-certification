@@ -1,0 +1,4 @@
+# Pyrefly configuration for the certification monorepo root
+# Docs: https://pyrefly.org/getting-started-cli
+
+python-interpreter-path = "apps/api/.venv/bin/python"
