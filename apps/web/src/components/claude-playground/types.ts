@@ -53,10 +53,13 @@ export type ChatStreamEvent =
   { type: 'error', detail: string, status_code?: number }
 
 export interface RateLimitInfo {
+
   /** Total requests allowed per window (from X-RateLimit-Limit). */
   limit: number
+
   /** Requests remaining in the current window (from X-RateLimit-Remaining). */
   remaining: number
+
   /** Epoch milliseconds when the current window resets (from X-RateLimit-Reset). */
   resetAt: number
 }

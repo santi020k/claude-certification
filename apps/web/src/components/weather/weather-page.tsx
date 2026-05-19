@@ -1,3 +1,4 @@
+/* eslint-disable better-tailwindcss/no-unknown-classes */
 'use client'
 
 import { type SyntheticEvent, useEffect, useId, useState } from 'react'
@@ -42,17 +43,19 @@ const EXAMPLES = [
 // ─── Weather categorisation ──────────────────────────────────────────────────
 
 type WeatherCategory =
-  | 'clear'
-  | 'partly-cloudy'
-  | 'cloudy'
-  | 'rain'
-  | 'snow'
-  | 'storm'
-  | 'fog'
+  | 'clear' |
+  'partly-cloudy' |
+  'cloudy' |
+  'rain' |
+  'snow' |
+  'storm' |
+  'fog'
 
 function getWeatherCategory(condition: string): WeatherCategory {
   const c = condition.toLowerCase()
+
   if (c.includes('thunder') || c.includes('storm')) return 'storm'
+
   if (
     c.includes('snow') ||
     c.includes('sleet') ||
@@ -61,17 +64,22 @@ function getWeatherCategory(condition: string): WeatherCategory {
     c.includes('freezing')
   )
     return 'snow'
+
   if (c.includes('rain') || c.includes('drizzle') || c.includes('shower'))
     return 'rain'
+
   if (c.includes('fog') || c.includes('mist') || c.includes('haze'))
     return 'fog'
+
   if (c.includes('overcast')) return 'cloudy'
+
   if (
     c.includes('cloud') ||
     c.includes('partly') ||
     c.includes('broken')
   )
     return 'partly-cloudy'
+
   return 'clear'
 }
 
@@ -180,10 +188,14 @@ function AnimatedWeatherIcon({
 
   if (category === 'clear') {
     const r = size * 0.19
+
     return (
       <svg
         viewBox={`0 0 ${size} ${size}`}
-        className={`weather-icon-clear ${className}`}
+        className={`
+          weather-icon-clear
+          ${className}
+        `}
         xmlns="http://www.w3.org/2000/svg"
       >
         <circle cx={cx} cy={cy} r={r} fill="currentColor" />
@@ -191,6 +203,7 @@ function AnimatedWeatherIcon({
           const angle = (i * 45 * Math.PI) / 180
           const inner = r + size * 0.055
           const outer = r + size * 0.13
+
           return (
             <line
               key={i}
@@ -222,6 +235,7 @@ function AnimatedWeatherIcon({
             const angle = (i * 60 * Math.PI) / 180
             const inner = size * 0.175
             const outer = size * 0.225
+
             return (
               <line
                 key={i}
@@ -270,6 +284,7 @@ function AnimatedWeatherIcon({
 
   if (category === 'rain') {
     const drops = [size * 0.27, size * 0.39, size * 0.51, size * 0.64]
+
     return (
       <svg
         viewBox={`0 0 ${size} ${size}`}
@@ -304,6 +319,7 @@ function AnimatedWeatherIcon({
 
   if (category === 'snow') {
     const flakes = [size * 0.24, size * 0.36, size * 0.48, size * 0.6, size * 0.72]
+
     return (
       <svg
         viewBox={`0 0 ${size} ${size}`}
@@ -377,10 +393,14 @@ function AnimatedWeatherIcon({
 
   // fog
   const fogLines = [size * 0.28, size * 0.38, size * 0.48, size * 0.58, size * 0.68]
+
   return (
     <svg
       viewBox={`0 0 ${size} ${size}`}
-      className={`weather-icon-fog ${className}`}
+      className={`
+        weather-icon-fog
+        ${className}
+      `}
       xmlns="http://www.w3.org/2000/svg"
     >
       {fogLines.map((y, i) => (
@@ -406,7 +426,13 @@ function AnimatedWeatherIcon({
 // ─── Loading skeleton ────────────────────────────────────────────────────────
 
 function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`rounded shimmer ${className}`} />
+  return (
+    <div className={`
+      shimmer rounded-sm
+      ${className}
+    `}
+    />
+  )
 }
 
 function WeatherSkeleton() {
@@ -423,7 +449,11 @@ function WeatherSkeleton() {
           <Skeleton className="h-9 w-28 rounded-lg" />
         </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="
+        grid gap-3
+        sm:grid-cols-3
+      "
+      >
         {[0, 1, 2].map(i => (
           <div
             key={i}
@@ -451,7 +481,11 @@ function WeatherEmptyState() {
     <div className="grid min-h-72 place-items-center text-center">
       <div className="space-y-6">
         <div className="mx-auto size-16 text-sky-200/55">
-          <AnimatedWeatherIcon category="partly-cloudy" size={64} className="size-full" />
+          <AnimatedWeatherIcon
+            category="partly-cloudy"
+            size={64}
+            className="size-full"
+          />
         </div>
 
         <div>
@@ -465,14 +499,18 @@ function WeatherEmptyState() {
         </div>
 
         {/* 3-step flow diagram */}
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+        <div className="
+          flex items-center justify-center gap-2 text-xs text-muted-foreground
+        "
+        >
           {FLOW_STEPS.map(({ icon: Icon, label }, i) => (
             <div key={label} className="flex items-center gap-2">
               <div className="flex flex-col items-center gap-1.5">
                 <div className="
-                  flex size-9 items-center justify-center rounded-lg
-                  border border-white/10 bg-white/5
-                ">
+                  flex size-9 items-center justify-center rounded-lg border
+                  border-white/10 bg-white/5
+                "
+                >
                   <Icon className="size-4 text-sky-200/65" />
                 </div>
                 <span>{label}</span>
@@ -507,10 +545,18 @@ function Metric({
 }: MetricProps) {
   return (
     <div
-      className={`animate-slide-up-fade rounded-lg border border-white/10 bg-black/10 p-3 card-hover ${delay}`}
+      className={`
+        animate-slide-up-fade card-hover rounded-lg border border-white/10
+        bg-black/10 p-3
+        ${delay}
+      `}
     >
       <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <Icon className={`size-4 ${accent}`} />
+        <Icon className={`
+          size-4
+          ${accent}
+        `}
+        />
         {label}
       </p>
       <p className="mt-2 text-lg font-semibold text-foreground">{value}</p>
@@ -530,55 +576,69 @@ function RateLimitBadge({ info }: { info: RateLimitInfo }) {
 
   // Tick every second so the countdown stays live without a page reload.
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1_000)
-    return () => clearInterval(id)
+    const id = setInterval(() => {
+      setNow(Date.now())
+    }, 1_000)
+
+    return () => {
+      clearInterval(id)
+    }
   }, [])
 
   const secondsLeft = Math.max(0, Math.ceil((info.resetAt - now) / 1_000))
   const pct         = info.remaining / info.limit            // 0 – 1
   const depleted    = info.remaining === 0
 
-  const palette = depleted
-    ? {
-        wrap: 'border-red-400/25 bg-red-500/10 text-red-300',
-        bar:  'bg-red-400'
-      }
-    : pct <= 0.3
-    ? {
+  const palette = depleted ?
+    {
+      wrap: 'border-red-400/25 bg-red-500/10 text-red-300',
+      bar: 'bg-red-400'
+    } :
+    pct <= 0.3 ?
+      {
         wrap: 'border-amber-400/25 bg-amber-500/8 text-amber-300',
-        bar:  'bg-amber-400'
-      }
-    : {
+        bar: 'bg-amber-400'
+      } :
+      {
         wrap: 'border-white/10 bg-black/10 text-muted-foreground',
-        bar:  'bg-sky-400'
+        bar: 'bg-sky-400'
       }
 
   return (
     <div
       className={`
-        animate-fade-in flex items-center gap-3 rounded-lg border
-        px-3 py-2 text-xs transition-colors duration-500
+        animate-fade-in flex items-center gap-3 rounded-lg border px-3 py-2
+        text-xs transition-colors duration-500
         ${palette.wrap}
       `}
     >
       {/* Label */}
       <span className="shrink-0">
-        {depleted
-          ? `Rate limited — resets in ${secondsLeft}s`
-          : `${info.remaining} / ${info.limit} requests this minute`}
+        {depleted ?
+          `Rate limited — resets in ${secondsLeft}s` :
+          `${info.remaining} / ${info.limit} requests this minute`}
       </span>
 
       {/* Countdown when low but not depleted */}
       {!depleted && pct <= 0.3 && secondsLeft > 0 && (
         <span className="shrink-0 text-muted-foreground">
-          · resets in {secondsLeft}s
+          · resets in
+          {' '}
+          {secondsLeft}
+          s
         </span>
       )}
 
       {/* Progress bar — drains left-to-right as requests are consumed */}
-      <div className="ml-auto h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-white/10">
+      <div className="
+        ml-auto h-1.5 w-20 shrink-0 overflow-hidden rounded-full bg-white/10
+      "
+      >
         <div
-          className={`h-full rounded-full transition-all duration-500 ${palette.bar}`}
+          className={`
+            h-full rounded-full transition-all duration-500
+            ${palette.bar}
+          `}
           style={{ width: `${Math.max(0, pct * 100)}%` }}
         />
       </div>
@@ -601,8 +661,11 @@ export function WeatherPage() {
 
   async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
+
     setError(null)
+
     setResult(null)
+
     setIsLoading(true)
 
     try {
@@ -616,14 +679,17 @@ export function WeatherPage() {
       // slowapi injects X-RateLimit-Limit / Remaining / Reset when
       // headers_enabled=True (see middleware/rate_limit.py).
       const rl = readRateLimitHeaders(response)
+
       if (rl) setRateLimit(rl)
 
       if (!response.ok) {
         const message = await readErrorMessage(response)
+
         const retryAfter =
-          response.status === 429
-            ? ` Try again in ${parseRetryAfter(response)} seconds.`
-            : ''
+          response.status === 429 ?
+            ` Try again in ${parseRetryAfter(response)} seconds.` :
+            ''
+
         throw new Error(`${message}${retryAfter}`)
       }
 
@@ -646,30 +712,32 @@ export function WeatherPage() {
         <div
           className={`
             blob-1 absolute -top-48 -left-48 size-[700px] rounded-full
-            blur-[130px] transition-colors duration-[2000ms]
+            blur-[130px] transition-colors duration-2000
             ${theme?.blob1 ?? 'bg-orange-800/10'}
           `}
         />
         <div
           className={`
             blob-2 absolute -right-48 -bottom-64 size-[800px] rounded-full
-            blur-[150px] transition-colors duration-[2000ms]
+            blur-[150px] transition-colors duration-2000
             ${theme?.blob2 ?? 'bg-stone-300/6'}
           `}
         />
         <div
           className={`
             blob-3 absolute top-1/3 left-1/2 size-[500px] -translate-x-1/2
-            rounded-full blur-[110px] transition-colors duration-[2000ms]
+            rounded-full blur-[110px] transition-colors duration-2000
             ${theme?.blob3 ?? 'bg-amber-900/8'}
           `}
         />
       </div>
 
       <section className="
-        relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col
-        px-4 py-10 sm:px-6 lg:px-10
-      ">
+        relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10
+        sm:px-6
+        lg:px-10
+      "
+      >
         <nav className="animate-fade-in flex items-center justify-between py-3">
           <Button asChild variant="ghost" size="sm">
             <Link href="/">
@@ -683,13 +751,14 @@ export function WeatherPage() {
         <div className="
           grid flex-1 items-start gap-6 py-8
           lg:grid-cols-[0.9fr_1.1fr]
-        ">
+        "
+        >
           {/* ── Form panel ──────────────────────────────────────────── */}
           <form
             onSubmit={handleSubmit}
             className="
-              animate-slide-up-fade rounded-xl border border-white/10
-              bg-white/5 p-5 shadow-xl shadow-black/20 card-hover
+              animate-slide-up-fade card-hover rounded-xl border border-white/10
+              bg-white/5 p-5 shadow-xl shadow-black/20
             "
           >
             {/* Header */}
@@ -698,21 +767,31 @@ export function WeatherPage() {
                 className={`
                   flex size-11 items-center justify-center rounded-lg
                   transition-colors duration-1000
-                  ${theme ? `bg-white/8 ${theme.icon}` : 'bg-sky-400/12 text-sky-200'}
+                  ${theme ?
+      `
+        bg-white/8
+        ${theme.icon}
+      ` :
+      'bg-sky-400/12 text-sky-200'}
                 `}
               >
-                {category ? (
-                  <AnimatedWeatherIcon
-                    category={category}
-                    size={28}
-                    className="size-7"
-                  />
-                ) : (
-                  <CloudSun className="size-6" />
-                )}
+                {category ?
+                  (
+                    <AnimatedWeatherIcon
+                      category={category}
+                      size={28}
+                      className="size-7"
+                    />
+                  ) :
+                  (
+                    <CloudSun className="size-6" />
+                  )}
               </div>
               <div>
-                <h1 className="text-2xl font-semibold tracking-normal text-foreground">
+                <h1 className="
+                  text-2xl font-semibold tracking-normal text-foreground
+                "
+                >
                   Claude Weather Tool
                 </h1>
                 <p className="text-sm text-muted-foreground">
@@ -730,7 +809,9 @@ export function WeatherPage() {
                 <Input
                   id={locationId}
                   value={location}
-                  onChange={e => setLocation(e.target.value)}
+                  onChange={e => {
+                    setLocation(e.target.value)
+                  }}
                   placeholder="City or place"
                   required
                 />
@@ -744,7 +825,9 @@ export function WeatherPage() {
                 <Textarea
                   id={questionId}
                   value={question}
-                  onChange={e => setQuestion(e.target.value)}
+                  onChange={e => {
+                    setQuestion(e.target.value)
+                  }}
                   placeholder="Ask what you need to know about the weather"
                   className="min-h-28 resize-none"
                 />
@@ -756,20 +839,26 @@ export function WeatherPage() {
                   Units
                 </span>
                 <div className="
-                  grid grid-cols-2 rounded-lg border border-white/10
-                  bg-black/10 p-1
-                ">
+                  grid grid-cols-2 rounded-lg border border-white/10 bg-black/10
+                  p-1
+                "
+                >
                   {(['celsius', 'fahrenheit'] as const).map(option => (
                     <button
                       key={option}
                       type="button"
-                      onClick={() => setUnit(option)}
+                      onClick={() => {
+                        setUnit(option)
+                      }}
                       className={`
-                        rounded-md px-3 py-2 text-sm font-medium
-                        transition-all duration-200
-                        ${unit === option
-                          ? 'bg-sky-300/18 text-sky-100 shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'}
+                        rounded-md px-3 py-2 text-sm font-medium transition-all
+                        duration-200
+                        ${unit === option ?
+                      'bg-sky-300/18 text-sky-100 shadow-sm' :
+                      `
+                        text-muted-foreground
+                        hover:text-foreground
+                      `}
                       `}
                     >
                       {option === 'celsius' ? 'Celsius' : 'Fahrenheit'}
@@ -786,10 +875,13 @@ export function WeatherPage() {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setQuestion(item)}
+                    onClick={() => {
+                      setQuestion(item)
+                    }}
                     className="
                       h-auto px-3 py-2 text-left whitespace-normal
-                      transition-all duration-150 hover:scale-[1.02]
+                      transition-all duration-150
+                      hover:scale-[1.02]
                       active:scale-[0.98]
                     "
                   >
@@ -802,14 +894,17 @@ export function WeatherPage() {
               {rateLimit ? <RateLimitBadge info={rateLimit} /> : null}
 
               {/* Error */}
-              {error ? (
-                <p className="
-                  animate-scale-in rounded-lg border border-red-400/20
-                  bg-red-500/10 p-3 text-sm text-red-100
-                ">
-                  {error}
-                </p>
-              ) : null}
+              {error ?
+                (
+                  <p className="
+                    animate-scale-in rounded-lg border border-red-400/20
+                    bg-red-500/10 p-3 text-sm text-red-100
+                  "
+                  >
+                    {error}
+                  </p>
+                ) :
+                null}
 
               {/* Submit */}
               <Button
@@ -821,11 +916,13 @@ export function WeatherPage() {
                   active:scale-[0.98]
                 "
               >
-                {isLoading ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Send className="size-4" />
-                )}
+                {isLoading ?
+                  (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) :
+                  (
+                    <Send className="size-4" />
+                  )}
                 {isLoading ? 'Asking Claude…' : 'Ask Claude'}
               </Button>
             </div>
@@ -834,34 +931,44 @@ export function WeatherPage() {
           {/* ── Result panel ────────────────────────────────────────── */}
           <section className="
             animate-slide-up-fade grid gap-4 [animation-delay:120ms]
-          ">
+          "
+          >
             {/* Weather card */}
             <div
               className={`
-                rounded-xl border p-5 shadow-xl shadow-black/20
-                transition-all duration-1000
-                ${theme
-                  ? `${theme.border} bg-white/6`
-                  : 'border-white/10 bg-white/5'}
+                rounded-xl border p-5 shadow-xl shadow-black/20 transition-all
+                duration-1000
+                ${theme ?
+      `
+        ${theme.border}
+        bg-white/6
+      ` :
+      'border-white/10 bg-white/5'}
               `}
             >
               {isLoading ? (
                 <WeatherSkeleton />
-              ) : weather && result && category && theme ? (
+              ) : weather && category && theme ? (
                 <div className="grid gap-5">
                   {/* Temperature + icon row */}
-                  <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="
+                    flex flex-wrap items-start justify-between gap-4
+                  "
+                  >
                     {/* Left: location + temp + condition */}
                     <div className="animate-slide-up-fade">
-                      <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                      <p className="
+                        flex items-center gap-1.5 text-sm text-muted-foreground
+                      "
+                      >
                         <MapPin className="size-3.5 shrink-0" />
                         {weather.location}
                         {weather.country ? `, ${weather.country}` : ''}
                       </p>
                       <p
                         className={`
-                          mt-2 text-6xl font-semibold tracking-tight
-                          animate-slide-up-fade [animation-delay:80ms]
+                          animate-slide-up-fade mt-2 text-6xl font-semibold
+                          tracking-tight [animation-delay:80ms]
                           ${theme.temp}
                         `}
                       >
@@ -870,8 +977,8 @@ export function WeatherPage() {
                       </p>
                       <p
                         className={`
-                          mt-1.5 text-sm font-medium
-                          animate-slide-up-fade [animation-delay:160ms]
+                          animate-slide-up-fade mt-1.5 text-sm font-medium
+                          [animation-delay:160ms]
                           ${theme.icon}
                         `}
                       >
@@ -883,7 +990,8 @@ export function WeatherPage() {
                     <div className="flex flex-col items-end gap-3">
                       <div
                         className={`
-                          animate-scale-in [animation-delay:100ms] ${theme.icon}
+                          animate-scale-in [animation-delay:100ms]
+                          ${theme.icon}
                         `}
                       >
                         <AnimatedWeatherIcon
@@ -894,8 +1002,8 @@ export function WeatherPage() {
                       </div>
                       <div
                         className={`
-                          animate-fade-in [animation-delay:220ms]
-                          rounded-lg border px-3 py-1.5 text-right text-xs
+                          animate-fade-in rounded-lg border px-3 py-1.5
+                          text-right text-xs [animation-delay:220ms]
                           ${theme.badge}
                         `}
                       >
@@ -906,7 +1014,11 @@ export function WeatherPage() {
                   </div>
 
                   {/* Metric cards — staggered */}
-                  <div className="grid gap-3 sm:grid-cols-3">
+                  <div className="
+                    grid gap-3
+                    sm:grid-cols-3
+                  "
+                  >
                     <Metric
                       icon={Thermometer}
                       label="Feels like"
@@ -931,17 +1043,23 @@ export function WeatherPage() {
                   </div>
 
                   {/* Precipitation banner (only when non-zero) */}
-                  {weather.precipitation > 0 ? (
-                    <div className="
-                      animate-fade-in [animation-delay:300ms]
-                      flex items-center gap-2 rounded-lg border
-                      border-blue-400/20 bg-blue-500/8 px-3 py-2
-                      text-sm text-blue-200
-                    ">
-                      <Droplets className="size-4 shrink-0" />
-                      <span>{weather.precipitation} mm precipitation</span>
-                    </div>
-                  ) : null}
+                  {weather.precipitation > 0 ?
+                    (
+                      <div className="
+                        animate-fade-in flex items-center gap-2 rounded-lg
+                        border border-blue-400/20 bg-blue-500/8 px-3 py-2
+                        text-sm text-blue-200 [animation-delay:300ms]
+                      "
+                      >
+                        <Droplets className="size-4 shrink-0" />
+                        <span>
+                          {weather.precipitation}
+                          {' '}
+                          mm precipitation
+                        </span>
+                      </div>
+                    ) :
+                    null}
                 </div>
               ) : (
                 <WeatherEmptyState />
@@ -949,26 +1067,40 @@ export function WeatherPage() {
             </div>
 
             {/* Claude answer */}
-            {result && !isLoading ? (
-              <div className="
-                animate-slide-up-fade [animation-delay:200ms]
-                rounded-xl border border-white/10 bg-white/5 p-5
-                shadow-xl shadow-black/20
-              ">
-                <p className="mb-3 text-sm font-medium text-muted-foreground">
-                  Claude answer
-                </p>
-                <MarkdownAnswer content={result.answer} />
+            {result && !isLoading ?
+              (
                 <div className="
-                  mt-4 flex flex-wrap gap-3 border-t border-white/8 pt-3
-                  text-xs text-muted-foreground
-                ">
-                  <span className="font-mono">{result.model}</span>
-                  <span>↑ {result.input_tokens} in</span>
-                  <span>↓ {result.output_tokens} out</span>
+                  animate-slide-up-fade rounded-xl border border-white/10
+                  bg-white/5 p-5 shadow-xl shadow-black/20
+                  [animation-delay:200ms]
+                "
+                >
+                  <p className="mb-3 text-sm font-medium text-muted-foreground">
+                    Claude answer
+                  </p>
+                  <MarkdownAnswer content={result.answer} />
+                  <div className="
+                    mt-4 flex flex-wrap gap-3 border-t border-white/8 pt-3
+                    text-xs text-muted-foreground
+                  "
+                  >
+                    <span className="font-mono">{result.model}</span>
+                    <span>
+                      ↑
+                      {result.input_tokens}
+                      {' '}
+                      in
+                    </span>
+                    <span>
+                      ↓
+                      {result.output_tokens}
+                      {' '}
+                      out
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ) : null}
+              ) :
+              null}
           </section>
         </div>
       </section>
