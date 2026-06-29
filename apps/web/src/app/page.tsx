@@ -3,8 +3,10 @@ import Link from 'next/link'
 import { ApiStatusIndicator } from '@/components/api-status/indicator'
 import { AmbientBackground } from '@/components/claude-playground/sections/ambient-background'
 
+import { Button } from '@repo/ui/components/ui/button'
 import {
   ArrowRight,
+  BookOpenCheck,
   Bot,
   CloudSun,
   FlaskConical,
@@ -12,9 +14,15 @@ import {
   Zap
 } from 'lucide-react'
 
-import { Button } from '@repo/ui/components/ui/button'
-
 const features = [
+  {
+    href: '/certification-guide',
+    title: 'Certification Guide',
+    description:
+      'A compact bilingual study guide for Claude certification scenarios: answers, concepts, traps, and extra practice.',
+    icon: BookOpenCheck,
+    badge: 'Study cards'
+  },
   {
     href: '/chat',
     title: 'Multi-turn Chat',
@@ -128,9 +136,9 @@ export default function Home() {
               style={{ animationDelay: '240ms' }}
             >
               <Button asChild size="lg">
-                <Link href="/chat">
-                  <MessageSquare className="size-4" />
-                  Start chatting
+                <Link href="/certification-guide">
+                  <BookOpenCheck className="size-4" />
+                  Study guide
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="p-4">

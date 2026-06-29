@@ -20,19 +20,30 @@
     "web:test": "pnpm --filter web test",
     "web:a11y": "pnpm --filter web test:a11y",
     "test:a11y": "pnpm run web:a11y",
+    "study:tunnel": "bash scripts/study-cloudflare-tunnel.sh",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean",
-    "prepare": "husky"
+    "prepare": "husky",
+    "commit": "cz"
   },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.8.3",
-    "turbo": "^2.9.14"
+    "turbo": "^2.9.14",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0"
   },
   "packageManager": "pnpm@10.11.0",
   "engines": {
     "node": ">=20"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

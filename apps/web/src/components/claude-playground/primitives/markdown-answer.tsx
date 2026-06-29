@@ -75,7 +75,6 @@ const useTypingEffect = (rawText: string, isStreaming: boolean) => {
     return () => {
       cancelAnimationFrame(animationFrameId)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStreaming])
 
   // If we suddenly toggle or stop streaming, make sure we sync instantly
