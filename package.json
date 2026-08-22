@@ -13,13 +13,15 @@
     "test": "turbo run test",
     "types:api": "PYTHONPATH=apps/api apps/api/.venv/bin/python scripts/export-openapi.py && openapi-typescript packages/shared/openapi.json --default-non-nullable false -o packages/shared/src/openapi.d.ts",
     "api:lint": "cd apps/api && .venv/bin/ruff check .",
-    "api:typecheck": "cd apps/api && npx pyright .",
+    "api:typecheck": "cd apps/api && ../../node_modules/.bin/pyright .",
     "api:pyrefly": "cd apps/api && .venv/bin/pyrefly check .",
+    "api:audit": "apps/api/.venv/bin/pip-audit -r apps/api/requirements.txt",
     "api:test": "pnpm --filter api test",
     "api:check": "pnpm run api:lint && pnpm run api:typecheck && pnpm run api:pyrefly && pnpm run api:test",
     "web:test": "pnpm --filter web test",
     "web:a11y": "pnpm --filter web test:a11y",
     "test:a11y": "pnpm run web:a11y",
+    "verify": "pnpm audit --audit-level high && pnpm run api:audit && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm api:lint && pnpm api:typecheck && pnpm api:pyrefly",
     "study:tunnel": "bash scripts/study-cloudflare-tunnel.sh",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo run clean",
@@ -27,15 +29,16 @@
     "commit": "cz"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "commitizen": "^4.3.2",
+    "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.5",
+    "lint-staged": "^17.3.0",
     "openapi-typescript": "^7.13.0",
-    "prettier": "^3.8.3",
-    "turbo": "^2.9.14",
-    "@commitlint/cli": "^19.3.0",
-    "@commitlint/config-conventional": "^19.2.2",
-    "commitizen": "^4.3.0",
-    "cz-conventional-changelog": "^3.3.0"
+    "prettier": "^3.9.6",
+    "pyright": "1.1.413",
+    "turbo": "^2.10.11"
   },
   "packageManager": "pnpm@10.11.0",
   "engines": {
@@ -44,6 +47,11 @@
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "8.0.16"
     }
   }
 }
