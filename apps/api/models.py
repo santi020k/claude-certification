@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -79,13 +79,15 @@ def _sanitise_question(raw: str) -> str:
 class AskRequest(BaseModel):
     """Body expected by POST /api/ask."""
 
-    question: str = Field(
-        ...,
-        min_length=3,
-        max_length=4_000,
-        description="The question you want Claude to answer.",
-        examples=["Explain Python decorators in simple terms"],
-    )
+    question: Annotated[
+        str,
+        Field(
+            min_length=3,
+            max_length=4_000,
+            description="The question you want Claude to answer.",
+            examples=["Explain Python decorators in simple terms"],
+        ),
+    ]
     max_tokens: int = Field(
         default=1_000,
         ge=50,
@@ -127,13 +129,15 @@ class AskResponse(BaseModel):
 class WeatherRequest(BaseModel):
     """Body expected by POST /api/weather."""
 
-    location: str = Field(
-        ...,
-        min_length=2,
-        max_length=120,
-        description="City or place to look up with the weather API.",
-        examples=["Bogotá", "New York"],
-    )
+    location: Annotated[
+        str,
+        Field(
+            min_length=2,
+            max_length=120,
+            description="City or place to look up with the weather API.",
+            examples=["Bogotá", "New York"],
+        ),
+    ]
     question: str | None = Field(
         default=None,
         min_length=3,
@@ -206,13 +210,15 @@ class ChatMessage(BaseModel):
 class ChatRequest(BaseModel):
     """Body expected by POST /api/chat."""
 
-    message: str = Field(
-        ...,
-        min_length=1,
-        max_length=4_000,
-        description="The next user message in the conversation.",
-        examples=["Can you explain that with a small Python example?"],
-    )
+    message: Annotated[
+        str,
+        Field(
+            min_length=1,
+            max_length=4_000,
+            description="The next user message in the conversation.",
+            examples=["Can you explain that with a small Python example?"],
+        ),
+    ]
     conversation_id: str | None = Field(
         default=None,
         min_length=8,

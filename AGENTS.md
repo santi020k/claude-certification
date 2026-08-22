@@ -10,7 +10,7 @@ reference for developers learning the Anthropic SDK.
 
 A full-stack **learning / certification project** that demonstrates how to:
 
-- Call the Codex API from a Python backend (FastAPI)
+- Call the Claude API from a Python backend (FastAPI)
 - Expose the results through a REST API consumed by a Next.js frontend
 - Structure a real monorepo (Turborepo + pnpm) with Python + TypeScript
 
@@ -26,31 +26,31 @@ certification/
 │   │   ├── config.py         ← Env vars, logging, constants
 │   │   ├── models.py         ← Pydantic request/response schemas
 │   │   ├── services/
-│   │   │   └── Codex.py     ← ask_claude() — the Anthropic SDK wrapper
+│   │   │   └── claude.py    ← ask_claude() — the Anthropic SDK wrapper
 │   │   └── routers/
 │   │       ├── health.py     ← GET /  and  GET /api/health
-│   │       └── Codex.py     ← POST /api/ask  and  GET /api/ask/demo
-│   └── web/                  ← Next.js 15 (TypeScript + Tailwind)
+│   │       └── claude.py    ← POST /api/ask  and  GET /api/ask/demo
+│   └── web/                  ← Next.js 16 (TypeScript + Tailwind)
 └── packages/shared/          ← Shared TypeScript types (placeholder)
 ```
 
 ---
 
-## Codex / Anthropic SDK Quick Reference
+## Claude / Anthropic SDK Quick Reference
 
 ### Current model
 
 ```python
-MODEL = "Codex-sonnet-4-0"   # fast + capable; good for most tasks
+MODEL = "claude-sonnet-4-0"   # fast + capable; good for most tasks
 ```
 
 Other available models (as of the project's creation):
 
 | Model              | Best for                                   |
 | ------------------ | ------------------------------------------ |
-| `Codex-opus-4-0`   | Complex reasoning, long documents          |
-| `Codex-sonnet-4-0` | Balanced — speed + intelligence ✅ default |
-| `Codex-haiku-4-5`  | Ultra-fast, lightweight tasks              |
+| `claude-opus-4-0`   | Complex reasoning, long documents          |
+| `claude-sonnet-4-0` | Balanced — speed + intelligence ✅ default |
+| `claude-haiku-4-5`  | Ultra-fast, lightweight tasks              |
 
 ### Basic message call
 
@@ -60,7 +60,7 @@ from anthropic import Anthropic
 client = Anthropic()  # reads ANTHROPIC_API_KEY from environment
 
 response = client.messages.create(
-    model="Codex-sonnet-4-0",
+    model="claude-sonnet-4-0",
     max_tokens=1024,
     messages=[
         {"role": "user", "content": "Explain async/await in Python."}
@@ -75,7 +75,7 @@ print(text)
 
 ```python
 response = client.messages.create(
-    model="Codex-sonnet-4-0",
+    model="claude-sonnet-4-0",
     max_tokens=1024,
     system="You are a senior Python engineer. Be concise and use examples.",
     messages=[{"role": "user", "content": "What is a context manager?"}],
@@ -90,7 +90,7 @@ history = []
 def chat(user_message: str) -> str:
     history.append({"role": "user", "content": user_message})
     response = client.messages.create(
-        model="Codex-sonnet-4-0",
+        model="claude-sonnet-4-0",
         max_tokens=1024,
         messages=history,
     )
@@ -103,7 +103,7 @@ def chat(user_message: str) -> str:
 
 ```python
 with client.messages.stream(
-    model="Codex-sonnet-4-0",
+    model="claude-sonnet-4-0",
     max_tokens=1024,
     messages=[{"role": "user", "content": "Write a haiku about Python."}],
 ) as stream:
@@ -115,7 +115,7 @@ with client.messages.stream(
 
 ```python
 count = client.messages.count_tokens(
-    model="Codex-sonnet-4-0",
+    model="claude-sonnet-4-0",
     messages=[{"role": "user", "content": "Hello!"}],
 )
 print(count.input_tokens)
@@ -140,7 +140,7 @@ print(response.usage.output_tokens)  # completion tokens
 3. **Chain-of-thought** — append "Think step by step." for complex reasoning.
 4. **One sentence mode** — append "Answer in one sentence." for quick summaries
    (this project's `one_sentence` flag does exactly this).
-5. **XML tags** — Codex handles structured output well:
+5. **XML tags** — Claude handles structured output well:
    ```
    Return your answer as <answer>…</answer> and your reasoning as <reasoning>…</reasoning>.
    ```
@@ -154,7 +154,7 @@ print(response.usage.output_tokens)  # completion tokens
 | Variable            | Required | Description                                          |
 | ------------------- | -------- | ---------------------------------------------------- |
 | `ANTHROPIC_API_KEY` | ✅       | Your Anthropic API key                               |
-| `MODEL`             | optional | Override default model (default: `Codex-sonnet-4-0`) |
+| `MODEL`             | optional | Override default model (default: `claude-sonnet-4-0`) |
 | `ALLOWED_ORIGINS`   | optional | Comma-separated CORS origins                         |
 | `APP_ENV`           | optional | `development` or `production`                        |
 | `API_HOST`          | optional | Bind address (default: `0.0.0.0`)                    |
@@ -170,7 +170,7 @@ When helping in this repo, prefer:
 
 - **Adding a new endpoint** → create the handler in the relevant
   `routers/*.py` file and register it in `main.py` via `include_router`.
-- **New Codex capability** → add a function to `services/Codex.py`;
+- **New Claude capability** → add a function to `services/claude.py`;
   keep it focused, typed, and tested independently.
 - **New Pydantic schema** → add it to `models.py`.
 - **Config changes** → centralise in `config.py`, never call `os.getenv`
@@ -183,8 +183,8 @@ When helping in this repo, prefer:
 ## Useful Links
 
 - [Anthropic API docs](https://docs.anthropic.com)
-- [Codex model overview](https://docs.anthropic.com/en/docs/about-Codex/models/overview)
-- [Prompt engineering guide](https://docs.anthropic.com/en/docs/build-with-Codex/prompt-engineering/overview)
+- [Claude model overview](https://docs.anthropic.com/en/docs/about-claude/models/overview)
+- [Prompt engineering guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview)
 - [Python SDK reference](https://github.com/anthropics/anthropic-sdk-python)
 - [FastAPI docs](https://fastapi.tiangolo.com)
 - [Turborepo docs](https://turbo.build/repo/docs)

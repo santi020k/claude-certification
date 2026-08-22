@@ -2,7 +2,7 @@
 # Install with:  pip install -r requirements.txt
 
 # Anthropic Python SDK — the official client for Claude API
-anthropic>=0.30.0
+anthropic==0.125.0
 
 # python-dotenv — loads .env files into os.environ automatically
 python-dotenv>=1.0.0
@@ -25,3 +25,4 @@ httpx>=0.27.0
 pytest>=8.0.0
 ruff>=0.8.0
 pyrefly>=1.0.0
+pip-audit>=2.9.0

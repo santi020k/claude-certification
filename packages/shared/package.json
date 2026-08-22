@@ -16,8 +16,8 @@
     "clean": "rm -rf .turbo"
   },
   "devDependencies": {
-    "@santi020k/eslint-config-basic": "2.0.0",
-    "eslint": "^10.5.0",
+    "@santi020k/eslint-config-basic": "3.5.1",
+    "eslint": "^10.9.0",
     "typescript": "^5.9.3"
   }
 }

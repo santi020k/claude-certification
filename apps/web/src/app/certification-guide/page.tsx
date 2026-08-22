@@ -992,7 +992,8 @@ export default function CertificationGuidePage() {
         mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8
         sm:px-6
         lg:px-10
-      ">
+      "
+      >
         <nav>
           <Button asChild variant="ghost" size="sm">
             <Link href="/">
@@ -1006,14 +1007,16 @@ export default function CertificationGuidePage() {
           <div className="
             mb-4 flex size-12 items-center justify-center rounded-lg border
             border-orange-200/20 bg-orange-300/10 text-orange-100
-          ">
+          "
+          >
             <BookOpenCheck className="size-6" />
           </div>
           <h1 className="
             max-w-3xl text-4xl/tight font-semibold tracking-normal
             text-foreground
             sm:text-5xl/tight
-          ">
+          "
+          >
             Choose your study language
           </h1>
           <p className="mt-4 max-w-2xl text-base/7 text-muted-foreground">
@@ -1036,7 +1039,7 @@ export default function CertificationGuidePage() {
 
 export function CertificationGuideContent({ language }: { language: Language }) {
   const copy = languageCopy[language]
-  const text = (value: { en: string; es: string }) => value[language]
+  const text = (value: { en: string, es: string }) => value[language]
 
   return (
     <main className="min-h-screen bg-background">
@@ -1044,7 +1047,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
         mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8
         sm:px-6
         lg:px-10
-      ">
+      "
+      >
         <nav className="flex flex-wrap items-center justify-between gap-3">
           <Button asChild variant="ghost" size="sm">
             <Link href="/">
@@ -1055,9 +1059,10 @@ export function CertificationGuideContent({ language }: { language: Language }) 
           <Button asChild variant="outline" size="sm">
             <Link href={copy.otherHref}>{copy.otherLanguage}</Link>
           </Button>
-          <Badge variant="outline" className="
-            border-orange-200/20 text-orange-100
-          ">
+          <Badge
+            variant="outline"
+            className="border-orange-200/20 text-orange-100"
+          >
             {copy.badge}
           </Badge>
         </nav>
@@ -1065,19 +1070,22 @@ export function CertificationGuideContent({ language }: { language: Language }) 
         <header className="
           grid gap-8
           lg:grid-cols-[0.95fr_1.05fr] lg:items-end
-        ">
+        "
+        >
           <div>
             <div className="
               mb-4 flex size-12 items-center justify-center rounded-lg border
               border-orange-200/20 bg-orange-300/10 text-orange-100
-            ">
+            "
+            >
               <BookOpenCheck className="size-6" />
             </div>
             <h1 className="
               max-w-3xl text-4xl/tight font-semibold tracking-normal
               text-foreground
               sm:text-5xl/tight
-            ">
+            "
+            >
               {copy.title}
             </h1>
             <p className="mt-4 max-w-2xl text-base/7 text-muted-foreground">
@@ -1088,8 +1096,9 @@ export function CertificationGuideContent({ language }: { language: Language }) 
           <div className="
             grid gap-3
             sm:grid-cols-2
-          ">
-            {answerPatterns.map((pattern) => (
+          "
+          >
+            {answerPatterns.map(pattern => (
               <div
                 key={pattern.en}
                 className="rounded-lg border border-white/10 bg-white/4 p-4"
@@ -1097,7 +1106,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
                 <p className="
                   text-xs font-semibold tracking-wide text-orange-100/80
                   uppercase
-                ">
+                "
+                >
                   {copy.patternTitle}
                 </p>
                 <p className="mt-2 text-sm/6 text-foreground">
@@ -1112,8 +1122,9 @@ export function CertificationGuideContent({ language }: { language: Language }) 
           grid gap-3
           md:grid-cols-2
           xl:grid-cols-5
-        ">
-          {themes.map((theme) => (
+        "
+        >
+          {themes.map(theme => (
             <a
               key={theme.name}
               href={`#${theme.name.toLowerCase().replaceAll(' ', '-')}`}
@@ -1133,8 +1144,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
           ))}
         </section>
 
-        {themes.map((theme) => {
-          const cards = studyCards.filter((card) => card.theme === theme.name)
+        {themes.map(theme => {
+          const cards = studyCards.filter(card => card.theme === theme.name)
 
           return (
             <section
@@ -1144,7 +1155,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
             >
               <div className="
                 mb-4 flex flex-wrap items-end justify-between gap-3
-              ">
+              "
+              >
                 <div>
                   <p className="text-sm font-medium text-orange-100">
                     {language === 'en' ? theme.focus : theme.focusEs}
@@ -1154,15 +1166,18 @@ export function CertificationGuideContent({ language }: { language: Language }) 
                   </h2>
                 </div>
                 <Badge variant="secondary">
-                  {cards.length} {copy.cardsLabel}
+                  {cards.length}
+                  {' '}
+                  {copy.cardsLabel}
                 </Badge>
               </div>
 
               <div className="
                 grid gap-4
                 lg:grid-cols-2
-              ">
-                {cards.map((card) => (
+              "
+              >
+                {cards.map(card => (
                   <article
                     key={card.id}
                     className="
@@ -1174,19 +1189,22 @@ export function CertificationGuideContent({ language }: { language: Language }) 
                         <div className="
                           flex size-10 shrink-0 items-center justify-center
                           rounded-md bg-orange-300/10 text-orange-100
-                        ">
+                        "
+                        >
                           <card.icon className="size-5" />
                         </div>
                         <div>
                           <p className="
                             text-xs font-semibold tracking-wide
                             text-orange-100/80 uppercase
-                          ">
+                          "
+                          >
                             {copy.questionLabel}
                           </p>
                           <p className="
                             mt-2 text-lg/7 font-semibold text-foreground
-                          ">
+                          "
+                          >
                             {text(card.question)}
                           </p>
                         </div>
@@ -1195,7 +1213,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
                         flex min-w-12 flex-col items-center rounded-md border
                         border-orange-200/20 bg-orange-300/10 px-3 py-2
                         text-orange-100
-                      ">
+                      "
+                      >
                         <span className="text-[10px] tracking-wide uppercase">
                           {copy.answerLabel}
                         </span>
@@ -1208,12 +1227,14 @@ export function CertificationGuideContent({ language }: { language: Language }) 
                     <div className="
                       mt-5 grid gap-3
                       sm:grid-cols-3
-                    ">
+                    "
+                    >
                       <div>
                         <div className="
                           mb-2 flex items-center gap-2 text-xs font-semibold
                           tracking-wide text-orange-100/80 uppercase
-                        ">
+                        "
+                        >
                           <CheckCircle2 className="size-3.5" />
                           {copy.whyLabel}
                         </div>
@@ -1225,7 +1246,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
                         <div className="
                           mb-2 flex items-center gap-2 text-xs font-semibold
                           tracking-wide text-orange-100/80 uppercase
-                        ">
+                        "
+                        >
                           <Brain className="size-3.5" />
                           {copy.conceptLabel}
                         </div>
@@ -1237,7 +1259,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
                         <div className="
                           mb-2 flex items-center gap-2 text-xs font-semibold
                           tracking-wide text-orange-100/80 uppercase
-                        ">
+                        "
+                        >
                           <CircleHelp className="size-3.5" />
                           {copy.trapLabel}
                         </div>
@@ -1258,7 +1281,8 @@ export function CertificationGuideContent({ language }: { language: Language }) 
             <div className="
               flex size-10 items-center justify-center rounded-md
               bg-orange-300/10 text-orange-100
-            ">
+            "
+            >
               <CircleHelp className="size-5" />
             </div>
             <div>
@@ -1273,8 +1297,9 @@ export function CertificationGuideContent({ language }: { language: Language }) 
           <div className="
             grid gap-3
             md:grid-cols-2
-          ">
-            {practice.map((item) => (
+          "
+          >
+            {practice.map(item => (
               <div
                 key={item.q}
                 className="

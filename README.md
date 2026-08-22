@@ -163,12 +163,16 @@ documented in **[docs/brand-guide.md](./docs/brand-guide.md)**.
 ## Quality checks
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm build
-pnpm api:lint
-pnpm api:test
+pnpm verify
 ```
+
+Pull requests run this same command in one read-only GitHub Actions job. The
+workflow does not run again after merge and deployment remains with Cloudflare,
+which keeps repository automation small and predictable.
+
+Security issues should be reported privately as described in
+**[SECURITY.md](./SECURITY.md)**. Please never include an Anthropic API key or
+private conversation content in a public issue.
 
 ---
 
@@ -179,3 +183,7 @@ Frontend is deployed to **Cloudflare Pages** — see `apps/web/wrangler.toml`.
 Set secret environment variables (e.g. `ANTHROPIC_API_KEY`) in the
 **Cloudflare dashboard → Pages → Settings → Environment variables**.
 Never put secrets in `wrangler.toml`.
+
+---
+
+Licensed under the [MIT License](./LICENSE).
